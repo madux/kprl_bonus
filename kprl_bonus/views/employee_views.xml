@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_employee_tree" model="ir.ui.view">
+        <field name="name">kprl.employee.tree.user</field>
+        <field name="model">kprl.employee</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <tree create="0" import="0">
+                <field name="employee_id"/>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="grade_id"/>
+                <field name="job_title"/>
+                <field name="status" widget="badge"/>
+                <field name="is_sales"/>
+                <field name="sales_role"/>
+                <field name="territory_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_employee_tree_manager" model="ir.ui.view">
+        <field name="name">kprl.employee.tree.manager</field>
+        <field name="model">kprl.employee</field>
+        <field name="groups">kprl_bonus.group_kprl_hr,kprl_bonus.group_kprl_finance,kprl_bonus.group_kprl_ceo</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="employee_id"/>
+                <field name="name"/>
+                <field name="department_id"/>
+                <field name="grade_id"/>
+                <field name="job_title"/>
+                <field name="status" widget="badge"/>
+                <field name="is_sales"/>
+                <field name="sales_role"/>
+                <field name="territory_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_employee_form" model="ir.ui.view">
+        <field name="name">kprl.employee.form</field>
+        <field name="model">kprl.employee</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_kprl_performance_input)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-line-chart"
+                                context="{'default_employee_id': active_id}">
+                            <div>Performance</div>
+                        </button>
+                        <button name="%(action_kprl_bonus_payout)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-money"
+                                context="{'default_employee_id': active_id}">
+                            <div>Payouts</div>
+                        </button>
+                        <button name="open_simulation"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-calculator"
+                                string="Simulate Bonus"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="employee_id"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="status"/>
+                        </group>
+                        <group>
+                            <field name="department_id"/>
+                            <field name="grade_id"/>
+                            <field name="job_title"/>
+                            <field name="subpool_id"/>
+                            <field name="manager_id"/>
+                        </group>
+                    </group>
+                    <group string="Employment">
+                        <group>
+                            <field name="date_hired"/>
+                            <field name="tenure_years"/>
+                            <field name="is_active"/>
+                        </group>
+                        <group string="Sales Info">
+                            <field name="is_sales"/>
+                            <field name="sales_role"
+                                   attrs="{'invisible': [('is_sales','=',False)], 'required': [('is_sales','=',True)]}"/>
+                            <field name="territory_id"
+                                   attrs="{'invisible': [('is_sales','=',False)]}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="image" widget="image"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kprl_employee_search" model="ir.ui.view">
+        <field name="name">kprl.employee.search</field>
+        <field name="model">kprl.employee</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="grade_id"/>
+                <filter name="active" string="Active" domain="[('status','=','active')]"/>
+                <filter name="sales" string="Sales Roles" domain="[('is_sales','=',True)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kprl_employee" model="ir.actions.act_window">
+        <field name="name">Employees</field>
+        <field name="res_model">kprl.employee</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
+
+    <record id="action_kprl_simulation" model="ir.actions.client">
+        <field name="name">Bonus Simulation</field>
+        <field name="tag">website_page</field>
+        <field name="params" eval="{'url': '/kprl/simulate/1'}"/>
+    </record>
+</odoo>

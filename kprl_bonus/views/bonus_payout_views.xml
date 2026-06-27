@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_bonus_payout_tree" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.tree</field>
+        <field name="model">kprl.bonus.payout</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="period_id"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="grade_id"/>
+                <field name="gross_payable" widget="monetary"/>
+                <field name="deferred_amount" widget="monetary"/>
+                <field name="net_immediate" widget="monetary"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_bonus_payout_form" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.form</field>
+        <field name="model">kprl.bonus.payout</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_approve" type="object"
+                            string="Approve"
+                            class="btn-success"
+                            states="computed"/>
+                    <button name="action_paid" type="object"
+                            string="Mark Paid"
+                            class="btn-primary"
+                            states="approved"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="period_id"/>
+                            <field name="department_id"/>
+                            <field name="grade_id"/>
+                            <field name="subpool_id"/>
+                        </group>
+                        <group string="Calculated Amounts">
+                            <field name="gross_payable" widget="monetary"/>
+                            <field name="deferred_amount" widget="monetary"/>
+                            <field name="net_immediate" widget="monetary"/>
+                        </group>
+                    </group>
+                    <group string="Multipliers &amp; Adjustments">
+                        <group>
+                            <field name="base_eligible" widget="monetary"/>
+                            <field name="dept_kpi_mult"/>
+                            <field name="appraisal_mult"/>
+                            <field name="behavioural_mult"/>
+                        </group>
+                        <group>
+                            <field name="tenure_mult"/>
+                            <field name="proration_factor"/>
+                            <field name="gmp_factor"/>
+                            <field name="deferral_rate"/>
+                        </group>
+                        <group>
+                            <field name="exception_premium" widget="monetary"/>
+                            <field name="malus_amount" widget="monetary"/>
+                            <field name="floor_check"/>
+                            <field name="cap_check"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="state"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kprl_bonus_payout_search" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.search</field>
+        <field name="model">kprl.bonus.payout</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="period_id"/>
+                <field name="department_id"/>
+                <field name="state"/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kprl_bonus_payout" model="ir.actions.act_window">
+        <field name="name">Staff Payouts</field>
+        <field name="res_model">kprl.bonus.payout</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
+</odoo>

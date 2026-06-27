@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="kprl_grade_g1" model="kprl.grade">
+            <field name="name">Top Management</field>
+            <field name="code">TMGT</field>
+            <field name="sequence">10</field>
+            <field name="yp_points">100</field>
+            <field name="diff_points">15</field>
+            <field name="skill_premium">10</field>
+            <field name="token_rate">2500</field>
+            <field name="deferral_rate">30.0</field>
+            <field name="aip_eligible">True</field>
+            <field name="governance_note">Board-level compensation approval required</field>
+        </record>
+
+        <record id="kprl_grade_g2" model="kprl.grade">
+            <field name="name">Senior Management</field>
+            <field name="code">SMGT</field>
+            <field name="sequence">20</field>
+            <field name="yp_points">85</field>
+            <field name="diff_points">10</field>
+            <field name="skill_premium">5</field>
+            <field name="token_rate">1800</field>
+            <field name="deferral_rate">20.0</field>
+            <field name="aip_eligible">True</field>
+        </record>
+
+        <record id="kprl_grade_g3" model="kprl.grade">
+            <field name="name">Mid Management</field>
+            <field name="code">MMGT</field>
+            <field name="sequence">30</field>
+            <field name="yp_points">70</field>
+            <field name="diff_points">8</field>
+            <field name="skill_premium">5</field>
+            <field name="token_rate">1400</field>
+            <field name="deferral_rate">15.0</field>
+            <field name="aip_eligible">False</field>
+        </record>
+
+        <record id="kprl_grade_g4" model="kprl.grade">
+            <field name="name">Supervisory</field>
+            <field name="code">SUPV</field>
+            <field name="sequence">40</field>
+            <field name="yp_points">55</field>
+            <field name="diff_points">5</field>
+            <field name="skill_premium">3</field>
+            <field name="token_rate">1000</field>
+            <field name="deferral_rate">10.0</field>
+            <field name="aip_eligible">False</field>
+        </record>
+
+        <record id="kprl_grade_g5" model="kprl.grade">
+            <field name="name">Senior Officer</field>
+            <field name="code">SOFF</field>
+            <field name="sequence">50</field>
+            <field name="yp_points">40</field>
+            <field name="diff_points">5</field>
+            <field name="skill_premium">2</field>
+            <field name="token_rate">800</field>
+            <field name="deferral_rate">10.0</field>
+            <field name="aip_eligible">False</field>
+        </record>
+
+        <record id="kprl_grade_g6" model="kprl.grade">
+            <field name="name">Officer</field>
+            <field name="code">OFFC</field>
+            <field name="sequence">60</field>
+            <field name="yp_points">25</field>
+            <field name="diff_points">3</field>
+            <field name="skill_premium">0</field>
+            <field name="token_rate">600</field>
+            <field name="deferral_rate">5.0</field>
+            <field name="aip_eligible">False</field>
+        </record>
+    </data>
+</odoo>

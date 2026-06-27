@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_performance_input_tree" model="ir.ui.view">
+        <field name="name">kprl.performance.input.tree</field>
+        <field name="model">kprl.performance.input</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="period_id"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="appraisal_score"/>
+                <field name="own_target" widget="monetary"/>
+                <field name="own_sales" widget="monetary"/>
+                <field name="prod_pct"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_performance_input_form" model="ir.ui.view">
+        <field name="name">kprl.performance.input.form</field>
+        <field name="model">kprl.performance.input</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="period_id"/>
+                            <field name="employee_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group string="Scores">
+                            <field name="appraisal_score"/>
+                            <field name="retain_score"/>
+                        </group>
+                    </group>
+                    <group string="Sales Performance">
+                        <group>
+                            <field name="own_target" widget="monetary"/>
+                            <field name="own_sales" widget="monetary"/>
+                            <field name="own_revenue" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="prod_pct"/>
+                            <field name="call_pct"/>
+                            <field name="present_pct"/>
+                            <field name="team_pct"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kprl_performance_input_search" model="ir.ui.view">
+        <field name="name">kprl.performance.input.search</field>
+        <field name="model">kprl.performance.input</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="period_id"/>
+                <field name="department_id"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kprl_performance_input" model="ir.actions.act_window">
+        <field name="name">Performance Inputs</field>
+        <field name="res_model">kprl.performance.input</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
+</odoo>

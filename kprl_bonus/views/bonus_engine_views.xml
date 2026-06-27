@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_bonus_engine_tree" model="ir.ui.view">
+        <field name="name">kprl.bonus.engine.tree</field>
+        <field name="model">kprl.bonus.engine</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="period_id"/>
+                <field name="state" widget="badge"/>
+                <field name="quarterly_revenue" widget="monetary"/>
+                <field name="effective_pool" widget="monetary"/>
+                <field name="total_payout" widget="monetary"/>
+                <field name="gate_status"/>
+                <field name="company_kpi_score"/>
+                <field name="proration_factor"/>
+                <field name="computed_on"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_bonus_engine_form" model="ir.ui.view">
+        <field name="name">kprl.bonus.engine.form</field>
+        <field name="model">kprl.bonus.engine</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_compute" type="object"
+                            string="Run Computation"
+                            class="btn-primary"
+                            states="draft"/>
+                    <button name="action_finalize" type="object"
+                            string="Finalize"
+                            class="btn-success"
+                            states="computed"/>
+                    <button name="action_reset" type="object"
+                            string="Reset"
+                            states="computed,finalized"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="period_id"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="computed_by"/>
+                            <field name="computed_on"/>
+                        </group>
+                    </group>
+
+                    <group string="Revenue &amp; Pool">
+                        <group>
+                            <field name="quarterly_revenue" widget="monetary"/>
+                            <field name="net_revenue" widget="monetary"/>
+                            <field name="pool_contribution" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="effective_pool" widget="monetary"/>
+                            <field name="aip_pool" widget="monetary"/>
+                            <field name="proration_factor"/>
+                        </group>
+                    </group>
+
+                    <group string="Gates &amp; KPI">
+                        <group>
+                            <field name="ebitda_margin"/>
+                            <field name="gate_status"/>
+                            <field name="gate_factor"/>
+                        </group>
+                        <group>
+                            <field name="gmp_status"/>
+                            <field name="gmp_factor"/>
+                            <field name="company_kpi_score"/>
+                        </group>
+                    </group>
+
+                    <group string="Payout Summary">
+                        <group>
+                            <field name="total_payout" widget="monetary"/>
+                            <field name="ops_payout" widget="monetary"/>
+                            <field name="sales_commission" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="payout_as_pct_revenue"/>
+                            <field name="pool_util_vs_ebitda_cap"/>
+                            <field name="headcount"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_bonus_engine" model="ir.actions.act_window">
+        <field name="name">Bonus Engine</field>
+        <field name="res_model">kprl.bonus.engine</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

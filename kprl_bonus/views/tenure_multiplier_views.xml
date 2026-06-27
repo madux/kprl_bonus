@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_tenure_multiplier_tree" model="ir.ui.view">
+        <field name="name">kprl.tenure.multiplier.tree</field>
+        <field name="model">kprl.tenure.multiplier</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="years_of_service"/>
+                <field name="multiplier"/>
+                <field name="note"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_tenure_multiplier_form" model="ir.ui.view">
+        <field name="name">kprl.tenure.multiplier.form</field>
+        <field name="model">kprl.tenure.multiplier</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="years_of_service"/>
+                        <field name="multiplier"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_tenure_multiplier" model="ir.actions.act_window">
+        <field name="name">Tenure Multipliers</field>
+        <field name="res_model">kprl.tenure.multiplier</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

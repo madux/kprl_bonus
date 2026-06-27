@@ -16,7 +16,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body.kprl-body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Work Sans', sans-serif;
     background-color: var(--kprl-bg-main);
     color: var(--kprl-text-main);
     padding-bottom: 40px;

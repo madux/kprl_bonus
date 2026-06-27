@@ -1,0 +1,118 @@
+/* employee.css — Employee Master */
+.kprl-body {
+    background: #F7F9FC;
+    padding: 20px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.kprl-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 12px; border-bottom: 1px solid #e2e7ee; margin-bottom: 8px;
+}
+
+.kprl-brand-group { display: flex; align-items: center; gap: 12px; }
+.kprl-grid-icon { font-size: 20px; color: #71496f; }
+.kprl-nav-breadcrumbs { font-size: 14px; }
+.kprl-muted { color: #7A8296; }
+.kprl-role-badge {
+    background: #71496f; color: #fff; font-size: 12px; font-weight: 600;
+    padding: 6px 14px; border-radius: 20px;
+}
+
+.kprl-sub-nav { margin: 12px 0; }
+.kprl-tabs { display: flex; gap: 4px; }
+.kprl-tab-item {
+    background: none; border: none; padding: 8px 20px; font-size: 14px;
+    font-weight: 500; color: #7A8296; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+}
+.kprl-tab-item:hover { color: #6a3d6a; }
+.kprl-active-tab { color: #6a3d6a; border-bottom-color: #6a3d6a; font-weight: 600; }
+
+.kprl-action-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 12px 0; padding: 10px 0;
+}
+
+.kprl-btn {
+    padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+}
+.kprl-btn-primary { background: #6a3d6a; color: #fff; border: none; }
+.kprl-btn-primary:hover { background: #553c55; }
+.kprl-btn-secondary { background: #fff; color: #6a3d6a; border: 1px solid #d0d5dd; }
+.kprl-btn-outline { background: none; color: #6a3d6a; border: 1px solid #6a3d6a; }
+.kprl-btn-outline:hover { background: #6a3d6a; color: #fff; }
+
+.kprl-status-filters { display: flex; gap: 4px; }
+.kprl-filter-item {
+    background: #f0f2f5; border: none; padding: 5px 14px; border-radius: 16px;
+    font-size: 12px; color: #5a5a5a; cursor: pointer; transition: all 0.2s;
+}
+.kprl-filter-item:hover { background: #e2e5ea; }
+.kprl-active-filter { background: #6a3d6a; color: #fff; }
+
+.kprl-dashboard-grid {
+    display: grid; grid-template-columns: 320px 1fr 1fr; gap: 20px;
+}
+
+.kprl-card {
+    background: #fff; border-radius: 10px; padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s;
+    opacity: 0; transform: translateY(16px);
+}
+.kprl-card.kprl-animate-in { opacity: 1; transform: translateY(0); }
+.kprl-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(106,61,106,.1); }
+
+.kprl-profile-card { text-align: center; }
+.kprl-avatar-wrapper { margin-bottom: 12px; }
+.kprl-avatar {
+    width: 80px; height: 80px; border-radius: 50%; background: #71496f;
+    color: #fff; font-size: 28px; font-weight: 700; display: flex;
+    align-items: center; justify-content: center; margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(113,73,111,.2);
+}
+.kprl-employee-name { font-size: 20px; font-weight: 700; color: #2D3142; margin-bottom: 4px; }
+.kprl-employee-code { font-size: 13px; color: #7A8296; margin-bottom: 10px; }
+
+.kprl-badge-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; }
+.kprl-divider { border: none; border-top: 1px solid #e2e7ee; margin: 12px 0; }
+
+.kprl-info-group { margin-bottom: 10px; text-align: left; }
+.kprl-info-label { display: block; font-size: 11px; font-weight: 600; color: #7A8296; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.kprl-info-value-input {
+    width: 100%; border: none; border-bottom: 1.5px solid transparent;
+    padding: 4px 0; font-size: 14px; color: #2D3142; background: transparent;
+    font-weight: 500; outline: none; transition: border-color 0.2s;
+}
+.kprl-info-value-input:focus { border-bottom-color: #62325E; }
+
+.kprl-card-title { font-size: 14px; font-weight: 700; color: #2D3142; margin-bottom: 16px; }
+.kprl-table-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #f0f2f5;
+}
+.kprl-table-label { font-size: 13px; color: #7A8296; }
+.kprl-table-value { font-size: 14px; font-weight: 500; color: #2D3142; }
+.kprl-table-value-group { text-align: right; }
+.kprl-text-bold { font-weight: 700; color: #2D3142; }
+.kprl-sub-note { display: block; font-size: 11px; color: #a0a8b8; }
+.kprl-highlight-row { background: #f8f4fc; border-radius: 4px; padding: 8px; }
+.kprl-summary-row-break { border-top: 2px solid #6a3d6a; margin-top: 8px; padding-top: 8px; }
+.kprl-net-immediate-row { background: #6a3d6a; padding: 10px 8px; border-radius: 6px; margin-top: 4px; }
+.kprl-net-immediate-row .kprl-table-label { color: #fff; font-weight: 700; }
+.kprl-net-immediate-row .kprl-table-value { color: #fff; font-weight: 800; font-size: 16px; }
+
+.kprl-metrics-card { grid-column: 1 / -1; }
+.kprl-metrics-title { font-size: 14px; font-weight: 700; color: #2D3142; margin-bottom: 16px; }
+.kprl-progress-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.kprl-progress-container { }
+.kprl-progress-labels { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.kprl-progress-title { font-size: 12px; color: #7A8296; }
+.kprl-progress-score { font-size: 12px; font-weight: 700; color: #2D3142; }
+.kprl-progress-bar-bg { height: 8px; background: #EBF0F6; border-radius: 4px; overflow: hidden; }
+.kprl-progress-bar-fill {
+    height: 100%; background: #00796B; border-radius: 4px;
+    width: 0%; transition: width 1s cubic-bezier(.4,0,.2,1);
+}

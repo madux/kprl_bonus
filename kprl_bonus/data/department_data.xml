@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="kprl_dept_prod" model="kprl.department">
+            <field name="name">Production</field>
+            <field name="code">PROD</field>
+            <field name="kpi_multiplier">1.00</field>
+        </record>
+        <record id="kprl_dept_qa" model="kprl.department">
+            <field name="name">Quality Assurance</field>
+            <field name="code">QA</field>
+            <field name="kpi_multiplier">1.00</field>
+        </record>
+        <record id="kprl_dept_eng" model="kprl.department">
+            <field name="name">Engineering</field>
+            <field name="code">ENG</field>
+            <field name="kpi_multiplier">1.02</field>
+        </record>
+        <record id="kprl_dept_scm" model="kprl.department">
+            <field name="name">Supply Chain</field>
+            <field name="code">SCM</field>
+            <field name="kpi_multiplier">1.00</field>
+        </record>
+        <record id="kprl_dept_sales" model="kprl.department">
+            <field name="name">Sales</field>
+            <field name="code">SALES</field>
+            <field name="kpi_multiplier">1.05</field>
+        </record>
+        <record id="kprl_dept_hr" model="kprl.department">
+            <field name="name">Human Resources</field>
+            <field name="code">HR</field>
+            <field name="kpi_multiplier">0.98</field>
+        </record>
+        <record id="kprl_dept_fin" model="kprl.department">
+            <field name="name">Finance</field>
+            <field name="code">FIN</field>
+            <field name="kpi_multiplier">1.00</field>
+        </record>
+        <record id="kprl_dept_admin" model="kprl.department">
+            <field name="name">Administration</field>
+            <field name="code">ADMIN</field>
+            <field name="kpi_multiplier">0.95</field>
+        </record>
+        <record id="kprl_dept_rd" model="kprl.department">
+            <field name="name">R&amp;D</field>
+            <field name="code">RD</field>
+            <field name="kpi_multiplier">1.03</field>
+        </record>
+    </data>
+</odoo>
