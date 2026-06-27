@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPRL Bonus System - Q2-2026 Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+    <div class="kprl-dashboard-container">
+        <aside class="kprl-sidebar">
+            <div class="kprl-logo-box">
+                <i class="fa fa-th-large kprl-logo-icon"></i>
+            </div>
+        </aside>
+
+        <main class="kprl-main-content">
+
+            <header class="kprl-header">
+                <div class="kprl-breadcrumb">
+                    <span class="kprl-brand-title">KPRL Bonus System</span>
+                    <i class="fa fa-angle-right kprl-crumb-sep"></i>
+                    <span class="kprl-current-view">Q2-2026 Dashboard</span>
+                </div>
+                <div class="kprl-user-actions">
+                    <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
+                    <button class="kprl-icon-btn"><i class="fa fa-question-circle-o"></i></button>
+                    <div class="kprl-user-badge">Finance Director</div>
+                </div>
+            </header>
+
+            <section class="kprl-control-bar">
+                <div class="kprl-action-group-left">
+                    <button class="kprl-btn-primary">Run Computation</button>
+                    <div class="kprl-status-pill-static">Period Close</div>
+                </div>
+                <div class="kprl-action-group-right">
+                    <button class="kprl-btn-secondary"><i class="fa fa-download"></i> Export</button>
+                    <button class="kprl-btn-secondary"><i class="fa fa-print"></i> Print</button>
+                </div>
+            </section>
+
+            <nav class="kprl-period-tabs">
+                <span class="kprl-label-text">Period:</span>
+                <button class="kprl-tab-btn">Q1-2026</button>
+                <button class="kprl-tab-btn kprl-tab-active">Q2-2026</button>
+                <button class="kprl-tab-btn">Q3-2026</button>
+                <button class="kprl-tab-btn">Q4-2026</button>
+            </nav>
+
+            <section class="kprl-gate-row">
+                <span class="kprl-label-text">Gate Status</span>
+                <div class="kprl-gate-badge kprl-gate-pass">
+                    <i class="fa fa-check-circle"></i> Profitability Gate: PASS (EBITDA 30%)
+                </div>
+                <div class="kprl-gate-badge kprl-gate-clean">
+                    <i class="fa fa-shield"></i> GMP Gate: CLEAN
+                </div>
+                <div class="kprl-gate-info-pill kprl-bg-light-blue">
+                    Company KPI Score: <strong>0.92</strong>
+                </div>
+                <div class="kprl-gate-info-pill kprl-bg-bold-blue">
+                    Pool Funded: <strong>$3,792,820</strong>
+                </div>
+            </section>
+
+            <section class="kprl-kpi-grid">
+
+                <div class="kprl-kpi-card kprl-border-cyan">
+                    <div class="kprl-card-title">Effective Pool</div>
+                    <div class="kprl-card-value">$3,792,820</div>
+                    <div class="kprl-card-trend kprl-trend-up">+12% vs Q1</div>
+                    <div class="kprl-card-subtext">Q2-2026 funded pool</div>
+                </div>
+
+                <div class="kprl-kpi-card kprl-border-dark-blue">
+                    <div class="kprl-card-title">Total Payout</div>
+                    <div class="kprl-card-value">$4,300,300</div>
+                    <div class="kprl-card-trend kprl-trend-up">+8% vs Q1</div>
+                    <div class="kprl-card-subtext">incl. deferred release</div>
+                </div>
+
+                <div class="kprl-kpi-card kprl-border-green">
+                    <div class="kprl-card-title">Payout / Revenue</div>
+                    <div class="kprl-card-value">1.8%</div>
+                    <div class="kprl-card-trend kprl-trend-down">-0.2pp</div>
+                    <div class="kprl-card-subtext">below 2.5% EBITDA cap</div>
+                </div>
+
+                <div class="kprl-kpi-card kprl-border-gray">
+                    <div class="kprl-card-title">Headcount Eligible</div>
+                    <div class="kprl-card-value">57 / 57</div>
+                    <div class="kprl-card-trend kprl-trend-neutral">100% appraised</div>
+                    <div class="kprl-card-subtext">&nbsp;</div>
+                </div>
+
+                <div class="kprl-kpi-card kprl-border-cyan">
+                    <div class="kprl-card-title">Revenue Achievement</div>
+                    <div class="kprl-card-value">108%</div>
+                    <div class="kprl-card-trend kprl-trend-up">+8 pp</div>
+                    <div class="kprl-card-subtext">vs Q2 target</div>
+                </div>
+
+                <div class="kprl-kpi-card kprl-border-green">
+                    <div class="kprl-card-title">EBITDA Margin</div>
+                    <div class="kprl-card-value">30.0%</div>
+                    <div class="kprl-card-trend kprl-trend-up">+8 pp vs gate</div>
+                    <div class="kprl-card-subtext">Gate: Full (&ge;22%)</div>
+                </div>
+
+                <div class="kprl-kpi-card kprl-border-dark-blue">
+                    <div class="kprl-card-title">Proration Factor</div>
+                    <div class="kprl-card-value">1.00&times;</div>
+                    <div class="kprl-card-trend kprl-trend-neutral">pool fully funded</div>
+                    <div class="kprl-card-subtext">&nbsp;</div>
+                </div>
+
+                <div class="kprl-kpi-card kprl-border-orange">
+                    <div class="kprl-card-title">AIP Pool (Annual)</div>
+                    <div class="kprl-card-value">$480,000</div>
+                    <div class="kprl-card-trend kprl-trend-neutral">Rev &times; 0.2%</div>
+                    <div class="kprl-card-subtext">&nbsp;</div>
+                </div>
+
+            </section>
+
+            <section class="kprl-table-section">
+                <h3 class="kprl-section-heading">Department Performance Breakdown</h3>
+
+                <div class="kprl-table-responsive">
+                    <table class="kprl-data-table">
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>KPI Score</th>
+                                <th>Multiplier</th>
+                                <th>Headcount</th>
+                                <th>Net Payout ($)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Operations</td>
+                                <td>0.95</td>
+                                <td>1.05</td>
+                                <td>12</td>
+                                <td>$892,450</td>
+                                <td><span class="kprl-status-tag kprl-tag-target">Target</span></td>
+                            </tr>
+                            <tr>
+                                <td>Finance &amp; Admin</td>
+                                <td>0.92</td>
+                                <td>1.02</td>
+                                <td>8</td>
+                                <td>$654,200</td>
+                                <td><span class="kprl-status-tag kprl-tag-target">Target</span></td>
+                            </tr>
+                            <tr>
+                                <td>Sales &amp; Marketing</td>
+                                <td>0.88</td>
+                                <td>1.00</td>
+                                <td>10</td>
+                                <td>$589,100</td>
+                                <td><span class="kprl-status-tag kprl-tag-watch">Watch</span></td>
+                            </tr>
+                            <tr>
+                                <td>Human Resources</td>
+                                <td>0.96</td>
+                                <td>1.08</td>
+                                <td>5</td>
+                                <td>$423,800</td>
+                                <td><span class="kprl-status-tag kprl-tag-exceed">Exceed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Engineering</td>
+                                <td>0.91</td>
+                                <td>1.03</td>
+                                <td>7</td>
+                                <td>$512,600</td>
+                                <td><span class="kprl-status-tag kprl-tag-target">Target</span></td>
+                            </tr>
+                            <tr>
+                                <td>Legal &amp; Compliance</td>
+                                <td>0.85</td>
+                                <td>0.98</td>
+                                <td>4</td>
+                                <td>$298,150</td>
+                                <td><span class="kprl-status-tag kprl-tag-watch">Watch</span></td>
+                            </tr>
+                            <tr>
+                                <td>Corporate Services</td>
+                                <td>0.90</td>
+                                <td>1.01</td>
+                                <td>11</td>
+                                <td>$649,800</td>
+                                <td><span class="kprl-status-tag kprl-tag-target">Target</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <footer class="kprl-sla-footer">
+                <div class="kprl-sla-content">
+                    <i class="fa fa-clock-o kprl-sla-icon"></i>
+                    <span><strong>Period Close SLA:</strong> Results published by 15-Jul-2026</span>
+                    <span class="kprl-sla-divider">|</span>
+                    <span><strong>Target payout:</strong> 20-Jul-2026</span>
+                    <span class="kprl-sla-divider">|</span>
+                    <span><strong>Status:</strong> <span class="kprl-text-success">ON TRACK</span></span>
+                </div>
+            </footer>
+
+        </main>
+    </div>
+
+</body>
+</html>

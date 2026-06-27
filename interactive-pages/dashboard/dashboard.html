@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -25,7 +25,7 @@
                 <div class="kprl-breadcrumb">
                     <span class="kprl-brand-title">KPRL Bonus System</span>
                     <i class="fa fa-angle-right kprl-crumb-sep"></i>
-                    <span class="kprl-current-view">Q2-2026 Dashboard</span>
+                    <span id="kprl-current-view" class="kprl-current-view">Q2-2026 Dashboard</span>
                 </div>
                 <div class="kprl-user-actions">
                     <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
@@ -47,10 +47,10 @@
 
             <nav class="kprl-period-tabs">
                 <span class="kprl-label-text">Period:</span>
-                <button class="kprl-tab-btn">Q1-2026</button>
-                <button class="kprl-tab-btn kprl-tab-active">Q2-2026</button>
-                <button class="kprl-tab-btn">Q3-2026</button>
-                <button class="kprl-tab-btn">Q4-2026</button>
+                <button class="kprl-tab-btn" data-period="Q1-2026">Q1-2026</button>
+                <button class="kprl-tab-btn kprl-tab-active" data-period="Q2-2026">Q2-2026</button>
+                <button class="kprl-tab-btn" data-period="Q3-2026">Q3-2026</button>
+                <button class="kprl-tab-btn" data-period="Q4-2026">Q4-2026</button>
             </nav>
 
             <section class="kprl-gate-row">
@@ -62,67 +62,67 @@
                     <i class="fa fa-shield"></i> GMP Gate: CLEAN
                 </div>
                 <div class="kprl-gate-info-pill kprl-bg-light-blue">
-                    Company KPI Score: <strong>0.92</strong>
+                    Company KPI Score: <strong id="kprl-kpi-score">0.92</strong>
                 </div>
                 <div class="kprl-gate-info-pill kprl-bg-bold-blue">
-                    Pool Funded: <strong>$3,792,820</strong>
+                    Pool Funded: <strong id="kprl-pool-funded">$3,792,820</strong>
                 </div>
             </section>
 
             <section class="kprl-kpi-grid">
-                
+
                 <div class="kprl-kpi-card kprl-border-cyan">
                     <div class="kprl-card-title">Effective Pool</div>
-                    <div class="kprl-card-value">$3,792,820</div>
-                    <div class="kprl-card-trend kprl-trend-up">+12% vs Q1</div>
+                    <div class="kprl-card-value" id="kprl-kpi-pool">$3,792,820</div>
+                    <div class="kprl-card-trend kprl-trend-up" id="kprl-trend-pool">+12% vs Q1</div>
                     <div class="kprl-card-subtext">Q2-2026 funded pool</div>
                 </div>
 
                 <div class="kprl-kpi-card kprl-border-dark-blue">
                     <div class="kprl-card-title">Total Payout</div>
-                    <div class="kprl-card-value">$4,300,300</div>
-                    <div class="kprl-card-trend kprl-trend-up">+8% vs Q1</div>
+                    <div class="kprl-card-value" id="kprl-kpi-payout">$4,300,300</div>
+                    <div class="kprl-card-trend kprl-trend-up" id="kprl-trend-payout">+8% vs Q1</div>
                     <div class="kprl-card-subtext">incl. deferred release</div>
                 </div>
 
                 <div class="kprl-kpi-card kprl-border-green">
                     <div class="kprl-card-title">Payout / Revenue</div>
-                    <div class="kprl-card-value">1.8%</div>
-                    <div class="kprl-card-trend kprl-trend-down">-0.2pp</div>
+                    <div class="kprl-card-value" id="kprl-kpi-prev">1.8%</div>
+                    <div class="kprl-card-trend kprl-trend-down" id="kprl-trend-prev">-0.2pp</div>
                     <div class="kprl-card-subtext">below 2.5% EBITDA cap</div>
                 </div>
 
                 <div class="kprl-kpi-card kprl-border-gray">
                     <div class="kprl-card-title">Headcount Eligible</div>
-                    <div class="kprl-card-value">57 / 57</div>
+                    <div class="kprl-card-value" id="kprl-kpi-hc">57 / 57</div>
                     <div class="kprl-card-trend kprl-trend-neutral">100% appraised</div>
                     <div class="kprl-card-subtext">&nbsp;</div>
                 </div>
 
                 <div class="kprl-kpi-card kprl-border-cyan">
                     <div class="kprl-card-title">Revenue Achievement</div>
-                    <div class="kprl-card-value">108%</div>
-                    <div class="kprl-card-trend kprl-trend-up">+8 pp</div>
+                    <div class="kprl-card-value" id="kprl-kpi-rev">108%</div>
+                    <div class="kprl-card-trend kprl-trend-up" id="kprl-trend-rev">+8 pp</div>
                     <div class="kprl-card-subtext">vs Q2 target</div>
                 </div>
 
                 <div class="kprl-kpi-card kprl-border-green">
                     <div class="kprl-card-title">EBITDA Margin</div>
-                    <div class="kprl-card-value">30.0%</div>
-                    <div class="kprl-card-trend kprl-trend-up">+8 pp vs gate</div>
+                    <div class="kprl-card-value" id="kprl-kpi-ebitda">30.0%</div>
+                    <div class="kprl-card-trend kprl-trend-up" id="kprl-trend-ebitda">+8 pp vs gate</div>
                     <div class="kprl-card-subtext">Gate: Full (&ge;22%)</div>
                 </div>
 
                 <div class="kprl-kpi-card kprl-border-dark-blue">
                     <div class="kprl-card-title">Proration Factor</div>
-                    <div class="kprl-card-value">1.00&times;</div>
+                    <div class="kprl-card-value" id="kprl-kpi-prorate">1.00&times;</div>
                     <div class="kprl-card-trend kprl-trend-neutral">pool fully funded</div>
                     <div class="kprl-card-subtext">&nbsp;</div>
                 </div>
 
                 <div class="kprl-kpi-card kprl-border-orange">
                     <div class="kprl-card-title">AIP Pool (Annual)</div>
-                    <div class="kprl-card-value">$480,000</div>
+                    <div class="kprl-card-value" id="kprl-kpi-aip">$480,000</div>
                     <div class="kprl-card-trend kprl-trend-neutral">Rev &times; 0.2%</div>
                     <div class="kprl-card-subtext">&nbsp;</div>
                 </div>
@@ -164,6 +164,17 @@
         </main>
     </div>
 
-    <script src="script.js"></script>
+    <div id="kprl-computation-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:12px;padding:40px;text-align:center;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <div style="font-size:48px;color:#6a3d6a;margin-bottom:20px;"><i class="fa fa-spinner fa-spin"></i></div>
+            <div style="font-size:18px;font-weight:700;color:#333;margin-bottom:8px;">Running Computation</div>
+            <div id="kprl-comp-text" style="font-size:13px;color:#6c757d;">Calculating bonus pool allocation...</div>
+            <div style="width:100%;height:6px;background:#e9ecef;border-radius:3px;margin:20px 0;overflow:hidden;">
+                <div id="kprl-progress-fill" style="height:100%;width:0%;background:#6a3d6a;border-radius:3px;transition:width .3s;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
 </body>
 </html>
