@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPRL BMS - Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="kprl-container">
+        
+        <div class="kprl-banner">
+            <div class="kprl-banner-content">
+                <h1 class="kprl-brand-title">KPRL</h1>
+                <p class="kprl-brand-subtitle">Bonus Management System</p>
+                <span class="kprl-version-tag">v1.0 — Odoo Integrated</span>
+            </div>
+
+            <div class="kprl-art-wrapper">
+                <div class="kprl-circle-top-left"></div>
+                <div class="kprl-circle-center-large"></div>
+                <div class="kprl-circle-mid-right"></div>
+                
+                <div class="kprl-boxes-row">
+                    <div class="kprl-entity-box">
+                        <span class="kprl-entity-text">Employees</span>
+                    </div>
+                    <div class="kprl-entity-box">
+                        <span class="kprl-entity-text">Departments</span>
+                    </div>
+                    <div class="kprl-entity-box">
+                        <span class="kprl-entity-text">Territories</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="kprl-form-section">
+            <div class="kprl-login-card">
+                <div class="kprl-logo-marker"></div>
+                <h2 class="kprl-card-title">KPRL BMS</h2>
+                <p class="kprl-card-subtitle">Sign in to your account</p>
+
+                <form id="kprl-login-form" autocomplete="off">
+                    <div class="kprl-input-group">
+                        <label for="kprl-email" class="kprl-input-label">Email Address</label>
+                        <input type="email" id="kprl-email" class="kprl-input-field" value="finance@kprl.com.ng" required>
+                    </div>
+
+                    <div class="kprl-input-group">
+                        <label for="kprl-password" class="kprl-input-label">Password</label>
+                        <input type="password" id="kprl-password" class="kprl-input-field" value="••••••••" required>
+                    </div>
+
+                    <div class="kprl-mfa-alert">
+                        <i class="fa fa-mobile kprl-mfa-icon" aria-hidden="true"></i>
+                        <span class="kprl-mfa-text">MFA verification required</span>
+                    </div>
+
+                    <button type="submit" class="kprl-btn-submit">Sign In</button>
+                </form>
+
+                <a href="#" class="kprl-forgot-password">Forgot password?</a>
+
+                <div class="kprl-footer-notice">
+                    <p class="kprl-restriction-text">Access restricted to authorised KPRL personnel</p>
+                    <p class="kprl-copyright-text">Powered by Odoo 17 ERP • KPRL Nigeria Ltd</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
