@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="action_kprl_bonus_engine" model="ir.actions.act_window">
+        <field name="name">Bonus Engine</field>
+        <field name="res_model">kprl.bonus.engine</field>
+        <field name="view_mode">tree,form</field>
+    </record>
     <record id="view_kprl_bonus_engine_tree" model="ir.ui.view">
         <field name="name">kprl.bonus.engine.tree</field>
         <field name="model">kprl.bonus.engine</field>
@@ -27,14 +32,14 @@
                     <button name="action_compute" type="object"
                             string="Run Computation"
                             class="btn-primary"
-                            states="draft"/>
+                            invisible="state != 'draft'"/>
                     <button name="action_finalize" type="object"
                             string="Finalize"
                             class="btn-success"
-                            states="computed"/>
+                            invisible="state != 'computed'"/>
                     <button name="action_reset" type="object"
                             string="Reset"
-                            states="computed,finalized"/>
+                            invisible="state not in ['computed', 'finalized']"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -96,9 +101,5 @@
         </field>
     </record>
 
-    <record id="action_kprl_bonus_engine" model="ir.actions.act_window">
-        <field name="name">Bonus Engine</field>
-        <field name="res_model">kprl.bonus.engine</field>
-        <field name="view_mode">tree,form</field>
-    </record>
+    
 </odoo>

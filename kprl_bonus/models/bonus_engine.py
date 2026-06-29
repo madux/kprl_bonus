@@ -55,8 +55,17 @@ class BonusEngine(models.Model):
                                compute='_compute_headcount', store=True)
     aip_pool = fields.Float(string='AIP Pool (Annual)', digits='Product Price')
 
-    parameter_id = fields.Many2one(related='period_id.parameter_ids',
+    parameter_id = fields.Many2one(compute='_compute_parameter_id', comodel_name='kprl.bonus.parameter',
                                    string='Active Parameters')
+    @api.depends('period_id.parameter_ids')
+    def _compute_parameter_id(self):
+        for rec in self:
+            if rec.period_id:
+                parameter_id = rec.period_id.parameter_ids.filtered(
+                    lambda p: p.active)
+                rec.parameter_id  = parameter_id and parameter_id[0].id or False
+            else:
+                rec.parameter_id = False
 
     computed_on = fields.Datetime(string='Computed On')
     computed_by = fields.Many2one('res.users', string='Computed By')

@@ -112,7 +112,7 @@
                                 <div class="kprl-card-title">EBITDA Margin</div>
                                 <div class="kprl-card-value" id="kprl-kpi-ebitda">--</div>
                                 <div class="kprl-card-trend" id="kprl-trend-ebitda"/>
-                                <div class="kprl-card-subtext">Gate: Full (&ge;22%)</div>
+                                <div class="kprl-card-subtext">Gate: Full (&gt;22%)</div>
                             </div>
                             <div class="kprl-kpi-card kprl-border-dark-blue">
                                 <div class="kprl-card-title">Proration Factor</div>
@@ -543,7 +543,7 @@
                         <div class="kprl-banner-content">
                             <h1 class="kprl-brand-title">KPRL</h1>
                             <p class="kprl-brand-subtitle">Bonus Management System</p>
-                            <span class="kprl-version-tag">v1.0 &mdash; Odoo Integrated</span>
+                            <span class="kprl-version-tag">v1.0 MAACHERP Integrated</span>
                         </div>
                         <div class="kprl-art-wrapper">
                             <div class="kprl-circle-top-left"></div>
@@ -581,7 +581,7 @@
                                 <div class="kprl-input-group">
                                     <label class="kprl-input-label">Password</label>
                                     <input type="password" name="password" id="kprl-password"
-                                           class="kprl-input-field" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                                           class="kprl-input-field" placeholder="************************"
                                            required="required"/>
                                 </div>
 
@@ -600,7 +600,6 @@
 
                             <div class="kprl-footer-notice">
                                 <p class="kprl-restriction-text">Access restricted to authorised KPRL personnel</p>
-                                <p class="kprl-copyright-text">Powered by Odoo 17 ERP &bull; KPRL Nigeria Ltd</p>
                             </div>
                         </div>
                     </div>
@@ -612,8 +611,8 @@
         </t>
     </template>
 
-    <template id="totp_page" name="KPRL TOTP" inherit_id="auth_totp.totp_form" primary="True">
-        <xpath expr="//div[hasclass('container')]" position="replace">
+    <template id="totp_page" name="KPRL TOTP" inherit_id="auth_totp.auth_totp_form" primary="True">
+        <xpath expr="//div[hasclass('oe_login_form')]" position="replace">
             <div>
                 <link rel="preconnect" href="https://fonts.googleapis.com"/>
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
@@ -625,7 +624,7 @@
                         <div class="kprl-banner-content">
                             <h1 class="kprl-brand-title">KPRL</h1>
                             <p class="kprl-brand-subtitle">Bonus Management System</p>
-                            <span class="kprl-version-tag">v1.0 &mdash; Odoo Integrated</span>
+                            <span class="kprl-version-tag">MAACH erp Integrated</span>
                         </div>
                         <div class="kprl-art-wrapper">
                             <div class="kprl-circle-top-left"></div>
@@ -818,7 +817,8 @@
                         <button class="kprl-filter-item" data-quarter="Q4">Q4</button>
                     </div>
                     <div class="kprl-right-actions">
-                        <a class="kprl-btn kprl-btn-outline" href="/kprl/employee/<t t-esc='employee.id'/>">Back to Profile</a>
+                        <!-- <a class="kprl-btn kprl-btn-outline" href="/kprl/employee/<t t-esc='employee.id'/>">Back to Profile</a> -->
+                         <a class="kprl-btn kprl-btn-outline" href="/kprl/employee">Back to Profile</a>
                     </div>
                 </section>
 

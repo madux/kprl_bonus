@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <record id="action_kprl_performance_input" model="ir.actions.act_window">
+        <field name="name">Performance Inputs</field>
+        <field name="res_model">kprl.performance.input</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
     <record id="view_kprl_performance_input_tree" model="ir.ui.view">
         <field name="name">kprl.performance.input.tree</field>
         <field name="model">kprl.performance.input</field>
@@ -66,9 +72,5 @@
         </field>
     </record>
 
-    <record id="action_kprl_performance_input" model="ir.actions.act_window">
-        <field name="name">Performance Inputs</field>
-        <field name="res_model">kprl.performance.input</field>
-        <field name="view_mode">tree,form,search</field>
-    </record>
+    
 </odoo>
