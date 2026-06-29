@@ -70,7 +70,7 @@
                         <group string="Sales Info">
                             <field name="is_sales"/>
                             <field name="sales_role"
-                                  invisible="is_sales == False" required ="is_sales == True"/>
+                                  invisible="is_sales == False" required="is_sales == True"/>
                             <field name="territory_id"
                                    invisible="is_sales == False"/>
                         </group>
