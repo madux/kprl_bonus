@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="action_kprl_deferred_ledger" model="ir.actions.act_window">
+        <field name="name">Deferred Bonus Ledger</field>
+        <field name="res_model">kprl.deferred.ledger</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    
     <record id="view_kprl_deferred_ledger_tree" model="ir.ui.view">
         <field name="name">kprl.deferred.ledger.tree</field>
         <field name="model">kprl.deferred.ledger</field>
@@ -26,11 +32,11 @@
                     <button name="action_vest" type="object"
                             string="Mark Vested"
                             class="btn-success"
-                            states="deferred"/>
+                            invisible="status != 'deferred'"/>
                     <button name="action_forfeit" type="object"
                             string="Forfeit"
                             class="btn-danger"
-                            states="deferred"/>
+                            invisible="status != 'deferred'"/>
                     <field name="status" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -38,6 +44,7 @@
                         <group>
                             <field name="employee_id"/>
                             <field name="period_id"/>
+                            <field name="status"/>
                             <field name="grade_id"/>
                             <field name="is_senior_mgmt"/>
                         </group>
@@ -57,9 +64,5 @@
         </field>
     </record>
 
-    <record id="action_kprl_deferred_ledger" model="ir.actions.act_window">
-        <field name="name">Deferred Bonus Ledger</field>
-        <field name="res_model">kprl.deferred.ledger</field>
-        <field name="view_mode">tree,form</field>
-    </record>
+    
 </odoo>

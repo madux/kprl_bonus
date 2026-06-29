@@ -22,7 +22,7 @@
     <record id="view_kprl_employee_tree_manager" model="ir.ui.view">
         <field name="name">kprl.employee.tree.manager</field>
         <field name="model">kprl.employee</field>
-        <field name="groups">kprl_bonus.group_kprl_hr,kprl_bonus.group_kprl_finance,kprl_bonus.group_kprl_ceo</field>
+        <!-- <field name="groups">kprl_bonus.group_kprl_hr,kprl_bonus.group_kprl_finance,kprl_bonus.group_kprl_ceo</field> -->
         <field name="arch" type="xml">
             <tree>
                 <field name="employee_id"/>
@@ -45,14 +45,14 @@
             <form>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="%(action_kprl_performance_input)d"
+                        <button name="%(kprl_bonus.action_kprl_performance_input)d"
                                 type="action"
                                 class="oe_stat_button"
                                 icon="fa-line-chart"
                                 context="{'default_employee_id': active_id}">
                             <div>Performance</div>
                         </button>
-                        <button name="%(action_kprl_bonus_payout)d"
+                        <button name="%(kprl_bonus.action_kprl_bonus_payout)d"
                                 type="action"
                                 class="oe_stat_button"
                                 icon="fa-money"
@@ -90,9 +90,9 @@
                         <group string="Sales Info">
                             <field name="is_sales"/>
                             <field name="sales_role"
-                                   attrs="{'invisible': [('is_sales','=',False)], 'required': [('is_sales','=',True)]}"/>
+                                  invisible="is_sales == False" required ="is_sales == True"/>
                             <field name="territory_id"
-                                   attrs="{'invisible': [('is_sales','=',False)]}"/>
+                                   invisible="is_sales == False"/>
                         </group>
                     </group>
                     <group>
@@ -124,9 +124,14 @@
         <field name="view_mode">tree,form,search</field>
     </record>
 
+    <!-- <record id="action_kprl_simulation" model="ir.actions.client">
+        <field name="name">Bonus Simulation</field>
+        <field name="tag">website_page</field>
+        <field name="params" eval="{'url': '/kprl/simulate/1'}"/>
+    </record> -->
     <record id="action_kprl_simulation" model="ir.actions.act_url">
         <field name="name">Bonus Simulation</field>
         <field name="url">/kprl/simulate/1</field>
-        <field name="target">self</field>
+        <field name="target">new</field>
     </record>
 </odoo>

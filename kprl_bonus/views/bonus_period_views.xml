@@ -25,13 +25,13 @@
                     <button name="action_activate" type="object"
                             string="Activate"
                             class="btn-primary"
-                            states="draft"/>
+                            invisible="state != 'draft'"/>
                     <button name="action_close" type="object"
                             string="Close Period"
-                            states="active"/>
+                            invisible="state != 'active'"/>
                     <button name="action_draft" type="object"
                             string="Reset to Draft"
-                            states="closed"/>
+                            invisible="state != 'closed'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>

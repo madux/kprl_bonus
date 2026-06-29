@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+     <record id="action_kprl_bonus_payout" model="ir.actions.act_window">
+        <field name="name">Staff Payouts</field>
+        <field name="res_model">kprl.bonus.payout</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
     <record id="view_kprl_bonus_payout_tree" model="ir.ui.view">
         <field name="name">kprl.bonus.payout.tree</field>
         <field name="model">kprl.bonus.payout</field>
@@ -26,11 +31,11 @@
                     <button name="action_approve" type="object"
                             string="Approve"
                             class="btn-success"
-                            states="computed"/>
+                            invisible="state != 'computed'"/>
                     <button name="action_paid" type="object"
                             string="Mark Paid"
                             class="btn-primary"
-                            states="approved"/>
+                            invisible="state != 'approved'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -91,9 +96,5 @@
         </field>
     </record>
 
-    <record id="action_kprl_bonus_payout" model="ir.actions.act_window">
-        <field name="name">Staff Payouts</field>
-        <field name="res_model">kprl.bonus.payout</field>
-        <field name="view_mode">tree,form,search</field>
-    </record>
+   
 </odoo>
