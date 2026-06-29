@@ -1,54 +1,74 @@
 /**
  * KPRL Bonus API Helper
- * Provides fetch-based access to the Odoo JSON endpoints.
+ * Uses Odoo's built-in rpc via inject CSRF token from server.
+ * Load this script AFTER the CSRF token window var is set.
  */
 (function () {
     'use strict';
 
-    const BASE = '/kprl/api';
+    var BASE = '/kprl/api';
+
+    function getCsrf() {
+        // 1) Odoo global rpc
+        if (typeof odoo !== 'undefined' && odoo.csrf_token) {
+            return odoo.csrf_token;
+        }
+        // 2) Meta tag injected by template
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) {
+            return meta.getAttribute('content');
+        }
+        // 3) Fallback window var
+        return window.KPRL_CSRF || '';
+    }
 
     async function request(method, path, body) {
-        const opts = {
+        var opts = {
             method: method,
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': getCsrf(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             credentials: 'same-origin',
         };
-        if (body) opts.body = JSON.stringify(body);
-        const res = await fetch(BASE + path, opts);
+        if (body) {
+            opts.body = JSON.stringify(body);
+        }
+        var res = await fetch(BASE + path, opts);
         if (!res.ok) {
-            const err = await res.json().catch(() => ({ error: res.statusText }));
-            throw new Error(err.error || res.statusText);
+            var err = await res.json().catch(function () { return { error: res.statusText }; });
+            throw new Error(err.error || err.message || res.statusText);
         }
         return res.json();
     }
 
     window.KPRL_API = {
-        get: (path) => request('GET', path),
-        put: (path, data) => request('PUT', path, data),
-        post: (path, data) => request('POST', path, data),
+        get: function (path) { return request('GET', path); },
+        put: function (path, data) { return request('PUT', path, data); },
+        post: function (path, data) { return request('POST', path, data); },
     };
 
-    // Helpers for formatting
     window.KPRL_FMT = {
-        currency: (v) => {
+        currency: function (v) {
             if (v == null) return '$0';
-            const n = Number(v);
+            var n = Number(v);
             return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         },
-        pct: (v) => {
+        pct: function (v) {
             if (v == null) return '0%';
             return (Number(v) * 100).toFixed(1).replace(/\.0$/, '') + '%';
         },
-        pctRaw: (v) => {
+        pctRaw: function (v) {
             if (v == null) return '0%';
             return Number(v).toFixed(2).replace(/\.?0+$/, '') + '%';
         },
-        score: (v) => {
+        score: function (v) {
             if (v == null) return '0.00';
             return Number(v).toFixed(2);
         },
-        badge: (status) => {
-            const map = {
+        badge: function (status) {
+            var map = {
                 'exceed': 'kprl-tag-exceed',
                 'target': 'kprl-tag-target',
                 'watch': 'kprl-tag-watch',

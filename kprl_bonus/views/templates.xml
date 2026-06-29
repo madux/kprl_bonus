@@ -17,6 +17,7 @@
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
                 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"/>
                 <link rel="stylesheet" href="/kprl_bonus/static/css/dashboard.css"/>
+                <meta name="csrf-token" t-att-content="request.csrf_token()"/>
             </head>
             <body>
                 <div class="kprl-dashboard-container">
@@ -204,6 +205,7 @@
                     </div>
                 </div>
 
+                <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
                 <script type="text/javascript" src="/kprl_bonus/static/js/dashboard.js"/>
             </body>
         </t>
@@ -220,6 +222,7 @@
                 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
                 <link rel="stylesheet" href="/kprl_bonus/static/css/employee.css"/>
+                <meta name="csrf-token" t-att-content="request.csrf_token()"/>
             </head>
             <body class="kprl-body">
                 <header class="kprl-header">
@@ -451,6 +454,7 @@
                 <script type="text/javascript">
                     window.KPRL_EMPLOYEE_ID = <t t-esc="employee.id"/>;
                 </script>
+                <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
                 <script type="text/javascript" src="/kprl_bonus/static/js/employee.js"/>
             </body>
         </t>
@@ -467,6 +471,7 @@
                 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
                 <link rel="stylesheet" href="/kprl_bonus/static/css/employee.css"/>
+                <meta name="csrf-token" t-att-content="request.csrf_token()"/>
             </head>
             <body>
                 <header class="kprl-header">
@@ -519,6 +524,7 @@
                     </div>
                 </main>
 
+                <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
                 <script type="text/javascript" src="/kprl_bonus/static/js/employee.js"/>
             </body>
         </t>
@@ -535,6 +541,7 @@
                 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
                 <link rel="stylesheet" href="/kprl_bonus/static/css/login.css"/>
+                <meta name="csrf-token" t-att-content="request.csrf_token()"/>
             </head>
             <body>
                 <div class="kprl-container">
@@ -607,6 +614,7 @@
 
                 </div>
 
+                <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
                 <script type="text/javascript" src="/kprl_bonus/static/js/login.js"/>
             </body>
         </t>
@@ -694,6 +702,7 @@
                 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
                 <link rel="stylesheet" href="/kprl_bonus/static/css/config.css"/>
+                <meta name="csrf-token" t-att-content="request.csrf_token()"/>
             </head>
             <body>
                 <div class="kprl-config-wrapper">
@@ -764,6 +773,7 @@
                     </main>
                 </div>
 
+                <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
                 <script type="text/javascript" src="/kprl_bonus/static/js/config.js"/>
             </body>
         </t>
@@ -781,6 +791,7 @@
                 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
                 <link rel="stylesheet" href="/kprl_bonus/static/css/simulation.css"/>
+                <meta name="csrf-token" t-att-content="request.csrf_token()"/>
             </head>
             <body class="kprl-body">
                 <header class="kprl-header">
@@ -1063,6 +1074,7 @@
                     window.KPRL_EMPLOYEE_ID = <t t-esc="employee.id"/>;
                     window.KPRL_SIM_PARAMS = <t t-esc="sim_params or '{}'" />;
                 </script>
+                <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
                 <script type="text/javascript" src="/kprl_bonus/static/js/simulation.js"/>
             </body>
         </t>

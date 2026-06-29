@@ -124,9 +124,9 @@
         <field name="view_mode">tree,form,search</field>
     </record>
 
-    <record id="action_kprl_simulation" model="ir.actions.client">
+    <record id="action_kprl_simulation" model="ir.actions.act_url">
         <field name="name">Bonus Simulation</field>
-        <field name="tag">website_page</field>
-        <field name="params" eval="{'url': '/kprl/simulate/1'}"/>
+        <field name="url">/kprl/simulate/1</field>
+        <field name="target">self</field>
     </record>
 </odoo>

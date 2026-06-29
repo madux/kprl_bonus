@@ -57,7 +57,7 @@ class Employee(models.Model):
     def open_simulation(self):
         self.ensure_one()
         return {
-            'type': 'ir.actions.client',
-            'tag': 'website_page',
-            'params': {'url': '/kprl/simulate/%d' % self.id},
+            'type': 'ir.actions.act_url',
+            'url': '/kprl/simulate/%d' % self.id,
+            'target': 'self',
         }
