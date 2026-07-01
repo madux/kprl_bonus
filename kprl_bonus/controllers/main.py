@@ -347,8 +347,11 @@ class KprlPages(http.Controller):
 
     @http.route('/kprl/dashboard', type='http', auth='user', website=True)
     def page_dashboard(self):
-        periods = request.env['kprl.bonus.period'].search_read(
-            [], ['id', 'name'], order='date_start desc'
+        # periods = request.env['kprl.bonus.period'].search_read(
+        #     [], ['id', 'name'], order='date_start desc'
+        # )
+        periods = request.env['kprl.bonus.period'].search(
+            [], order='date_start desc'
         )
         return request.render('kprl_bonus.dashboard_page', {
             'periods': periods,

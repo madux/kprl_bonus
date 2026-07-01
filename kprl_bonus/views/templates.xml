@@ -81,7 +81,7 @@
                         <section class="kprl-kpi-grid" id="kprl-kpi-grid">
                             <div class="kprl-kpi-card kprl-border-cyan">
                                 <div class="kprl-card-title">Effective Pool</div>
-                                <div class="kprl-card-value" id="kprl-kpi-pool">--</div>
+                                <div class="kprl-card-value" id="kprl-kpi-pool"></div>
                                 <div class="kprl-card-trend" id="kprl-trend-pool"/>
                                 <div class="kprl-card-subtext">funded bonus pool</div>
                             </div>
@@ -92,8 +92,8 @@
                                 <div class="kprl-card-subtext">incl. deferred release</div>
                             </div>
                             <div class="kprl-kpi-card kprl-border-green">
-                                <div class="kprl-card-title">Payout / Revenue</div>
-                                <div class="kprl-card-value" id="kprl-kpi-prev">--</div>
+                                <div class="kprl-card-title">ExpectedRevenue</div>
+                                <div class="kprl-card-value" id="kprl-kpi-prev"><t t-esc="periods and periods[0]['revenue_target'] or 0"/></div>
                                 <div class="kprl-card-trend" id="kprl-trend-prev"/>
                                 <div class="kprl-card-subtext">below EBITDA cap</div>
                             </div>

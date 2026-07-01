@@ -102,11 +102,11 @@
               action="action_kprl_dept_kpi_multiplier"
               sequence="40"/>
 
-    <menuitem id="menu_kprl_simulation"
+    <!-- <menuitem id="menu_kprl_simulation"
               name="Bonus Simulation"
               parent="menu_kprl_ops"
               action="action_kprl_simulation"
-              sequence="45"/>
+              sequence="45"/> -->
 
     <!-- Payouts -->
     <menuitem id="menu_kprl_payouts"

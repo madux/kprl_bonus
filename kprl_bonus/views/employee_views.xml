@@ -110,9 +110,9 @@
         <field name="tag">website_page</field>
         <field name="params" eval="{'url': '/kprl/simulate/1'}"/>
     </record> -->
-    <record id="action_kprl_simulation" model="ir.actions.act_url">
+    <!-- <record id="action_kprl_simulation" model="ir.actions.act_url">
         <field name="name">Bonus Simulation</field>
         <field name="url">/kprl/simulate/1</field>
-        <field name="target">new</field>
-    </record>
+        <field name="target">new</field> 
+    </record>-->
 </odoo>
