@@ -38,8 +38,8 @@ class BonusEngine(models.Model):
     gmp_factor = fields.Float(string='GMP Factor', digits=(5, 4), default=1.0)
 
     company_kpi_score = fields.Float(string='Company KPI Score', digits=(5, 4))
-    effective_pool = fields.Float(string='Effective Bonus Pool',
-                                  digits='Product Price')
+    effective_pool = fields.Float(string='EFFECTIVE POOL (₦)',
+                                  digits='Product Price', help="GMP Factor * Gate Factor * Quaterly revenue - [Funded × (0.6·CompanyMult + 0.4·DeptMult), capped]")
     proration_factor = fields.Float(string='Proration Factor', digits=(5, 4),
                                     default=1.0)
     total_payout = fields.Float(string='Total Quarterly Payout',
@@ -53,10 +53,120 @@ class BonusEngine(models.Model):
                                            digits=(5, 4))
     headcount = fields.Integer(string='Headcount Eligible',
                                compute='_compute_headcount', store=True)
-    aip_pool = fields.Float(string='AIP Pool (Annual)', digits='Product Price')
+    aip_pool = fields.Float(string='AIP Pool (Annual)', digits='Product Price') 
+    company_kpi_score = fields.Float(string='Company KPI Score', digits=(5, 4))
+
+    opm_pool_split = fields.Float(string='OPM POOL SPLIT (%)',
+                                  digits='Product Price', default=60)
+    sup_pool_split = fields.Float(string='SUP POOL SPLIT(%)',
+                                  digits='Product Price',  default=60)
+    opm_pool = fields.Float(string='OPM POOL (₦)',
+                                  digits='Product Price', 
+                                  compute="_compute_pool_total", help="effective_pool * opm pool split")
+    
+    sub_pool = fields.Float(string='Sub Pool Total (₦)',
+                                  digits='Product Price', help="effective_pool * sup_pool_split", 
+                                  compute="_compute_suppool_total")
+    senior_management_sub_pool = fields.Float(string='Senior Mgt Sub Pool Split (%)',
+                                  digits='Product Price', help="Sub-Pool % of SUP", 
+                                  default=70, placeholder="e.g 70 %")
+    senior_management_pool = fields.Float(string='Senior Mgt Pool (₦)',
+                                  digits='Product Price', help="senior_management_sub_pool / 100 * sub_pool", 
+                                  compute="_compute_senior_mgtpool_total")
+    ops_sub_pool = fields.Float(string='OPS Sub Pool Total (₦)',
+                                  digits='Product Price', help="GMP Factor", 
+                                  compute="_compute_opssuppool_total")
+    ops_sub_pool_percentage = fields.Float(string='OPS Sub Pool (%)',
+                                  digits='Product Price', help="GMP Factor")
+    
+    opm_total_point = fields.Float(string='OPM Total Point',
+                                  digits='Product Price', default=0)
+    senior_mgt_total_point = fields.Float(string='Senior Mgt Total Point',
+                                  digits='Product Price', default=0)
+    
+    ops_sup_total_point = fields.Float(string='OPS SUP Total Point',
+                                  digits='Product Price', default=0)
+ 
+    opm_value_point = fields.Float(string='OPM Value Point (₦)',
+                                   help="rec.opm_pool / rec.opm_total_point",
+                                  digits='Product Price', readonly=True,compute="_compute_value_point")
+    
+    senior_mgt_value_point = fields.Float(string='Senior Mgt Value Point (₦)',
+                                  digits='Product Price', help="rec.senior_management_pool / rec.senior_mgt_total_point", readonly=True,compute="_compute_value_point")
+    ops_sup_value_point = fields.Float(string='OPS SUP Value Point (₦)',
+                                  digits='Product Price', readonly=True, help="rec.ops_sub_pool / rec.ops_sup_total_point",
+                                  compute="_compute_value_point")
+    
+    @api.depends('ops_sup_total_point', 'senior_mgt_total_point', 'opm_total_point')
+    def _compute_value_point(self):
+        for rec in self:
+            # if rec.ops_sup_total_point or rec.senior_mgt_total_point or rec.opm_total_point:
+            rec.opm_value_point = rec.opm_pool / rec.opm_total_point if rec.opm_total_point > 0 else 1
+            rec.senior_mgt_value_point = rec.senior_management_pool / rec.senior_mgt_total_point if rec.senior_mgt_total_point > 0 else 1 
+            rec.ops_sup_value_point = rec.ops_sub_pool / rec.ops_sup_total_point if rec.ops_sup_total_point > 0 else 1 
+            # else:
+            #     rec.ops_sup_value_point = 0
+            #     rec.opm_value_point = 0
+            #     rec.senior_mgt_value_point = 0
+
+    @api.depends('opm_pool_split', 'effective_pool')
+    def _compute_pool_total(self):
+        for rec in self:
+            if rec.opm_pool_split or rec.effective_pool:
+                opmspl = rec.opm_pool_split / 100 
+                total = opmspl * rec.effective_pool
+                rec.opm_pool = total
+            else:
+                rec.opm_pool = 0
+
+    @api.depends('sup_pool_split', 'effective_pool')
+    def _compute_suppool_total(self):
+        for rec in self:
+            if rec.sup_pool_split or rec.effective_pool:
+                opmspl = rec.sup_pool_split / 100 
+                total = opmspl * rec.effective_pool
+                rec.sub_pool = total
+            else:
+                rec.sub_pool = 0
+    
+    @api.depends('senior_management_sub_pool', 'sub_pool')
+    def _compute_senior_mgtpool_total(self):
+        for rec in self:
+            if rec.senior_management_sub_pool or rec.sub_pool:
+                opmspl = rec.senior_management_sub_pool / 100 
+                total = opmspl * rec.sub_pool
+                rec.senior_management_pool = total
+            else:
+                rec.senior_management_pool = 0
+
+    @api.depends('sub_pool', 'ops_sub_pool_percentage')
+    def _compute_opssuppool_total(self):
+        for rec in self:
+            if rec.sub_pool or rec.ops_sub_pool_percentage:
+                opmspl = rec.ops_sub_pool_percentage / 100 
+                total = opmspl * rec.sub_pool
+                rec.ops_sub_pool = total
+            else:
+                rec.ops_sub_pool = 0
+
+    # EFFECTIVE POOL (₦) [Funded × (0.6·CompanyMult + 0.4·DeptMult), capped]
+    # OPM Pool Split %
+    # SUP Pool Split %
+    # OPM Pool (₦)
+    # SUP Pool Total (₦)
+    # SEN-MGT Sub-Pool % of SUP
+    # OPS-SUP Sub-Pool %
+    # SEN-MGT Pool (₦)
+    # OPS-SUP Pool (₦)
 
     parameter_id = fields.Many2one(compute='_compute_parameter_id', comodel_name='kprl.bonus.parameter',
                                    string='Active Parameters')
+    
+    grade_level_ids = fields.Many2many(comodel_name='kprl.grade',
+                                   string='Grade Level Applicable')
+    employee_count = fields.Integer(string='Employees', help="Total employee on selected grades", 
+                               compute='_compute_total_employee_on_grade', store=True)
+
     @api.depends('period_id.parameter_ids')
     def _compute_parameter_id(self):
         for rec in self:
@@ -93,6 +203,20 @@ class BonusEngine(models.Model):
                 rec.gate_factor = params.partial_gate_floor if params else 0.0025
             else:
                 rec.gate_factor = params.min_pool_rate if params else 0.0
+    
+    @api.depends('grade_level_ids')
+    def _compute_total_employee_on_grade(self):
+        for rec in self:
+            if rec.grade_level_ids:
+                emp = 0
+                for g in rec.grade_level_ids:
+                    emps = self.env['kprl.employee'].search_count([
+                        ('grade_id', '=', g.id),
+                    ])
+                    emp += emps
+                rec.employee_count = emp
+            else:
+                rec.employee_count = 0
 
     @api.depends('period_id')
     def _compute_headcount(self):
@@ -131,7 +255,10 @@ class BonusEngine(models.Model):
         self.computed_by = self.env.user
 
     def action_finalize(self):
+        self.action_compute()
         self.state = 'finalized'
 
     def action_reset(self):
         self.state = 'draft'
+        self.action_compute()
+

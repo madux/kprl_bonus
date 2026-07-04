@@ -67,8 +67,20 @@
                             <field name="approver_id"/>
                             <field name="approval_date"/>
                         </group>
-                    </group>
 
+                         
+
+                        <group>
+                            <field name="funded_pool_after_both_gate"/>
+                            <field name="profitability_gate_factor"/>
+                        </group>
+                        <group>
+                            <field name="state"/>
+                            <field name="base_bonus_pool"/>
+                            <field name="gmp_gate_factor"/>
+                        </group>
+                    </group>
+ 
                     <notebook>
                         <!-- Section A: Main Bonus Pool -->
                         <page name="pool_params" string="Pool Parameters">
@@ -92,13 +104,14 @@
                                 </group>
                             </group>
                             <!-- CEO-only: Governance Bounds -->
-                            <group string="Governance Bounds (CEO / Board Only)"
-                                   groups="kprl_bonus.group_kprl_ceo">
-                                <group string="Pool Rate Bounds">
-                                    <div class="alert alert-info" style="margin-bottom:12px;">
+                            <div>
+                            <div class="alert alert-info" style="margin-bottom:12px;">
                                         <i class="fa fa-lock"/> These limits define the allowed range for each parameter.
                                         Only the CEO / Superadmin can modify them.
                                     </div>
+                            </div>
+                            <group string="Governance Bounds (CEO / Board Only)">
+                                <group string="Pool Rate Bounds"> 
                                     <field name="min_pool_rate_min" string="Min Pool Rate — Lower Bound"/>
                                     <field name="min_pool_rate_max" string="Min Pool Rate — Upper Bound"/>
                                     <field name="min_pool_rate_approver"/>

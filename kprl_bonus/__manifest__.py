@@ -46,6 +46,11 @@
         'views/menu_views.xml',
 
     ],
+    'assets': {
+        'web.assets_backend': [
+            'kprl_bonus/static/css/backend_css.scss'
+        ],
+    },
     'demo': [],
     'installable': True,
     'application': True,

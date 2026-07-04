@@ -24,38 +24,42 @@ class BonusParameter(models.Model):
     notes = fields.Text(string='Change Notes')
 
     # -- Section A: Main Bonus Pool Parameters (Board approval required) --
-    min_pool_rate = fields.Float(string='Min Pool Rate (EBITDA < 18%)', digits=(5, 4))
-    min_pool_rate_min = fields.Float(string='Min Limit', digits=(5, 4), default=0.0)
-    min_pool_rate_max = fields.Float(string='Max Limit', digits=(5, 4), default=0.01)
+    min_pool_rate = fields.Float(string='Min Pool Rate (EBITDA < 18%)', digits=(5, 4), 
+                                 default=0.61)
+    min_pool_rate_min = fields.Float(string='Min Limit', digits=(5, 4), default=0.3)
+    min_pool_rate_max = fields.Float(string='Max Limit', digits=(5, 4), default=0.8)
     min_pool_rate_approver = fields.Char(string='Approver', default='Board')
 
+    max_pool_rate = fields.Float(string="""Max Pool Rate (15% - 30%)""", digits=(5, 4),
+                                 default=1.70
+                                 )
+    
+    max_pool_rate_min = fields.Float(default=1.50)
+    max_pool_rate_max = fields.Float(default=2.0)
+    max_pool_rate_approver = fields.Char(default='Board')
+
     ebitda_scaling_start = fields.Float(string='EBITDA Threshold — Scaling Begins',
-                                        digits=(5, 4))
-    ebitda_scaling_start_min = fields.Float(default=0.10)
-    ebitda_scaling_start_max = fields.Float(default=0.15)
+                                        digits=(5, 4), default=12.0)
+    ebitda_scaling_start_min = fields.Float(default=10)
+    ebitda_scaling_start_max = fields.Float(default=15)
     ebitda_scaling_start_approver = fields.Char(default='Board')
 
     ebitda_max_rate_threshold = fields.Float(string='EBITDA Threshold — Max Rate Reached',
-                                             digits=(5, 4))
-    ebitda_max_rate_threshold_min = fields.Float(default=0.25)
-    ebitda_max_rate_threshold_max = fields.Float(default=0.70)
+                                             digits=(5, 4), default=30)
+    ebitda_max_rate_threshold_min = fields.Float(default=25.00)
+    ebitda_max_rate_threshold_max = fields.Float(default=70.00)
     ebitda_max_rate_threshold_approver = fields.Char(default='Board')
 
     partial_gate_floor = fields.Float(string='Partial Gate Floor (EBITDA 18%)',
-                                      digits=(5, 4))
-    partial_gate_floor_min = fields.Float(default=0.001)
-    partial_gate_floor_max = fields.Float(default=0.015)
+                                      digits=(5, 4), default=18.0)
+    partial_gate_floor_min = fields.Float(default=15.0)
+    partial_gate_floor_max = fields.Float(default=22.0)
     partial_gate_floor_approver = fields.Char(default='Board')
 
-    full_gate_floor = fields.Float(string='Full Gate Floor (EBITDA 22%)', digits=(5, 4))
-    full_gate_floor_min = fields.Float(default=0.015)
-    full_gate_floor_max = fields.Float(default=0.03)
+    full_gate_floor = fields.Float(string='Full Gate Floor (EBITDA 22%)', digits=(5, 4), default=22.0)
+    full_gate_floor_min = fields.Float(default=20)
+    full_gate_floor_max = fields.Float(default=30)
     full_gate_floor_approver = fields.Char(default='Board')
-
-    max_pool_rate = fields.Float(string='Max Pool Rate (EBITDA >= 22%)', digits=(5, 4))
-    max_pool_rate_min = fields.Float(default=0.015)
-    max_pool_rate_max = fields.Float(default=0.03)
-    max_pool_rate_approver = fields.Char(default='Board')
 
     opm_subpool_share = fields.Float(string='OPM Sub-Pool Share', digits=(5, 4))
     opm_subpool_share_min = fields.Float(default=0.50)
@@ -84,39 +88,89 @@ class BonusParameter(models.Model):
 
     # -- Section B: Sales Commission Rates (Finance Director) --
     sales_commission_rate = fields.Float(string='Sales Commission Rate (%)',
-                                         digits=(5, 4))
+                                         digits=(5, 4), default=0.30)
+    sales_commission_rate_min = fields.Float(default=0.20)
+    sales_commission_rate_max = fields.Float(default=1.00)
     sales_commission_rate_approver = fields.Char(default='Finance Director')
 
     retrieval_commission_rate = fields.Float(string='Retrieval Commission Rate (%)',
-                                             digits=(5, 4))
+                                             digits=(5, 4), default=0.70)
+    retrieval_commission_min = fields.Float(default=0.20)
+    retrieval_commission_max = fields.Float(default=1.00)
     retrieval_commission_rate_approver = fields.Char(default='Finance Director')
 
+    rsm_pool_share = fields.Float(default=22)
+    rsm_pool_min = fields.Float(default=15)
+    rsm_pool_rate_max = fields.Float(default=30)
+    rsm_pool_rate_approver = fields.Char(default='Finance Director')
+
+
     rsm_asm_commission_rate = fields.Float(string='RSM+ASM Commission Rate (%)',
-                                           digits=(5, 4))
+                                           digits=(5, 4), default=55.0)
+    rsm_asm_commission_rate_min = fields.Float(default=55)
+    rsm_asm_commission_rate_max = fields.Float(default=85)
     rsm_asm_commission_rate_approver = fields.Char(default='Finance Director')
+
+    asm_commission_rate_min = fields.Float(default=0.20)
+    asm_commission_rate_max = fields.Float(default=1.00)
+    asm_commission_rate_approver = fields.Char(default='Finance Director')
+
+
+    national_sm_pool = fields.Float(default=8.0)
+    national_sm_poolshare_min = fields.Float(default=4.0)
+    national_sm_poolshare_max = fields.Float(default=10)
+
+    head_technical_poolshare = fields.Float(default=5.0)
+    head_technical_poolshare_min = fields.Float(default=3.0)
+    head_technical_poolshare_max = fields.Float(default=8.0)
+
+    gm_poolshare_rate = fields.Float(default=10)
+    gm_poolshare_rate_min = fields.Float(default=5)
+    gm_poolshare_rate_max = fields.Float(default=12)
+    gm_poolshare_rate_approver = fields.Char(default='Finance Director')
 
     product_pool_share_pct = fields.Float(string='Product Pool Share (%)',
                                           digits=(5, 4))
+    product_pool_share_pct_min = fields.Float(default=0.20)
+    product_pool_share_pct_max = fields.Float(default=1.00)
     product_pool_share_pct_approver = fields.Char(default='Finance Director')
 
     commission_share_pct = fields.Float(string='Commission Share (%)', digits=(5, 4))
+    commission_share_pct_min = fields.Float(default=0.20)
+    commission_share_pct_max = fields.Float(default=1.00)
     commission_share_pct_approver = fields.Char(default='Finance Director')
 
     rsm_asm_dual_factor = fields.Float(string='RSM+ASM Dual Role Factor',
                                        digits=(5, 4))
+    rsm_asm_dual_factor_min = fields.Float(default=0.20)
+    rsm_asm_dual_factor_max = fields.Float(default=1.00)
     rsm_asm_dual_factor_approver = fields.Char(default='Finance Director')
 
     # -- Section C: Sales Eligibility Thresholds --
     top_mgmt_min_sales = fields.Float(string='Top Mgmt Min Sales',
-                                      digits='Product Price')
+                                      digits='Product Price', default=75)
+    top_mgmt_min_sales_min = fields.Float(default=65)
+    top_mgmt_min_sales_max = fields.Float(default=100)
+
     sen_mgmt_min_sales = fields.Float(string='Senior Mgmt Min Sales',
                                       digits='Product Price')
+    sen_mgmt_min_sales_min = fields.Float(default=0.20)
+    sen_mgmt_min_sales_max = fields.Float(default=1.00)
+
     mid_mgmt_min_sales = fields.Float(string='Mid Mgmt Min Sales',
                                       digits='Product Price')
+    mid_mgmt_min_sales_min = fields.Float(default=0.20)
+    mid_mgmt_min_sales_max = fields.Float(default=1.00)
+
     first_entrant_sales_threshold = fields.Float(string='First Entrant Threshold',
                                                  digits='Product Price')
+    first_entrant_sales_threshold_min = fields.Float(default=0.20)
+    first_entrant_sales_threshold_max = fields.Float(default=1.00)
+
     entry_level_sales_retrieval = fields.Float(string='Entry Level Sales Retrieval',
                                                digits=(5, 4))
+    entry_level_sales_retrieval_min = fields.Float(default=0.20)
+    entry_level_sales_retrieval_max = fields.Float(default=1.00)
 
     # -- Section D: AIP & Deferred Parameters --
     aip_eligibility_threshold = fields.Float(string='AIP Eligibility Threshold',
@@ -134,22 +188,22 @@ class BonusParameter(models.Model):
 
     # -- Section E: KPI Weights (must sum to 100%) --
     revenue_weight = fields.Float(string='Revenue Achievement Weight (%)',
-                                  digits=(5, 2))
+                                  digits=(5, 2), default=25)
     revenue_weight_min = fields.Float(default=0.0)
     revenue_weight_max = fields.Float(default=25.0)
 
     ebitda_weight = fields.Float(string='EBITDA Achievement Weight (%)',
-                                 digits=(5, 2))
+                                 digits=(5, 2), default="20")
     ebitda_weight_min = fields.Float(default=0.0)
     ebitda_weight_max = fields.Float(default=25.0)
 
     gmp_weight = fields.Float(string='GMP / Quality Score Weight (%)',
-                              digits=(5, 2))
+                              digits=(5, 2), default=25)
     gmp_weight_min = fields.Float(default=0.0)
     gmp_weight_max = fields.Float(default=25.0)
 
     extended_kpi_weight = fields.Float(string='Extended KPI Weight (%)',
-                                       digits=(5, 2))
+                                       digits=(5, 2), default=25)
     extended_kpi_weight_min = fields.Float(default=0.0)
     extended_kpi_weight_max = fields.Float(default=25.0)
 
@@ -182,6 +236,17 @@ class BonusParameter(models.Model):
                                            digits=(5, 2))
     accelerator_mult_2 = fields.Float(string='Accelerator Multiplier 2', digits=(5, 4))
     individual_cap = fields.Float(string='Individual Cap (%)', digits=(5, 2))
+    # TODO TEST THE FUNCTIONS
+    funded_pool_after_both_gate = fields.Float(default=0, compute="_compute_funded_pool")
+    profitability_gate_factor = fields.Float(default=1,string="Profitability Gate Factor (continuous ramp)")
+    base_bonus_pool = fields.Float(default=0, string="Base Bonus Pool")
+    gmp_gate_factor = fields.Float(default=1, string="GMP Gate Factor")
+
+    @api.depends('profitability_gate_factor', 'base_bonus_pool', 'gmp_gate_factor')
+    def _compute_funded_pool(self):
+        for rec in self:
+            rec.funded_pool_after_both_gate = rec.profitability_gate_factor * rec.base_bonus_pool * rec.gmp_gate_factor
+
 
     _sql_constraints = [
         ('period_unique', 'UNIQUE(period_id)',
@@ -233,8 +298,8 @@ class BonusParameter(models.Model):
                     raise ValidationError(_(
                         'Min Pool Rate (%s%%) must be below Max Pool Rate (%s%%).'
                     ) % (
-                        rec.min_pool_rate * 100,
-                        rec.max_pool_rate * 100,
+                        rec.min_pool_rate / 100,
+                        rec.max_pool_rate / 100,
                     ))
 
     @api.constrains('ebitda_scaling_start', 'ebitda_max_rate_threshold',
@@ -242,13 +307,13 @@ class BonusParameter(models.Model):
     def _check_ebitda_thresholds(self):
         for rec in self:
             if rec.ebitda_scaling_start and rec.full_gate_floor:
-                if rec.ebitda_scaling_start > rec.full_gate_floor:
+                if rec.ebitda_scaling_start > rec.full_gate_floor: # 11 > 22
                     raise ValidationError(_(
                         'EBITDA Scaling Start (%s%%) must not exceed '
                         'Full Gate Floor (%s%%) — prevents dead zone.'
                     ) % (
-                        rec.ebitda_scaling_start * 100,
-                        rec.full_gate_floor * 100,
+                        rec.ebitda_scaling_start / 100,
+                        rec.full_gate_floor / 100,
                     ))
             if rec.ebitda_max_rate_threshold and rec.full_gate_floor:
                 if rec.ebitda_max_rate_threshold <= rec.full_gate_floor:
@@ -256,8 +321,8 @@ class BonusParameter(models.Model):
                         'EBITDA Max Rate Threshold (%s%%) must exceed '
                         'Full Gate Floor (%s%%) — ensures scaling in full zone.'
                     ) % (
-                        rec.ebitda_max_rate_threshold * 100,
-                        rec.full_gate_floor * 100,
+                        rec.ebitda_max_rate_threshold / 100,
+                        rec.full_gate_floor / 100,
                     ))
 
     @api.constrains('partial_gate_floor', 'full_gate_floor')
@@ -269,8 +334,8 @@ class BonusParameter(models.Model):
                         'Partial Gate Floor (%s%%) must be below '
                         'Full Gate Floor (%s%%).'
                     ) % (
-                        rec.partial_gate_floor * 100,
-                        rec.full_gate_floor * 100,
+                        rec.partial_gate_floor / 100,
+                        rec.full_gate_floor / 100,
                     ))
 
     @api.constrains('opm_subpool_share', 'sen_mgt_share', 'ops_sup_share')
@@ -278,10 +343,11 @@ class BonusParameter(models.Model):
         for rec in self:
             total = (rec.opm_subpool_share + rec.sen_mgt_share +
                      rec.ops_sup_share)
-            if total and not (0.99 <= total <= 1.01):
-                raise ValidationError(_(
-                    'Pool shares must sum to 100%%. Current total: %s%%'
-                ) % (total * 100))
+            if total: #  
+                if total != 100: #(0.99 <= total <= 1.01):
+                    raise ValidationError(_(
+                        'Pool shares must sum to 100%%. Current total: %s%%'
+                    ) % (total))
 
     @api.depends('revenue_weight', 'ebitda_weight', 'gmp_weight',
                  'extended_kpi_weight')
