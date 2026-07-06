@@ -20,7 +20,7 @@
         <field name="name">kprl.bonus.period.form</field>
         <field name="model">kprl.bonus.period</field>
         <field name="arch" type="xml">
-            <form>
+            <form class="o_payout_form">
                 <header>
                     <button name="action_activate" type="object"
                             string="Activate"
@@ -35,23 +35,28 @@
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
-                    <group>
-                        <group>
-                            <field name="name"/>
-                            <field name="date_start"/>
-                            <field name="date_end"/>
-                            <field name="state"/>
+                    <div class="o_payout_statement">
+                        <group> 
+                            <field name="description"/>
                         </group>
+                    </div>
+                    <div class="o_payout_card o_payout_meta">
                         <group>
-                            <field name="revenue_target" widget="monetary"/>
-                            <field name="net_rev_target" widget="monetary"/>
-                            <field name="ebitda_margin"/>
-                            <field name="company_kpi"/>
+                            <group>
+                                <field name="name"/>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                                <field name="state"/>
+                            </group>
+                            <group>
+                                <field name="revenue_target" widget="monetary"/>
+                                <field name="net_rev_target" widget="monetary" invisible="1"/>
+                                <field name="ebitda_margin"/>
+                                <field name="company_kpi"/>
+                            </group>
                         </group>
-                    </group>
-                    <group>
-                        <field name="description"/>
-                    </group>
+                    </div>
+                    
                     <notebook>
                         <page name="parameters" string="Parameters">
                             <field name="parameter_ids" nolabel="1">

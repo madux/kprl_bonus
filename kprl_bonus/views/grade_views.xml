@@ -9,7 +9,7 @@
                 <field name="name"/>
                 <field name="code"/>
                 <field name="yp_points"/>
-                <field name="diff_points"/>
+                <field name="diff_points" invisible="1"/>
                 <field name="skill_premium"/>
                 <field name="total_points"/>
                 <field name="token_rate" widget="monetary"/>
@@ -42,7 +42,7 @@
                     <group string="Points Breakdown">
                         <group>
                             <field name="yp_points"/>
-                            <field name="diff_points"/>
+                            <field name="diff_points" invisible="1"/>
                             <field name="skill_premium"/>
                             <field name="total_points"/>
                         </group>

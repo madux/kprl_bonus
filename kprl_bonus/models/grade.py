@@ -9,7 +9,7 @@ class Grade(models.Model):
     name = fields.Char(string='Grade Name', required=True)
     code = fields.Char(string='Grade Code', required=True)
     sequence = fields.Integer(string='Sequence', default=10)
-    yp_points = fields.Float(string='Your Points (YP)', digits=(5, 1),
+    yp_points = fields.Float(string='Base Points (Base Premium)', digits=(5, 1),
                              help='Base grade points for bonus calculation')
     diff_points = fields.Float(string='Diff Points', digits=(5, 1),
                                help='Differentiation points adjustment')
@@ -22,12 +22,13 @@ class Grade(models.Model):
     subpool_id = fields.Many2one('kprl.subpool', string='Sub-Pool')
     aip_eligible = fields.Boolean(string='AIP Eligible', default=False)
     governance_note = fields.Text(string='Governance Notes')
+    appraisal_base_score = fields.Float(string='Appraisal Pass Mark (%)', default =65, help="each grade should have an appraisal park mark")
 
     _sql_constraints = [
         ('code_unique', 'UNIQUE(code)', 'Grade code must be unique!'),
     ]
 
-    @api.depends('yp_points', 'diff_points', 'skill_premium')
+    @api.depends('yp_points', 'skill_premium')
     def _compute_total_points(self):
         for rec in self:
-            rec.total_points = rec.yp_points + rec.diff_points + rec.skill_premium
+            rec.total_points = rec.yp_points + rec.skill_premium

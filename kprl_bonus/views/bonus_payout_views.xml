@@ -49,28 +49,42 @@
                         </group>
                         <group string="Calculated Amounts">
                             <field name="gross_payable" widget="monetary"/>
-                            <field name="deferred_amount" widget="monetary"/>
-                            <field name="net_immediate" widget="monetary"/>
+                            <field name="deferred_amount" widget="monetary" readonly="0" force_save="1"/>
+                            <field name="net_immediate" widget="monetary" readonly="0" force_save="1"/>
                         </group>
                     </group>
                     <group string="Multipliers &amp; Adjustments">
                         <group>
-                            <field name="base_eligible" widget="monetary"/>
+                            <field name="base_eligible" widget="monetary" readonly="1"/>
                             <field name="dept_kpi_mult"/>
                             <field name="appraisal_mult"/>
                             <field name="behavioural_mult"/>
+                            <field name="behaviour_05"/>
+                            <field name="appraisal_score"/>
+                            <field name="adjusted_amount" readonly="1" widget="monetary"/>
+                            <field name="tenure_years"/>
+
                         </group>
                         <group>
                             <field name="tenure_mult"/>
                             <field name="proration_factor"/>
                             <field name="gmp_factor"/>
-                            <field name="deferral_rate"/>
+                            <field name="deferral_rate" readonly="0" widget="monetary"/>
+                            <field name="value_point"/>
+                            <field name="total_points" readonly="0" force_save="1"/>
+                            <field name="payable"/>
                         </group>
                         <group>
                             <field name="exception_premium" widget="monetary"/>
+                            <field name="tenure_enhance"/>
+                            <field name="quarterly_amount" string="★ QUATERTLY PAYOUT (₦)"/>
+                            <field name="final_floor" readonly="1" force_save="1"/>
+                        </group>
+                        <group>
                             <field name="malus_amount" widget="monetary"/>
                             <field name="floor_check"/>
-                            <field name="cap_check"/>
+                            <field name="cap_check"/> 
+
                         </group>
                     </group>
                     <group>
