@@ -14,7 +14,7 @@ class BonusPeriod(models.Model):
         ('active', 'Active'),
         ('closed', 'Closed'),
     ], string='Status', default='draft', required=True)
-    revenue_target = fields.Float(string='Revenue Target', digits='Product Price')
+    revenue_target = fields.Float(string='Quaterly Revenue Target', digits='Product Price')
     net_rev_target = fields.Float(string='Net Revenue Target', digits='Product Price')
     ebitda_margin = fields.Float(string='EBITDA Margin (%)', digits=(5, 2))
     company_kpi = fields.Float(string='Company KPI Score', digits=(5, 4))

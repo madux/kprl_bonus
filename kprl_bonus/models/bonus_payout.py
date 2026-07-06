@@ -22,9 +22,44 @@ class BonusPayout(models.Model):
     dept_kpi_mult = fields.Float(string='Dept KPI Multiplier', digits=(5, 4),
                                  default=1.0)
     appraisal_mult = fields.Float(string='Appraisal Multiplier', digits=(5, 4),
-                                  default=1.0)
+                                  default=0.0, compute="compute_appraisal_mult")
     behavioural_mult = fields.Float(string='Behavioural Multiplier', digits=(5, 4),
                                     default=1.0)
+    
+    @api.depends('employee_id', 'appraisal_score')
+    def compute_appraisal_mult(self):
+        """
+        Calculate performance factor based on appraisal score.
+
+        Args:
+            employee: Employee record or any truthy value.
+            appraisal_score (float): Appraisal score as a decimal (e.g. 0.82 for 82%).
+
+        Returns:
+            float or None
+        """
+        for rec in self:
+            employee = rec.employee_id
+            appraisal_score = rec.appraisal_score
+            result = 0
+            if not employee:
+                result = None
+
+            if appraisal_score < 0.65:
+                result = 0.0
+
+            elif appraisal_score in range (60, 75):
+                result = 0.6 + (appraisal_score - 0.65) * 0.15
+
+            elif appraisal_score >= 0.75 and appraisal_score < 0.90:
+                result = 0.75 + (appraisal_score - 0.75) * 1.0
+            elif appraisal_score >= 0.90 and appraisal_score < 1.1:
+                result = 0.90 + (appraisal_score - 0.90) * 2.0
+
+            elif appraisal_score >= 1.1: 
+                result = 1.10
+            rec.appraisal_mult = result
+
     exception_premium = fields.Float(string='Exception Premium (₦)',
                                      digits='Product Price')
     proration_factor = fields.Float(string='Proration', digits=(5, 4), default=1.0)
@@ -43,7 +78,7 @@ class BonusPayout(models.Model):
     
     tenure_years = fields.Float(string='Tenure years', store=True, related='employee_id.tenure_years', compute='_compute_tenure_mult')
     deferral_rate = fields.Float(string='Deferral Rate (%)', digits=(5, 4), compute='_compute_deferred_rate', default=0.0)
-    appraisal_score = fields.Float(string='Deferral Rate (%)', digits=(5, 4))
+    appraisal_score = fields.Float(string='Appraisal Score (%)', digits=(5, 4))
     adjusted_amount = fields.Float(string='Adjusted (₦)', digits=(5, 4), compute='_compute_adjusted')
     behaviour_05 = fields.Float(string='Behavioure /25', digits=(5, 4), default=23)
     deferred_amount = fields.Float(string='Deferred Amount (₦)',
@@ -85,7 +120,8 @@ class BonusPayout(models.Model):
     )
     def compute_base_eligible(self):
         for rec in self:
-            rec.base_eligible = rec.total_points * rec.value_point 
+            vl_point = rec.grade_id.total_points 
+            rec.base_eligible = vl_point * rec.value_point
 
     @api.depends(
         'employee_id.grade_id',

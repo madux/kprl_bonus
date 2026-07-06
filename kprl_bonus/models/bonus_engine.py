@@ -259,6 +259,6 @@ class BonusEngine(models.Model):
         self.state = 'finalized'
 
     def action_reset(self):
-        self.state = 'draft'
         self.action_compute()
+        self.state = 'draft'
 

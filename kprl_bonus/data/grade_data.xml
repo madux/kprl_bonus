@@ -10,6 +10,7 @@
             <field name="skill_premium">10</field>
             <field name="token_rate">2500</field>
             <field name="deferral_rate">30.0</field>
+            <field name="appraisal_base_score">75.0</field>
             <field name="aip_eligible">True</field>
             <field name="governance_note">Board-level compensation approval required</field>
         </record>
@@ -24,6 +25,8 @@
             <field name="token_rate">1800</field>
             <field name="deferral_rate">20.0</field>
             <field name="aip_eligible">True</field>
+            <field name="appraisal_base_score">75.0</field>
+
         </record>
 
         <record id="kprl_grade_g3" model="kprl.grade">
@@ -36,6 +39,8 @@
             <field name="token_rate">1400</field>
             <field name="deferral_rate">15.0</field>
             <field name="aip_eligible">False</field>
+            <field name="appraisal_base_score">75.0</field>
+
         </record>
 
         <record id="kprl_grade_g4" model="kprl.grade">
@@ -48,6 +53,8 @@
             <field name="token_rate">1000</field>
             <field name="deferral_rate">10.0</field>
             <field name="aip_eligible">False</field>
+            <field name="appraisal_base_score">65.0</field>
+
         </record>
 
         <record id="kprl_grade_g5" model="kprl.grade">
@@ -60,6 +67,8 @@
             <field name="token_rate">800</field>
             <field name="deferral_rate">10.0</field>
             <field name="aip_eligible">False</field>
+            <field name="appraisal_base_score">65.0</field>
+
         </record>
 
         <record id="kprl_grade_g6" model="kprl.grade">
@@ -72,6 +81,8 @@
             <field name="token_rate">600</field>
             <field name="deferral_rate">5.0</field>
             <field name="aip_eligible">False</field>
+            <field name="appraisal_base_score">65.0</field>
+
         </record>
     </data>
 </odoo>

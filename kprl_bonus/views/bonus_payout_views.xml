@@ -60,6 +60,7 @@
                             <field name="appraisal_mult"/>
                             <field name="behavioural_mult"/>
                             <field name="behaviour_05"/>
+                            <field name="appraisal_score"/>
                             <field name="adjusted_amount" readonly="1" widget="monetary"/>
                             <field name="tenure_years"/>
 
