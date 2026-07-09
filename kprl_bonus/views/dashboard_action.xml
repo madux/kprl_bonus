@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="action_kprl_dashboard" model="ir.actions.client">
+            <field name="name">Dashboard</field>
+            <field name="tag">kprl_dashboard</field>
+        </record>
+
+    </data>
+</odoo>

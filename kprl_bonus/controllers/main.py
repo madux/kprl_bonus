@@ -11,7 +11,7 @@ class KprlApi(http.Controller):
 
     # ─── Periods ────────────────────────────────────────────────────────────
 
-    @http.route('/kprl/api/periods', type='http', auth='user', methods=['GET'],
+    @http.route('/kprl/api/periods', type='http', auth='user', methods=['GET','POST'],
                 csrf=False)
     def api_periods(self):
         periods = request.env['kprl.bonus.period'].search_read(
@@ -23,7 +23,7 @@ class KprlApi(http.Controller):
     # ─── Dashboard ──────────────────────────────────────────────────────────
 
     @http.route('/kprl/api/dashboard/<int:period_id>', type='http',
-                auth='user', methods=['GET'], csrf=False)
+                auth='user', methods=['GET', 'POST'], csrf=False)
     def api_dashboard(self, period_id):
         period = request.env['kprl.bonus.period'].browse(period_id)
         if not period.exists():
@@ -294,7 +294,7 @@ class KprlApi(http.Controller):
 
     # ─── Trends (Dashboard Chart) ──────────────────────────────────────────
 
-    @http.route('/kprl/api/trends', type='http', auth='user', methods=['GET'],
+    @http.route('/kprl/api/trends', type='http', auth='user', methods=['GET', 'POST'],
                 csrf=False)
     def api_trends(self):
         periods = request.env['kprl.bonus.period'].search_read(

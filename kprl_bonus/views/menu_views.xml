@@ -6,6 +6,13 @@
               web_icon="kprl_bonus,static/description/icon.svg"
               sequence="100"/>
 
+        <!-- Dashboard -->
+   <menuitem id="menu_kprl_dashboard"
+              name="Dashboard"
+              parent="menu_kprl_bonus_root"
+              action="action_kprl_dashboard"
+              sequence="5"/>
+              
     <!-- Bonus Config -->
     <menuitem id="menu_kprl_config"
               name="Configuration"

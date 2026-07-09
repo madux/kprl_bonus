@@ -54,7 +54,7 @@ class BonusEngine(models.Model):
     headcount = fields.Integer(string='Headcount Eligible',
                                compute='_compute_headcount', store=True)
     aip_pool = fields.Float(string='AIP Pool (Annual)', digits='Product Price') 
-    company_kpi_score = fields.Float(string='Company KPI Score', digits=(5, 4))
+    # company_kpi_score = fields.Float(string='Company KPI Score', digits=(5, 4)) duplicate field, already defined above
 
     opm_pool_split = fields.Float(string='OPM POOL SPLIT (%)',
                                   digits='Product Price', default=60)

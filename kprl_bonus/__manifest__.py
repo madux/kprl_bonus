@@ -21,6 +21,7 @@
         'data/grade_data.xml',
         'data/tenure_data.xml',
         'data/department_data.xml',
+        'views/dashboard_action.xml',
         'data/subpool_data.xml',
         'data/role_data.xml',
         'views/templates.xml',
@@ -48,7 +49,16 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'kprl_bonus/static/css/backend_css.scss'
+            'kprl_bonus/static/css/backend_css.scss',
+            'kprl_bonus/static/css/bonus_suite.css',
+            'kprl_bonus/static/css/index.css',
+            'kprl_bonus/static/css/bonus_params.css',
+            'kprl_bonus/static/css/kprl_dashboard.css',
+            'kprl_bonus/static/src/dashboard/kprl_dashboard.js',
+            'kprl_bonus/static/src/dashboard/kprl_dashboard.xml',
+            'kprl_bonus/static/src/dashboard/kprl_dashboard.css',
+            'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
+            'kprl_bonus/static/src/dashboard/kprl_dashboard.js',
         ],
     },
     'demo': [],
