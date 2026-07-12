@@ -95,7 +95,7 @@
 
 /* ---------- Hero statement (total payout) ---------- */
 .o_payout_form .o_payout_statement {
-    background: linear-gradient(135deg, #4f5fe0 0%, #6c3cd6 100%);
+    background: #8784D2;
     border-radius: var(--payout-radius);
     padding: 28px 28px 24px;
     margin-bottom: 20px;

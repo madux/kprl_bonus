@@ -164,8 +164,8 @@
                                         <td t-esc="d.department_id ? d.department_id[1] : 'N/A'"/>
                                         <td t-esc="fmtScore(d.kpi_score)"/>
                                         <td t-esc="fmtMult(d.multiplier)"/>
-                                        <td>--</td>
-                                        <td>--</td>
+                                        <td t-esc="d.headcount || 0"/>
+                                        <td t-esc="fmtCurrency(d.net_payout)"/>
                                         <td>
                                             <span class="kprl-owl-status-tag"
                                                   t-att-class="deptStatusCls(d)"

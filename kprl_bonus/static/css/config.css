@@ -76,7 +76,6 @@
     font-size: 14px; font-weight: 700; color: #2D3142; margin-bottom: 16px;
 }
 
-.kprl-form-container { }
 .kprl-form-group { margin-bottom: 12px; }
 .kprl-input-label { display: block; font-size: 12px; font-weight: 600; color: #7A8296; margin-bottom: 4px; }
 .kprl-input-row { display: flex; align-items: center; gap: 10px; }

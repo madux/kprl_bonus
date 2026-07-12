@@ -260,20 +260,66 @@
     </record>
 
     <record id="action_kprl_bonus_parameter" model="ir.actions.act_window">
-        <field name="name">Control Panel (Parameters)</field>
-        <field name="res_model">kprl.bonus.parameter</field>
-        <field name="view_mode">tree,form</field>
-        <field name="help" type="html">
-            <p><strong>CEO / Superadmin Control Panel</strong></p>
-            <p>Configure all bonus parameters for each period. Each field has governance limits (min/max) set by the approver authority. After approval, parameters are locked to prevent further edits.</p>
-            <ul>
-                <li><strong>Section A:</strong> Main Bonus Pool — Board approval required</li>
-                <li><strong>Section B:</strong> Sales Commission — Finance Director approval</li>
-                <li><strong>Section C:</strong> Eligibility Thresholds</li>
-                <li><strong>Section D:</strong> AIP &amp; Deferred Parameters</li>
-                <li><strong>Section E:</strong> KPI Weights — must sum to 100%</li>
-                <li><strong>Section F:</strong> National Targets &amp; Accelerators</li>
-            </ul>
-        </field>
-    </record>
+    <field name="name">Control Panel (Parameters)</field>
+    <field name="res_model">kprl.bonus.parameter</field>
+    <field name="view_mode">kanban,tree,form</field>
+    <field name="help" type="html">
+        <p><strong>CEO / Superadmin Control Panel</strong></p>
+        <p>Configure all bonus parameters for each period. Each field has governance limits (min/max) set by the approver authority. After approval, parameters are locked to prevent further edits.</p>
+    </field>
+</record>
+
+   <record id="view_kprl_bonus_parameter_kanban" model="ir.ui.view">
+    <field name="name">kprl.bonus.parameter.kanban</field>
+    <field name="model">kprl.bonus.parameter</field>
+    <field name="arch" type="xml">
+        <kanban class="o_kanban_kprl_params">
+            <field name="period_id"/>
+            <field name="version"/>
+            <field name="state"/>
+            <field name="is_locked"/>
+            <field name="approver_id"/>
+            <field name="approval_date"/>
+            <field name="min_pool_rate"/>
+            <field name="max_pool_rate"/>
+            <field name="base_bonus_pool"/>
+            <templates>
+                <t t-name="kanban-box">
+                    <div t-attf-class="kprl_param_card kprl_state_#{record.state.raw_value}">
+                        <div class="kprl_card_top">
+                            <div class="kprl_card_title">
+                                <field name="period_id"/>
+                                <span class="kprl_version">v<field name="version"/></span>
+                            </div>
+                            <span t-if="record.is_locked.raw_value" class="kprl_lock">
+                                <i class="fa fa-lock"/>
+                            </span>
+                        </div>
+                        <div class="kprl_card_state">
+                            <field name="state" widget="badge"/>
+                        </div>
+                        <div class="kprl_card_metrics">
+                            <div class="kprl_metric">
+                                <span class="kprl_metric_label">Pool Range</span>
+                                <span class="kprl_metric_value">
+                                    <field name="min_pool_rate"/>% – <field name="max_pool_rate"/>%
+                                </span>
+                            </div>
+                            <div class="kprl_metric">
+                                <span class="kprl_metric_label">Base Pool</span>
+                                <span class="kprl_metric_value"><field name="base_bonus_pool" widget="monetary"/></span>
+                            </div>
+                        </div>
+                        <div class="kprl_card_footer" t-if="record.approver_id.raw_value">
+                            <i class="fa fa-user-o"/> <field name="approver_id"/>
+                            <span t-if="record.approval_date.raw_value">
+                                — <field name="approval_date"/>
+                            </span>
+                        </div>
+                    </div>
+                </t>
+            </templates>
+        </kanban>
+    </field>
+</record>
 </odoo>

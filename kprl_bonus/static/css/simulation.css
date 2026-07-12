@@ -1,4 +1,5 @@
 /* simulation.css — Bonus Simulation Page */
+@import url('/kprl_bonus/static/css/dashboard.css');
 .kprl-body {
     background: #F7F9FC;
     padding: 20px 32px;

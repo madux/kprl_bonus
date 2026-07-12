@@ -71,6 +71,19 @@ export class KprlDashboard extends Component {
     }
   }
 
+  // async _loadDashboard() {
+  //   if (!this.state.currentPeriodId) return;
+  //   try {
+  //     const resp = await fetch(
+  //       `/kprl/api/dashboard/${this.state.currentPeriodId}`,
+  //     );
+  //     const data = await resp.json();
+  //     this.state.engine = data.engine || {};
+  //     this.state.departments = data.departments || [];
+  //   } catch (e) {
+  //     console.error('Dashboard load error:', e);
+  //   }
+  // }
   async _loadDashboard() {
     if (!this.state.currentPeriodId) return;
     try {
@@ -79,7 +92,30 @@ export class KprlDashboard extends Component {
       );
       const data = await resp.json();
       this.state.engine = data.engine || {};
-      this.state.departments = data.departments || [];
+
+      const deptScores = data.departments || [];
+      const payouts = data.payouts || [];
+
+      const deptAgg = {};
+      for (const p of payouts) {
+        const deptId = p.department_id ? p.department_id[0] : null;
+        if (!deptId) continue;
+        if (!deptAgg[deptId]) {
+          deptAgg[deptId] = { headcount: 0, netPayout: 0 };
+        }
+        deptAgg[deptId].headcount += 1;
+        deptAgg[deptId].netPayout += p.net_immediate || 0;
+      }
+
+      this.state.departments = deptScores.map((d) => {
+        const deptId = d.department_id ? d.department_id[0] : null;
+        const agg = deptAgg[deptId] || { headcount: 0, netPayout: 0 };
+        return {
+          ...d,
+          headcount: agg.headcount,
+          net_payout: agg.netPayout,
+        };
+      });
     } catch (e) {
       console.error('Dashboard load error:', e);
     }
@@ -257,11 +293,26 @@ export class KprlDashboard extends Component {
   gmpLabel(s) {
     return (s || 'N/A').toUpperCase();
   }
+  // deptStatus(d) {
+  //   return d.gmp_status === 'clean' ? 'ON TARGET' : 'WATCH';
+  // }
+
   deptStatus(d) {
-    return d.gmp_status === 'clean' ? 'ON TARGET' : 'WATCH';
+    const score = d.kpi_score || 0;
+    if (score >= 1.0) return 'EXCEED';
+    if (score >= 0.9) return 'ON TARGET';
+    return 'WATCH';
   }
+
+  // deptStatusCls(d) {
+  //   return d.gmp_status === 'clean' ? 'kprl-tag-target' : 'kprl-tag-watch';
+  // }
+
   deptStatusCls(d) {
-    return d.gmp_status === 'clean' ? 'kprl-tag-target' : 'kprl-tag-watch';
+    const score = d.kpi_score || 0;
+    if (score >= 1.0) return 'kprl-tag-exceed';
+    if (score >= 0.9) return 'kprl-tag-target';
+    return 'kprl-tag-watch';
   }
 }
 

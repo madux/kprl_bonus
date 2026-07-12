@@ -1,9 +1,9 @@
 .kprl-owl-dash {
   padding: 16px 24px 40px;
   background: #f4f6f9;
-  min-height: 100vh;
+  height: 100%;
+    overflow-y: auto;
   font-family: "Work Sans", sans-serif;
-  height: 100vh;
 }
 
 .kprl-loading-overlay {
@@ -409,6 +409,11 @@
   color: #856404;
 }
 
+.kprl-tag-exceed {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
 .kprl-owl-sla-footer {
   background: #fffde7;
   border: 1px solid #fff59d;
