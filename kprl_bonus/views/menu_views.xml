@@ -145,6 +145,12 @@
               parent="menu_kprl_bonus_root"
               sequence="40"/>
 
+    <menuitem id="menu_kprl_governance_log"
+              name="Governance Log"
+              parent="menu_kprl_governance"
+              action="action_kprl_governance_log"
+              sequence="5"/>
+
     <menuitem id="menu_kprl_governance_event"
               name="Malus &amp; Clawback Events"
               parent="menu_kprl_governance"
@@ -156,4 +162,10 @@
               parent="menu_kprl_governance"
               action="action_kprl_risk_register"
               sequence="20"/>
+
+    <menuitem id="menu_kprl_audit_trail"
+              name="Audit Trail"
+              parent="menu_kprl_governance"
+              action="action_kprl_audit_trail"
+              sequence="30"/>
 </odoo>

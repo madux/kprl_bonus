@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="kprl_bonus.KprlGovernance">
+        <div class="kprl-gov-container">
+
+            <!-- Loading -->
+            <t t-if="state.loading">
+                <div class="kprl-loading-overlay">
+                    <div class="kprl-spinner"/>
+                    <span>Loading governance data...</span>
+                </div>
+            </t>
+
+            <t t-if="!state.loading">
+
+                <!-- Header -->
+                <header class="kprl-gov-header">
+                    <div class="kprl-gov-breadcrumb">
+                        <span class="kprl-gov-brand">KPRL Bonus System</span>
+                        <i class="fa fa-angle-right kprl-gov-sep"/>
+                        <span class="kprl-gov-current">Governance &amp; Audit</span>
+                    </div>
+                </header>
+
+                <!-- Tab Bar -->
+                <nav class="kprl-gov-tabs">
+                    <button class="kprl-gov-tab"
+                            t-att-class="state.activeTab === 'governance_log' ? 'kprl-gov-tab-active' : ''"
+                            t-on-click="() => this.switchTab('governance_log')">
+                        Governance Log
+                    </button>
+                    <button class="kprl-gov-tab"
+                            t-att-class="state.activeTab === 'malus_events' ? 'kprl-gov-tab-active' : ''"
+                            t-on-click="() => this.switchTab('malus_events')">
+                        Malus Events
+                    </button>
+                    <button class="kprl-gov-tab"
+                            t-att-class="state.activeTab === 'clawback_register' ? 'kprl-gov-tab-active' : ''"
+                            t-on-click="() => this.switchTab('clawback_register')">
+                        Clawback Register
+                    </button>
+                    <button class="kprl-gov-tab"
+                            t-att-class="state.activeTab === 'audit_trail' ? 'kprl-gov-tab-active' : ''"
+                            t-on-click="() => this.switchTab('audit_trail')">
+                        Audit Trail
+                    </button>
+                    <button class="kprl-gov-tab"
+                            t-att-class="state.activeTab === 'risk_register' ? 'kprl-gov-tab-active' : ''"
+                            t-on-click="() => this.switchTab('risk_register')">
+                        Risk Register
+                    </button>
+                </nav>
+
+                <!-- Action Bar -->
+                <div class="kprl-gov-action-bar">
+                    <div class="kprl-gov-action-left">
+                        <button class="kprl-gov-btn-primary" t-on-click="openNewEvent">
+                            <i class="fa fa-plus"/> New Governance Event
+                        </button>
+                    </div>
+                    <div class="kprl-gov-action-right">
+                        <select class="kprl-gov-select" t-on-change="onFilterSeverity">
+                            <option value="all">All Severity</option>
+                            <option value="low">LOW</option>
+                            <option value="minor">MINOR</option>
+                            <option value="medium">MEDIUM</option>
+                            <option value="major">MAJOR</option>
+                            <option value="high">HIGH</option>
+                            <option value="critical">CRITICAL</option>
+                        </select>
+                        <select class="kprl-gov-select" t-on-change="onFilterStatus">
+                            <option value="all">All Status</option>
+                            <option value="open">OPEN</option>
+                            <option value="pending">PENDING</option>
+                            <option value="applied">APPLIED</option>
+                            <option value="waived">WAIVED</option>
+                            <option value="closed">CLOSED</option>
+                        </select>
+                        <button class="kprl-gov-btn-outline">
+                            <i class="fa fa-download"/> Export PDF
+                        </button>
+                        <button class="kprl-gov-btn-outline">
+                            <i class="fa fa-filter"/> Filter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="kprl-gov-summary-row">
+                    <div class="kprl-gov-summary-card">
+                        <div class="kprl-gov-summary-label">Open Events</div>
+                        <div class="kprl-gov-summary-value kprl-text-red"
+                             t-esc="state.summary.open_events"/>
+                    </div>
+                    <div class="kprl-gov-summary-card">
+                        <div class="kprl-gov-summary-label">Pending FD Approval</div>
+                        <div class="kprl-gov-summary-value kprl-text-amber"
+                             t-esc="state.summary.pending_fd_approval"/>
+                    </div>
+                    <div class="kprl-gov-summary-card">
+                        <div class="kprl-gov-summary-label">Malus Applied YTD</div>
+                        <div class="kprl-gov-summary-value kprl-text-navy"
+                             t-esc="fmtCurrency(state.summary.malus_applied_ytd)"/>
+                    </div>
+                    <div class="kprl-gov-summary-card">
+                        <div class="kprl-gov-summary-label">Clawback Active</div>
+                        <div class="kprl-gov-summary-value kprl-text-green"
+                             t-esc="state.summary.clawback_active"/>
+                    </div>
+                    <div class="kprl-gov-summary-card">
+                        <div class="kprl-gov-summary-label">Audit Entries (Q2)</div>
+                        <div class="kprl-gov-summary-value kprl-text-navy"
+                             t-esc="state.summary.audit_entries"/>
+                    </div>
+                </div>
+
+                <!-- Governance Log / Malus / Clawback Tabs Content -->
+                <t t-if="state.activeTab !== 'audit_trail' and state.activeTab !== 'risk_register'">
+                    <div class="kprl-gov-split-layout">
+                        <!-- Left: Events Table -->
+                        <div class="kprl-gov-table-panel">
+                            <div class="kprl-gov-table-wrap">
+                                <table class="kprl-gov-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Ref</th>
+                                            <th>Date</th>
+                                            <th>Employee</th>
+                                            <th>Trigger Type</th>
+                                            <th>Severity</th>
+                                            <th>Stage</th>
+                                            <th>Malus %</th>
+                                            <th>Malus (₦)</th>
+                                            <th>Status</th>
+                                            <th>Approver</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="filteredEvents" t-as="ev" t-key="ev.id">
+                                            <tr t-on-click="() => this.selectEvent(ev)"
+                                                t-att-class="state.selectedEvent and state.selectedEvent.id === ev.id ? 'kprl-gov-row-selected' : ''">
+                                                <td class="kprl-gov-td-ref" t-esc="ev.ref"/>
+                                                <td t-esc="fmtDate(ev.date)"/>
+                                                <td t-esc="ev.employee_id ? ev.employee_id[1] : 'N/A'"/>
+                                                <td t-esc="triggerLabel(ev.trigger_type)"/>
+                                                <td>
+                                                    <span class="kprl-gov-badge"
+                                                          t-att-class="severityClass(ev.severity)"
+                                                          t-esc="ev.severity ? ev.severity.toUpperCase() : ''"/>
+                                                </td>
+                                                <td t-esc="stageLabel(ev.stage)"/>
+                                                <td t-esc="ev.malus_pct ? ev.malus_pct + '%' : 'TBD'"/>
+                                                <td t-esc="ev.malus_amount ? fmtCurrency(ev.malus_amount) : 'TBD'"/>
+                                                <td>
+                                                    <span class="kprl-gov-badge"
+                                                          t-att-class="statusClass(ev.status)"
+                                                          t-esc="ev.status ? ev.status.toUpperCase() : ''"/>
+                                                </td>
+                                                <td t-esc="ev.approver_id ? ev.approver_id[1] : 'Unassigned'"/>
+                                            </tr>
+                                        </t>
+                                        <t t-if="filteredEvents.length === 0">
+                                            <tr>
+                                                <td colspan="10" class="kprl-gov-empty">
+                                                    No events found
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Right: Detail + Audit Trail -->
+                        <div class="kprl-gov-detail-panel">
+                            <!-- Detail Card -->
+                            <t t-if="state.selectedEvent">
+                                <div class="kprl-gov-detail-card">
+                                    <h3 class="kprl-gov-detail-title">
+                                        <t t-esc="state.selectedEvent.ref"/> Detail —
+                                        <t t-esc="state.selectedEvent.employee_id ? state.selectedEvent.employee_id[1] : 'N/A'"/>
+                                        (<t t-esc="state.selectedEvent.severity ? state.selectedEvent.severity.toUpperCase() : ''"/>)
+                                    </h3>
+                                    <table class="kprl-gov-detail-table">
+                                        <tr>
+                                            <td class="kprl-gov-dt-label">Trigger</td>
+                                            <td class="kprl-gov-dt-value" t-esc="state.selectedEvent.trigger_description || triggerLabel(state.selectedEvent.trigger_type)"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="kprl-gov-dt-label">Severity</td>
+                                            <td class="kprl-gov-dt-value">
+                                                <span class="kprl-gov-badge"
+                                                      t-att-class="severityClass(state.selectedEvent.severity)"
+                                                      t-esc="state.selectedEvent.severity ? state.selectedEvent.severity.toUpperCase() : ''"/>
+                                                — <t t-esc="state.selectedEvent.malus_pct ? state.selectedEvent.malus_pct + '% malus proposed' : 'TBD'"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="kprl-gov-dt-label">Relevant Period</td>
+                                            <td class="kprl-gov-dt-value" t-esc="state.selectedEvent.period_id ? state.selectedEvent.period_id[1] : 'N/A'"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="kprl-gov-dt-label">Investigation Lead</td>
+                                            <td class="kprl-gov-dt-value" t-esc="state.selectedEvent.investigation_lead || 'N/A'"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="kprl-gov-dt-label">Malus Proposed</td>
+                                            <td class="kprl-gov-dt-value" t-esc="state.selectedEvent.malus_pct ? state.selectedEvent.malus_pct + '% → ' + fmtCurrency(state.selectedEvent.malus_amount) + ' deduction from net payable' : 'TBD'"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="kprl-gov-dt-label">Evidence Ref</td>
+                                            <td class="kprl-gov-dt-value" t-esc="state.selectedEvent.evidence_ref || 'N/A'"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="kprl-gov-dt-label">Outcome</td>
+                                            <td class="kprl-gov-dt-value" t-esc="state.selectedEvent.outcome || 'Pending'"/>
+                                        </tr>
+                                        <tr>
+                                            <td class="kprl-gov-dt-label">Next Action</td>
+                                            <td class="kprl-gov-dt-value" t-esc="state.selectedEvent.next_action || 'N/A'"/>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </t>
+
+                            <!-- Audit Trail Card -->
+                            <div class="kprl-gov-audit-card">
+                                <h3 class="kprl-gov-audit-title">
+                                    Recent Audit Trail — Last 15 Actions
+                                </h3>
+                                <div class="kprl-gov-audit-list">
+                                    <t t-foreach="state.auditTrail" t-as="entry" t-key="entry.id">
+                                        <div class="kprl-gov-audit-item">
+                                            <div class="kprl-gov-audit-meta">
+                                                <span class="kprl-gov-audit-time" t-esc="fmtDateTime(entry.timestamp)"/>
+                                            </div>
+                                            <div class="kprl-gov-audit-desc">
+                                                <strong t-esc="entry.user_id ? entry.user_id[1] : 'System'"/>:
+                                                <span t-esc="entry.name"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                    <t t-if="state.auditTrail.length === 0">
+                                        <div class="kprl-gov-audit-empty">No audit entries found</div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Audit Trail Tab (Full View) -->
+                <t t-if="state.activeTab === 'audit_trail'">
+                    <div class="kprl-gov-full-panel">
+                        <div class="kprl-gov-audit-card">
+                            <h3 class="kprl-gov-audit-title">Full Audit Trail</h3>
+                            <div class="kprl-gov-audit-list">
+                                <t t-foreach="state.auditTrail" t-as="entry" t-key="entry.id">
+                                    <div class="kprl-gov-audit-item">
+                                        <div class="kprl-gov-audit-meta">
+                                            <span class="kprl-gov-audit-time" t-esc="fmtDateTime(entry.timestamp)"/>
+                                        </div>
+                                        <div class="kprl-gov-audit-desc">
+                                            <strong t-esc="entry.user_id ? entry.user_id[1] : 'System'"/>:
+                                            <span t-esc="entry.name"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Risk Register Tab -->
+                <t t-if="state.activeTab === 'risk_register'">
+                    <div class="kprl-gov-full-panel">
+                        <div class="kprl-gov-audit-card">
+                            <h3 class="kprl-gov-audit-title">Risk Register</h3>
+                            <p class="kprl-gov-info-text">View and manage risks in the Risk Register menu item.</p>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Pending FD Warning Banner -->
+                <t t-if="hasPendingWarning">
+                    <div class="kprl-gov-warning-banner">
+                        <i class="fa fa-exclamation-triangle"/>
+                        <span>Pending Finance Director approval before Q2 payout run is finalised</span>
+                    </div>
+                </t>
+
+            </t>
+        </div>
+                    <!-- New Governance Event Modal -->
+            <t t-if="state.showModal">
+                <div class="kprl-gov-modal-overlay" t-on-click="closeModal">
+                    <div class="kprl-gov-modal" t-on-click="(ev) => ev.stopPropagation()">
+                        <div class="kprl-gov-modal-header">
+                            <h3 class="kprl-gov-modal-title">New Governance Event</h3>
+                            <button class="kprl-gov-modal-close" t-on-click="closeModal">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                        <div class="kprl-gov-modal-body">
+                            <div class="kprl-gov-form-row">
+                                <label class="kprl-gov-form-label">Employee</label>
+                                <select class="kprl-gov-form-input" t-model="state.newEvent.employee_id">
+                                    <option value="">-- Select Employee --</option>
+                                    <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
+                                        <option t-att-value="emp.id" t-esc="emp.name"/>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="kprl-gov-form-row">
+                                <label class="kprl-gov-form-label">Period</label>
+                                <select class="kprl-gov-form-input" t-model="state.newEvent.period_id">
+                                    <option value="">-- Select Period --</option>
+                                    <t t-foreach="state.periods" t-as="p" t-key="p.id">
+                                        <option t-att-value="p.id" t-esc="p.name"/>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="kprl-gov-form-row">
+                                <label class="kprl-gov-form-label">Trigger Type</label>
+                                <select class="kprl-gov-form-input" t-model="state.newEvent.trigger_type">
+                                    <option value="policy_breach">Policy Breach</option>
+                                    <option value="gmp_deviation">GMP Deviation</option>
+                                    <option value="late_reporting">Late Reporting</option>
+                                    <option value="kpi_data_dispute">KPI Data Dispute</option>
+                                    <option value="malus">Malus</option>
+                                    <option value="clawback">Clawback</option>
+                                </select>
+                            </div>
+                            <div class="kprl-gov-form-row">
+                                <label class="kprl-gov-form-label">Trigger Description</label>
+                                <input type="text" class="kprl-gov-form-input" t-model="state.newEvent.trigger_description" placeholder="e.g. GMP Major Deviation — Batch QC-2026-048 recalled"/>
+                            </div>
+                            <div class="kprl-gov-form-row kprl-gov-form-half">
+                                <div>
+                                    <label class="kprl-gov-form-label">Severity</label>
+                                    <select class="kprl-gov-form-input" t-model="state.newEvent.severity">
+                                        <option value="low">LOW</option>
+                                        <option value="minor">MINOR</option>
+                                        <option value="medium">MEDIUM</option>
+                                        <option value="major">MAJOR</option>
+                                        <option value="high">HIGH</option>
+                                        <option value="critical">CRITICAL</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="kprl-gov-form-label">Malus %</label>
+                                    <input type="number" class="kprl-gov-form-input" t-model="state.newEvent.malus_pct" min="0" max="100" step="0.5"/>
+                                </div>
+                            </div>
+                            <div class="kprl-gov-form-row kprl-gov-form-half">
+                                <div>
+                                    <label class="kprl-gov-form-label">Malus Amount (₦)</label>
+                                    <input type="number" class="kprl-gov-form-input" t-model="state.newEvent.malus_amount" min="0" step="1000"/>
+                                </div>
+                                <div>
+                                    <label class="kprl-gov-form-label">Investigation Lead</label>
+                                    <input type="text" class="kprl-gov-form-input" t-model="state.newEvent.investigation_lead" placeholder="e.g. QA Director + HR Director"/>
+                                </div>
+                            </div>
+                            <div class="kprl-gov-form-row">
+                                <label class="kprl-gov-form-label">Evidence Ref</label>
+                                <input type="text" class="kprl-gov-form-input" t-model="state.newEvent.evidence_ref" placeholder="e.g. Deviation Report QA-DEV-2026-042"/>
+                            </div>
+                            <div class="kprl-gov-form-row">
+                                <label class="kprl-gov-form-label">Description</label>
+                                <textarea class="kprl-gov-form-input kprl-gov-form-textarea" t-model="state.newEvent.description" rows="3" placeholder="Detailed description of the governance event..."/>
+                            </div>
+                        </div>
+                        <div class="kprl-gov-modal-footer">
+                            <button class="kprl-gov-btn-outline" t-on-click="closeModal">Cancel</button>
+                            <button class="kprl-gov-btn-primary" t-on-click="saveNewEvent">
+                                <i class="fa fa-save"/> Save Event
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+    </t>
+
+</templates>

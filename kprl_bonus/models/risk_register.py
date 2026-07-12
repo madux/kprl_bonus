@@ -7,6 +7,8 @@ class RiskRegister(models.Model):
     _order = 'create_date desc'
     _rec_name = 'risk_description'
 
+    ref = fields.Char(string='Risk Ref', compute='_compute_ref', store=True)
+    date = fields.Date(string='Date Identified', default=fields.Date.context_today)
     risk_description = fields.Text(string='Risk Description', required=True)
     category = fields.Char(string='Category')
     impact = fields.Selection([
@@ -23,12 +25,24 @@ class RiskRegister(models.Model):
     rating = fields.Char(string='Risk Rating', compute='_compute_rating',
                          store=True)
     control_owner = fields.Char(string='Control Owner')
+    risk_owner = fields.Char(string='Risk Owner')
     mitigation = fields.Text(string='Mitigation Plan')
+    notes = fields.Text(string='Notes')
     status = fields.Selection([
         ('open', 'Open'),
         ('monitoring', 'Monitoring'),
         ('closed', 'Closed'),
     ], string='Status', default='open')
+
+    @api.depends('create_date')
+    def _compute_ref(self):
+        for rec in self:
+            if rec.create_date:
+                year = rec.create_date.year
+                seq = str(rec.id).zfill(3)
+                rec.ref = f"RSK-{year}-{seq}"
+            else:
+                rec.ref = f"RSK-0000-{rec.id}"
 
     @api.depends('impact', 'likelihood')
     def _compute_rating(self):

@@ -327,7 +327,88 @@ class KprlApi(http.Controller):
         ], ['territory_id', 'effective_target', 'achievement_pct',
             'commission_payable', 'state'])
         return self._json_response(payouts)
+    
+        # ─── Governance Summary ──────────────────────────────────────────────
 
+    @http.route('/kprl/api/governance/summary', type='http', auth='user',
+                methods=['GET'], csrf=False)
+    def api_governance_summary(self):
+        events = request.env['kprl.governance.event'].search([])
+        open_count = len(events.filtered(lambda e: e.stage == 'open'))
+        pending_fd = len(events.filtered(lambda e: e.stage == 'under_review'))
+        malus_ytd = sum(events.mapped('malus_amount'))
+        clawback_active = len(events.filtered(
+            lambda e: e.trigger_type == 'clawback' and e.status == 'open'))
+
+        period = request.env['kprl.bonus.period'].search(
+            [], order='date_start desc', limit=1)
+        audit_count = 0
+        if period:
+            audit_count = request.env['kprl.audit.trail'].search_count([])
+
+        return self._json_response({
+            'open_events': open_count,
+            'pending_fd_approval': pending_fd,
+            'malus_applied_ytd': malus_ytd,
+            'clawback_active': clawback_active,
+            'audit_entries': audit_count,
+        })
+
+    # ─── Governance Events (Enhanced) ────────────────────────────────────
+
+    @http.route('/kprl/api/governance/events', type='http', auth='user',
+                methods=['GET'], csrf=False)
+    def api_governance_events(self):
+        events = request.env['kprl.governance.event'].search_read(
+            [], ['id', 'ref', 'date', 'employee_id', 'trigger_type',
+                 'trigger_description', 'severity', 'stage', 'malus_pct',
+                 'malus_amount', 'clawback_amount', 'status',
+                 'investigation_lead', 'evidence_ref', 'outcome',
+                 'next_action', 'approver_id', 'description'],
+            order='create_date desc'
+        )
+        return self._json_response(events)
+
+    @http.route('/kprl/api/governance/events/<int:event_id>', type='http',
+                auth='user', methods=['GET'], csrf=False)
+    def api_governance_event_detail(self, event_id):
+        event = request.env['kprl.governance.event'].browse(event_id)
+        if not event.exists():
+            return self._json_error('Event not found', 404)
+        data = event.read([])[0]
+        return self._json_response(data)
+
+    # ─── Audit Trail ─────────────────────────────────────────────────────
+
+    @http.route('/kprl/api/audit-trail', type='http', auth='user',
+                methods=['GET'], csrf=False)
+    def api_audit_trail(self):
+        limit = int(request.httprequest.args.get('limit', 15))
+        entries = request.env['kprl.audit.trail'].search_read(
+            [], ['id', 'name', 'user_id', 'timestamp', 'event_id',
+                 'category'],
+            order='timestamp desc',
+            limit=limit
+        )
+        return self._json_response(entries)
+
+    # ─── Risk Register ───────────────────────────────────────────────────
+
+    @http.route('/kprl/api/risk-register', type='http', auth='user',
+                methods=['GET', 'POST'], csrf=False)
+    def api_risk_register(self):
+        if request.httprequest.method == 'POST':
+            data = json.loads(request.httprequest.data)
+            risk = request.env['kprl.risk.register'].create(data)
+            return self._json_response({'id': risk.id, 'status': 'created'})
+        risks = request.env['kprl.risk.register'].search_read(
+            [], ['id', 'ref', 'date', 'risk_description', 'category',
+                 'impact', 'likelihood', 'rating', 'control_owner',
+                 'risk_owner', 'mitigation', 'status'],
+            order='create_date desc'
+        )
+        return self._json_response(risks)
+    
     # ─── Helpers ────────────────────────────────────────────────────────────
 
     def _json_response(self, data, status=200):

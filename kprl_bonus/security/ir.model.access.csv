@@ -77,3 +77,7 @@ access_kprl_governance_event_ceo,kprl.governance.event.ceo,model_kprl_governance
 
 access_kprl_risk_register_user,kprl.risk.register.user,model_kprl_risk_register,group_kprl_user,1,0,0,0
 access_kprl_risk_register_ceo,kprl.risk.register.ceo,model_kprl_risk_register,group_kprl_ceo,1,1,1,1
+
+access_kprl_audit_trail_user,kprl.audit.trail.user,model_kprl_audit_trail,group_kprl_user,1,0,0,0
+access_kprl_audit_trail_hr,kprl.audit.trail.hr,model_kprl_audit_trail,group_kprl_hr,1,1,1,1
+access_kprl_audit_trail_ceo,kprl.audit.trail.ceo,model_kprl_audit_trail,group_kprl_ceo,1,1,1,1

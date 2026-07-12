@@ -44,7 +44,10 @@
         'views/deferred_ledger_views.xml',
         'views/governance_event_views.xml',
         'views/risk_register_views.xml',
+        'views/audit_trail_views.xml',
+        'views/governance_action.xml',
         'views/menu_views.xml',
+        
 
     ],
     'assets': {
@@ -59,6 +62,9 @@
             'kprl_bonus/static/src/dashboard/kprl_dashboard.css',
             'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
             'kprl_bonus/static/src/auth/kprl_login.css',
+            'kprl_bonus/static/src/governance/kprl_governance.js',
+            'kprl_bonus/static/src/governance/kprl_governance.xml',
+            'kprl_bonus/static/src/governance/kprl_governance.css',
         ],
     },
     'demo': [],
