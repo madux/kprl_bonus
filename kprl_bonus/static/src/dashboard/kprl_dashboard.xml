@@ -188,11 +188,11 @@
                 <!-- ─── SLA Footer ─── -->
                 <div class="kprl-owl-sla-footer">
                     <i class="fa fa-clock-o kprl-owl-sla-icon"/>
-                    <span><strong>Period Close SLA:</strong> Results published by 15-Jul-2026</span>
+                    <span><strong>Period Close SLA:</strong> Results published by <t t-esc="fmtSLADate(state.slaResultsDate)"/></span>
                     <span class="kprl-owl-sla-div">|</span>
-                    <span><strong>Target payout:</strong> 20-Jul-2026</span>
+                    <span><strong>Target payout:</strong> <t t-esc="fmtSLADate(state.slaPayoutDate)"/></span>
                     <span class="kprl-owl-sla-div">|</span>
-                    <span><strong>Status:</strong> <span class="kprl-owl-text-success">ON TRACK</span></span>
+                    <span><strong>Status:</strong> <span t-att-class="state.slaStatus === 'ON TRACK' ? 'kprl-owl-text-success' : state.slaStatus === 'OVERDUE' ? 'kprl-owl-text-danger' : ''" t-esc="state.slaStatus"/></span>
                 </div>
             </t>
 

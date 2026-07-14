@@ -179,14 +179,14 @@
                         </div>
                     </section>
 
-                    <footer class="kprl-sla-footer">
+                        <footer class="kprl-sla-footer">
                         <div class="kprl-sla-content">
                             <i class="fa fa-clock-o kprl-sla-icon"></i>
-                            <span><strong>Period Close SLA:</strong> Results published by 15-Jul-2026</span>
+                            <span><strong>Period Close SLA:</strong> Results published by <t t-esc="period.sla_results_date or '--'"/></span>
                             <span class="kprl-sla-divider">|</span>
-                            <span><strong>Target payout:</strong> 20-Jul-2026</span>
+                            <span><strong>Target payout:</strong> <t t-esc="period.sla_payout_date or '--'"/></span>
                             <span class="kprl-sla-divider">|</span>
-                            <span><strong>Status:</strong> <span class="kprl-text-success">ON TRACK</span></span>
+                            <span><strong>Status:</strong> <span t-attf-class="#{period.sla_status == 'ON TRACK' and 'kprl-text-success' or period.sla_status == 'OVERDUE' and 'kprl-text-danger' or ''}" t-esc="period.sla_status or '--'"/></span>
                         </div>
                     </footer>
                 </main>

@@ -36,6 +36,9 @@ export class KprlDashboard extends Component {
       compPct: 0,
       trendMetric: 'effective_pool',
       trendType: 'bar',
+      slaResultsDate: '',
+      slaPayoutDate: '',
+      slaStatus: 'ON TRACK',
     });
 
     onWillStart(async () => {
@@ -92,6 +95,12 @@ export class KprlDashboard extends Component {
       );
       const data = await resp.json();
       this.state.engine = data.engine || {};
+
+      if (data.period) {
+        this.state.slaResultsDate = data.period.sla_results_date || '';
+        this.state.slaPayoutDate = data.period.sla_payout_date || '';
+        this.state.slaStatus = data.period.sla_status || 'ON TRACK';
+      }
 
       const deptScores = data.departments || [];
       const payouts = data.payouts || [];
@@ -289,6 +298,16 @@ export class KprlDashboard extends Component {
     return (
       { full: 'PASS', partial: 'PARTIAL', closed: 'CLOSED' }[s] || '--'
     ).toUpperCase();
+  }
+
+  fmtSLADate(val) {
+    if (!val) return '--';
+    const d = new Date(val + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
   }
   gmpLabel(s) {
     return (s || 'N/A').toUpperCase();

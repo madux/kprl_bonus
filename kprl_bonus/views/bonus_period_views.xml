@@ -12,6 +12,7 @@
                 <field name="revenue_target" widget="monetary"/>
                 <field name="ebitda_margin"/>
                 <field name="company_kpi"/>
+                <field name="sla_status"/>
             </tree>
         </field>
     </record>
@@ -47,6 +48,8 @@
                                 <field name="date_start"/>
                                 <field name="date_end"/>
                                 <field name="state"/>
+                                <field name="sla_results_date"/>
+                                <field name="sla_payout_date"/>
                             </group>
                             <group>
                                 <field name="revenue_target" widget="monetary"/>

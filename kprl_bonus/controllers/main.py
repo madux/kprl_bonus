@@ -15,7 +15,8 @@ class KprlApi(http.Controller):
                 csrf=False)
     def api_periods(self):
         periods = request.env['kprl.bonus.period'].search_read(
-            [], ['id', 'name', 'date_start', 'date_end', 'state'],
+            [], ['id', 'name', 'date_start', 'date_end', 'state',
+                 'sla_results_date', 'sla_payout_date', 'sla_status'],
             order='date_start desc'
         )
         return self._json_response(periods)
@@ -44,7 +45,10 @@ class KprlApi(http.Controller):
 
         data = {
             'period': {'id': period.id, 'name': period.name,
-                       'state': period.state},
+                'state': period.state,
+                'sla_results_date': str(period.sla_results_date) if period.sla_results_date else None,
+                'sla_payout_date': str(period.sla_payout_date) if period.sla_payout_date else None,
+                'sla_status': period.sla_status},
             'engine': engine.read(['quarterly_revenue', 'net_revenue',
                 'pool_contribution', 'gate_status', 'ebitda_margin',
                 'gate_factor', 'gmp_status', 'gmp_factor', 'company_kpi_score',
@@ -428,14 +432,14 @@ class KprlPages(http.Controller):
 
     @http.route('/kprl/dashboard', type='http', auth='user', website=True)
     def page_dashboard(self):
-        # periods = request.env['kprl.bonus.period'].search_read(
-        #     [], ['id', 'name'], order='date_start desc'
-        # )
         periods = request.env['kprl.bonus.period'].search(
             [], order='date_start desc'
         )
+        active = periods.filtered(lambda p: p.state == 'active')
+        period = active[0] if active else periods[0] if periods else None
         return request.render('kprl_bonus.dashboard_page', {
             'periods': periods,
+            'period': period,
         })
 
     @http.route('/kprl/employee/<int:emp_id>', type='http', auth='user',
