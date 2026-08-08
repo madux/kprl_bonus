@@ -51,7 +51,7 @@
             <field name="model">kprl.employee</field>
             <field name="priority">32</field>
             <field name="arch" type="xml">
-                <form class="o_kprl_employee_form" create="false" edit="false" groups="kprl_bonus.group_kprl_user">
+                <form class="o_kprl_employee_form" create="true" edit="true" groups="kprl_bonus.group_kprl_user">
                     <!-- Field declarations for modifiers -->
                     <field name="status" invisible="1"/>
                     <field name="is_sales" invisible="1"/>
@@ -145,12 +145,16 @@
 
                                 <div class="o_emp_info_rows">
                                     <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Related Employee</span>
+                                        <span class="o_emp_info_value"><field name="employee_id" required="1"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
                                         <span class="o_emp_info_label">Employee ID</span>
-                                        <span class="o_emp_info_value"><field name="staff_id"/></span>
+                                        <span class="o_emp_info_value"><field name="staff_id" required="1" readonly="0"/></span>
                                     </div>
                                     <div class="o_emp_info_row">
                                         <span class="o_emp_info_label">Department</span>
-                                        <span class="o_emp_info_value"><field name="department_id"/></span>
+                                        <span class="o_emp_info_value"><field name="department_id" readonly="0"/></span>
                                     </div>
                                     <div class="o_emp_info_row">
                                         <span class="o_emp_info_label">Job Title</span>

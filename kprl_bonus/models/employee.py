@@ -16,12 +16,12 @@ class Employee(models.Model):
         "hr.employee",
         string="HR Employee",
         required=False,
-        ondelete="cascade",
+        ondelete="set null",
     )
     employee_id_num = fields.Integer(related='employee_id.id', string='Employee ID', readonly=True)
 
     kprl_number = fields.Char()
-    staff_id = fields.Char(string='Staff ID', required=True)
+    staff_id = fields.Char(string='Staff ID', required=True, related='employee_id.staff_id')
 
     name = fields.Char(string='Employee Name', required=True)
     work_email = fields.Char()
@@ -98,9 +98,9 @@ class Employee(models.Model):
         for rec in self:
             rec.user_role = role
 
-    _sql_constraints = [
-        ('employee_id_unique', 'UNIQUE(employee_id)', 'Employee ID must be unique!'),
-    ]
+    # _sql_constraints = [
+    #     ('employee_id_unique', 'UNIQUE(employee_id)', 'Employee ID must be unique!'),
+    # ]
 
     # ── UI Helper ──
     initials = fields.Char(string='Initials', compute='_compute_initials', store=True)
