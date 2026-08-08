@@ -16,7 +16,9 @@ input, button, select, textarea {
 }
 
 a { color: #6a3d6a; text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover {
+    text-decoration: none;
+}
 
 .kprl-status-pill {
     display: inline-block;

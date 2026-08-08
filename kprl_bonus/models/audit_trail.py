@@ -1,6 +1,5 @@
 from odoo import models, fields, api
 
-
 class AuditTrail(models.Model):
     _name = 'kprl.audit.trail'
     _description = 'Audit Trail Entry'

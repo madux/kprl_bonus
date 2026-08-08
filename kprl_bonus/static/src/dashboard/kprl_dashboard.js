@@ -39,11 +39,18 @@ export class KprlDashboard extends Component {
       slaResultsDate: '',
       slaPayoutDate: '',
       slaStatus: 'ON TRACK',
+      // Territory Performance
+      // Self-Service
+      selectedEmployeeId: null,
+      employeePayout: null,
+      selfServiceLoading: false,
     });
 
     onWillStart(async () => {
       await this._loadPeriods();
+      await this._loadEmployees();
     });
+
     onMounted(() => {
       this._renderTrendChart();
     });
@@ -125,8 +132,62 @@ export class KprlDashboard extends Component {
           net_payout: agg.netPayout,
         };
       });
+
+      // Territory performance data
+      const terrResp = await fetch(
+        `/kprl/api/territories/${this.state.currentPeriodId}`,
+      );
+      const terrData = await terrResp.json();
+      const payoutMap = {};
+      for (const p of terrData.payouts || []) {
+        const tid = p.territory_id[0];
+        if (
+          !payoutMap[tid] ||
+          p.achievement_pct > payoutMap[tid].achievement_pct
+        ) {
+          payoutMap[tid] = p;
+        }
+      }
+      this.state.territories = (terrData.territories || []).map((t) => ({
+        ...t,
+        latest_payout: payoutMap[t.id] || null,
+        achievement_pct: payoutMap[t.id]
+          ? payoutMap[t.id].achievement_pct
+          : t.achieve_pct || 0,
+        commission_payable: payoutMap[t.id]
+          ? payoutMap[t.id].commission_payable
+          : 0,
+      }));
     } catch (e) {
       console.error('Dashboard load error:', e);
+    }
+  }
+  async _loadEmployees() {
+    try {
+      const resp = await fetch('/kprl/api/employees');
+      const data = await resp.json();
+      this.state.employees = data || [];
+    } catch (e) {
+      console.error('Employees load error:', e);
+    }
+  }
+
+  async selectEmployee(ev) {
+    const empId = parseInt(ev.target.value, 10);
+    this.state.selectedEmployeeId = empId;
+    this.state.employeePayout = null;
+    if (!empId || !this.state.currentPeriodId) return;
+    this.state.selfServiceLoading = true;
+    try {
+      const resp = await fetch(
+        `/kprl/api/employee/self-service/${empId}/${this.state.currentPeriodId}`,
+      );
+      const data = await resp.json();
+      this.state.employeePayout = data;
+    } catch (e) {
+      console.error('Self-service load error:', e);
+    } finally {
+      this.state.selfServiceLoading = false;
     }
   }
 
@@ -283,7 +344,7 @@ export class KprlDashboard extends Component {
     return val;
   }
   fmtCurrency(val) {
-    return val ? CURRENCY.format(val) : '--';
+    return val != null ? CURRENCY.format(val) : '--';
   }
   fmtPct(val) {
     return val != null ? (val * 100).toFixed(1) + '%' : '--';
@@ -332,6 +393,21 @@ export class KprlDashboard extends Component {
     if (score >= 1.0) return 'kprl-tag-exceed';
     if (score >= 0.9) return 'kprl-tag-target';
     return 'kprl-tag-watch';
+  }
+
+  achievementBarClass(pct) {
+    if (pct >= 100) return 'kprl-achieve-green';
+    if (pct >= 75) return 'kprl-achieve-yellow';
+    if (pct >= 50) return 'kprl-achieve-orange';
+    return 'kprl-achieve-red';
+  }
+
+  achievementBarStyle(pct) {
+    return 'width:' + Math.min(pct, 100) + '%';
+  }
+
+  sourceBadgeClass(source) {
+    return source === 'RSM' ? 'kprl-badge-rsm' : 'kprl-badge-team';
   }
 }
 

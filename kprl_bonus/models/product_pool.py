@@ -21,6 +21,8 @@ class ProductPool(models.Model):
                                      compute='_compute_pool_contrib', store=True)
     margin_pct = fields.Float(string='Margin (%)', digits=(5, 2))
 
+    quarterly_revenue = fields.Float(string='Quarterly Revenue', digits=(5, 2), compute='_compute_quarterly_revenue')
+
     _sql_constraints = [
         ('product_period_unique', 'UNIQUE(product_id, period_id)',
          'A product can only have one pool entry per period!'),
@@ -35,3 +37,8 @@ class ProductPool(models.Model):
     def _compute_pool_contrib(self):
         for rec in self:
             rec.pool_contribution = rec.quantity_revenue * (rec.sku_rate / 100.0)
+
+    @api.depends('unit_price', 'sku_rate')
+    def _compute_quarterly_revenue(self):
+        for record in self:
+            record.quarterly_revenue = record.unit_price * record.sku_rate

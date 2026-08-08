@@ -4,7 +4,35 @@ from odoo import http
 from odoo.http import request, Response
 from odoo.exceptions import AccessError
 from odoo.addons.web.controllers.main import Home
+# -*- coding: utf-8 -*-
+import logging
+import ast 
+import random
+from multiprocessing.spawn import prepare
+import urllib.parse
+from odoo import http, fields, _
+from odoo.exceptions import ValidationError
+from odoo.tools import consteq, plaintext2html
+from odoo.http import request
+from datetime import date, datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from bs4 import BeautifulSoup
+import odoo
+import odoo.addons.web.controllers.home as main
+from odoo.addons.web.controllers.utils import ensure_db, _get_login_redirect_url, is_user_internal
+from odoo.tools.translate import _
+from odoo.tools.misc import format_date
 
+from odoo.tools import file_path
+from odoo.modules.module import get_resource_path
+
+class Home(main.Home):
+    
+    def _login_redirect(self, uid, redirect=None):
+        '''we did this so that every user will be directed to portal page'''
+        emp_id = request.env['kprl.employee'].search([('employee_id.user_id.id', '=', uid)], limit=1)
+        routes = f'/kprl/employee/{emp_id.id}'
+        return routes # _get_login_redirect_url(uid, redirect)
 
 class KprlApi(http.Controller):
     """JSON API endpoints for the KPRL Bonus frontend."""
@@ -120,6 +148,17 @@ class KprlApi(http.Controller):
             'exception_premium', 'proration_factor', 'tenure_mult', 'gmp_factor',
             'malus_amount', 'gross_payable', 'deferral_rate', 'deferred_amount',
             'net_immediate', 'state'])[0]
+        # Add governance events
+        gov_events = request.env['kprl.governance.event'].search_read([
+            ('employee_id', '=', emp_id),
+            ('period_id', '=', period_id),
+            ('trigger_type', 'in', ('malus', 'clawback')),
+        ], ['id', 'ref', 'trigger_type', 'severity', 'malus_pct',
+            'malus_amount', 'clawback_amount', 'status', 'description'])
+        data['governance_events'] = gov_events
+        data['total_governance_deduction'] = sum(
+            e['malus_amount'] + e['clawback_amount'] for e in gov_events
+        )
         return self._json_response(data)
 
     # ─── Performance Inputs ─────────────────────────────────────────────────
@@ -412,6 +451,69 @@ class KprlApi(http.Controller):
             order='create_date desc'
         )
         return self._json_response(risks)
+
+        # ��� Self-Service (Employee Bonus Detail) ��������������������������������
+
+    @http.route('/kprl/api/employee/self-service/<int:emp_id>/<int:period_id>',
+                type='http', auth='user', methods=['GET'], csrf=False)
+    def api_employee_self_service(self, emp_id, period_id):
+        """Return employee info + computed bonus figures for self-service panel."""
+        emp = request.env['kprl.employee'].browse(emp_id)
+        if not emp.exists():
+            return self._json_error('Employee not found', 404)
+
+        payout = request.env['kprl.bonus.payout'].search([
+            ('employee_id', '=', emp_id),
+            ('period_id', '=', period_id),
+        ], limit=1)
+
+        period = request.env['kprl.bonus.period'].browse(period_id)
+
+        data = {
+            'employee_id': emp.id,
+            'name': emp.name,
+            'staff_id': emp.staff_id,
+            'department': emp.department_id.name if emp.department_id else '—',
+            'grade': emp.grade_id.name if emp.grade_id else '—',
+            'grade_code': emp.grade_id.code if emp.grade_id else '—',
+            'job_title': emp.job_title or '—',
+            'is_sales': emp.is_sales,
+            'sales_role': emp.sales_role or '—',
+            'territory': emp.territory_id.name if emp.territory_id else '—',
+            'period_name': period.name if period else '—',
+        }
+
+        if payout:
+            data.update({
+                'has_payout': True,
+                'base_eligible': payout.base_eligible,
+                'dept_kpi_mult': payout.dept_kpi_mult,
+                'appraisal_mult': payout.appraisal_mult,
+                'behavioural_mult': payout.behavioural_mult,
+                'proration_factor': payout.proration_factor,
+                'tenure_mult': payout.tenure_mult,
+                'gmp_factor': payout.gmp_factor,
+                'gross_payable': payout.gross_payable,
+                'deferred_amount': payout.deferred_amount,
+                'net_immediate': payout.net_immediate,
+                'quarterly_amount': payout.quarterly_amount,
+                'exception_premium': payout.exception_premium,
+                'malus_amount': payout.malus_amount,
+                'state': payout.state,
+            })
+            # Map to self-service labels
+            data['ops_bonus'] = payout.net_immediate
+            data['sales_commission'] = payout.exception_premium or 0.0
+            data['total_estimated_payout'] = payout.gross_payable or 0.0
+        else:
+            data.update({
+                'has_payout': False,
+                'ops_bonus': 0.0,
+                'sales_commission': 0.0,
+                'total_estimated_payout': 0.0,
+            })
+
+        return self._json_response(data)
     
     # ─── Helpers ────────────────────────────────────────────────────────────
 
@@ -425,8 +527,6 @@ class KprlApi(http.Controller):
 
     def _json_error(self, message, status=400):
         return self._json_response({'error': message}, status)
-
-
 class KprlPages(http.Controller):
     """Serve the KPRL frontend pages through Odoo."""
 
@@ -521,6 +621,15 @@ class KprlPages(http.Controller):
         values = {'redirect': redirect or '/kprl/dashboard'}
         return request.render('kprl_bonus.login_page', values)
 
+    @http.route('/kprl/simulate', type='http', auth='user',
+                website=True)
+    def page_simulate_redirect(self):
+        emp = request.env['kprl.employee'].search(
+            [('employee_id.user_id.id', '=', request.env.uid)], limit=1)
+        if not emp:
+            return request.not_found()
+        return request.redirect('/kprl/simulate/%d' % emp.id)
+
     @http.route('/kprl/simulate/<int:emp_id>', type='http', auth='user',
                 website=True)
     def page_simulation(self, emp_id):
@@ -528,7 +637,6 @@ class KprlPages(http.Controller):
         if not emp.exists():
             return request.not_found()
 
-        # Get current period and params
         periods = request.env['kprl.bonus.period'].search(
             [], order='date_start desc')
         active = periods.filtered(lambda p: p.state == 'active')

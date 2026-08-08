@@ -55,29 +55,35 @@ class BonusEngine(models.Model):
                                compute='_compute_headcount', store=True)
     aip_pool = fields.Float(string='AIP Pool (Annual)', digits='Product Price') 
     # company_kpi_score = fields.Float(string='Company KPI Score', digits=(5, 4)) duplicate field, already defined above
+        # ── L4: Grand Pool split ──
+    opm_pool_split = fields.Float(
+        string='OPM Share (%)', digits=(5, 2), default=60,
+        help="User input: OPM's share of the Grand Pool")
+    sup_pool_split = fields.Float(
+        string='SUP Share (%)', digits=(5, 2),
+        compute='_compute_sup_pool_split', store=True,
+        help="Auto-computed: 100 − OPM share")
+    opm_pool = fields.Float(
+        string='OPM Pool', digits='Product Price',
+        compute='_compute_pool_total', store=True)
+    sub_pool = fields.Float(
+        string='SUP Pool Total', digits='Product Price',
+        compute='_compute_suppool_total', store=True)
 
-    opm_pool_split = fields.Float(string='OPM POOL SPLIT (%)',
-                                  digits='Product Price', default=60)
-    sup_pool_split = fields.Float(string='SUP POOL SPLIT(%)',
-                                  digits='Product Price',  default=60)
-    opm_pool = fields.Float(string='OPM POOL (₦)',
-                                  digits='Product Price', 
-                                  compute="_compute_pool_total", help="effective_pool * opm pool split")
-    
-    sub_pool = fields.Float(string='Sub Pool Total (₦)',
-                                  digits='Product Price', help="effective_pool * sup_pool_split", 
-                                  compute="_compute_suppool_total")
-    senior_management_sub_pool = fields.Float(string='Senior Mgt Sub Pool Split (%)',
-                                  digits='Product Price', help="Sub-Pool % of SUP", 
-                                  default=70, placeholder="e.g 70 %")
-    senior_management_pool = fields.Float(string='Senior Mgt Pool (₦)',
-                                  digits='Product Price', help="senior_management_sub_pool / 100 * sub_pool", 
-                                  compute="_compute_senior_mgtpool_total")
-    ops_sub_pool = fields.Float(string='OPS Sub Pool Total (₦)',
-                                  digits='Product Price', help="GMP Factor", 
-                                  compute="_compute_opssuppool_total")
-    ops_sub_pool_percentage = fields.Float(string='OPS Sub Pool (%)',
-                                  digits='Product Price', help="GMP Factor")
+    # ── L5: SUP Pool split ──
+    senior_management_sub_pool = fields.Float(
+        string='Senior-Mgmt Share (%)', digits=(5, 2), default=70,
+        help="User input: Senior-Mgmt's share of the SUP Pool")
+    ops_sub_pool_percentage = fields.Float(
+        string='Ops-Support Share (%)', digits=(5, 2),
+        compute='_compute_ops_sub_pool_pct', store=True,
+        help="Auto-computed: 100 − Senior-Mgmt share")
+    senior_management_pool = fields.Float(
+        string='Senior-Mgmt Pool', digits='Product Price',
+        compute='_compute_senior_mgtpool_total', store=True)
+    ops_sub_pool = fields.Float(
+        string='Ops-Support Pool Total', digits='Product Price',
+        compute='_compute_opssuppool_total', store=True)
     
     opm_total_point = fields.Float(string='OPM Total Point',
                                   digits='Product Price', default=0)
@@ -109,45 +115,35 @@ class BonusEngine(models.Model):
             #     rec.opm_value_point = 0
             #     rec.senior_mgt_value_point = 0
 
+    @api.depends('opm_pool_split')
+    def _compute_sup_pool_split(self):
+        for rec in self:
+            rec.sup_pool_split = 100.0 - (rec.opm_pool_split or 0.0)
+
+    @api.depends('senior_management_sub_pool')
+    def _compute_ops_sub_pool_pct(self):
+        for rec in self:
+            rec.ops_sub_pool_percentage = 100.0 - (rec.senior_management_sub_pool or 0.0)
+
     @api.depends('opm_pool_split', 'effective_pool')
     def _compute_pool_total(self):
         for rec in self:
-            if rec.opm_pool_split or rec.effective_pool:
-                opmspl = rec.opm_pool_split / 100 
-                total = opmspl * rec.effective_pool
-                rec.opm_pool = total
-            else:
-                rec.opm_pool = 0
+            rec.opm_pool = (rec.opm_pool_split / 100.0) * rec.effective_pool if rec.effective_pool else 0.0
 
     @api.depends('sup_pool_split', 'effective_pool')
     def _compute_suppool_total(self):
         for rec in self:
-            if rec.sup_pool_split or rec.effective_pool:
-                opmspl = rec.sup_pool_split / 100 
-                total = opmspl * rec.effective_pool
-                rec.sub_pool = total
-            else:
-                rec.sub_pool = 0
-    
+            rec.sub_pool = (rec.sup_pool_split / 100.0) * rec.effective_pool if rec.effective_pool else 0.0
+
     @api.depends('senior_management_sub_pool', 'sub_pool')
     def _compute_senior_mgtpool_total(self):
         for rec in self:
-            if rec.senior_management_sub_pool or rec.sub_pool:
-                opmspl = rec.senior_management_sub_pool / 100 
-                total = opmspl * rec.sub_pool
-                rec.senior_management_pool = total
-            else:
-                rec.senior_management_pool = 0
+            rec.senior_management_pool = (rec.senior_management_sub_pool / 100.0) * rec.sub_pool if rec.sub_pool else 0.0
 
-    @api.depends('sub_pool', 'ops_sub_pool_percentage')
+    @api.depends('ops_sub_pool_percentage', 'sub_pool')
     def _compute_opssuppool_total(self):
         for rec in self:
-            if rec.sub_pool or rec.ops_sub_pool_percentage:
-                opmspl = rec.ops_sub_pool_percentage / 100 
-                total = opmspl * rec.sub_pool
-                rec.ops_sub_pool = total
-            else:
-                rec.ops_sub_pool = 0
+            rec.ops_sub_pool = (rec.ops_sub_pool_percentage / 100.0) * rec.sub_pool if rec.sub_pool else 0.0
 
     # EFFECTIVE POOL (₦) [Funded × (0.6·CompanyMult + 0.4·DeptMult), capped]
     # OPM Pool Split %
@@ -242,7 +238,7 @@ class BonusEngine(models.Model):
             ('period_id', '=', self.period_id.id),
         ])
         self.ops_payout = sum(p.gross_payable for p in payouts)
-        self.sales_commission = self.ops_payout * 0.0
+        # self.sales_commission = self.ops_payout * 0.0
         self.total_payout = self.ops_payout + self.sales_commission
         self.aip_pool = self.quarterly_revenue * (params.aip_annual_rate or 0.002)
 
@@ -253,11 +249,9 @@ class BonusEngine(models.Model):
         self.state = 'computed'
         self.computed_on = fields.Datetime.now()
         self.computed_by = self.env.user
-
     def action_finalize(self):
         self.action_compute()
         self.state = 'finalized'
-
     def action_reset(self):
         self.action_compute()
         self.state = 'draft'

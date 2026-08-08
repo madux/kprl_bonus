@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_payout_register" model="ir.actions.report">
+          <field name="name">Payout Register</field>
+          <field name="model">kprl.bonus.payout.report</field>
+          <field name="report_type">qweb-pdf</field>
+          <field name="report_name">kprl_bonus.report_payout_register</field>
+          <field name="report_file">kprl_bonus.report_payout_register</field>
+          <field name="print_report_name">
+              'Payout-Register-%s' % (object.period_id.name if object.period_id else 'Draft')
+          </field>
+    </record>
+    <!-- Tree View (editable bottom) -->
+    <record id="view_kprl_payout_report_tree" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.report.tree</field>
+        <field name="model">kprl.bonus.payout.report</field>
+        <field name="arch" type="xml">
+            <tree string="Payroll Payout Register" editable="bottom" create="false" delete="false">
+                <field name="sequence" optional="show" string="#"/>
+                <field name="employee_id" string="Emp ID"/>
+                <field name="employee_name" string="Staff Name"/>
+                <field name="kprl_department_id" string="Department"/>
+                <field name="grade_id" string="Grade / Role"/>
+                <field name="comp_track" string="Track" widget="badge"
+                       decoration-info="comp_track == 'ops'"
+                       decoration-warning="comp_track == 'sales'"
+                       decoration-success="comp_track == 'both'"/>
+                <field name="ops_bonus" widget="monetary" sum="Total Ops"/>
+                <field name="sales_commission" widget="monetary" sum="Total Sales"/>
+                <field name="total_payout" widget="monetary" sum="Grand Total"/>
+                <field name="aip_eligible" string="AIP Elig"/>
+                <field name="notes" optional="show"/>
+                <field name="state" widget="badge" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_kprl_payout_report_form" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.report.form</field>
+        <field name="model">kprl.bonus.payout.report</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" type="object" string="Confirm"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_exported" type="object" string="Mark Exported"
+                            class="btn-success" invisible="state != 'confirmed'"/>
+                    <button name="action_print_pdf" type="object" string="Print PDF"
+                            class="btn-secondary" invisible="state == 'exported'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_print_pdf" type="object"
+                                class="oe_stat_button" icon="fa-print">
+                            <div class="o_stat_text">Print Report</div>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="employee_name"/>
+                            <field name="period_id"/>
+                            <field name="kprl_department_id"/>
+                        </group>
+                        <group>
+                            <field name="grade_id"/>
+                            <field name="comp_track" widget="badge"/>
+                            <field name="aip_eligible"/>
+                            <field name="currency_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Payout Breakdown">
+                        <group>
+                            <field name="ops_bonus" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="sales_commission" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="total_payout" widget="monetary"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1" placeholder="Payroll remarks, pro-rata notes, holdbacks..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_kprl_payout_report_search" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.report.search</field>
+        <field name="model">kprl.bonus.payout.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="employee_name"/>
+                <field name="period_id"/>
+                <field name="kprl_department_id"/>
+                <field name="grade_id"/>
+                <field name="comp_track"/>
+                <filter name="group_department" string="Department"
+                        context="{'group_by': 'kprl_department_id'}"/>
+                <filter name="group_track" string="Track"
+                        context="{'group_by': 'comp_track'}"/>
+                <filter name="group_aip" string="AIP Eligible"
+                        context="{'group_by': 'aip_eligible'}"/>
+                <filter name="positive_total" string="Total > 0"
+                        domain="[('total_payout', '>', 0)]"/>
+                <separator/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="confirmed" string="Confirmed" domain="[('state','=','confirmed')]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_kprl_payout_report" model="ir.actions.act_window">
+        <field name="name">Payout Register</field>
+        <field name="res_model">kprl.bonus.payout.report</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p>Generate the Payroll Payout Register to view a consolidated report of all employee payouts for a selected period.</p>
+            <p>Click <b>Generate Report</b> from the Bonus Period form, or create entries manually.</p>
+        </field>
+    </record>
+
+    <!-- Server Action: Generate from Period -->
+    <record id="action_generate_payout_report" model="ir.actions.server">
+        <field name="name">Generate Payout Register</field>
+        <field name="model_id" ref="model_kprl_bonus_payout_report"/>
+        <field name="binding_model_id" ref="model_kprl_bonus_period"/>
+        <field name="binding_view_types">form</field>
+        <field name="state">code</field>
+        <field name="code">
+        if records:
+            action = records.env['kprl.bonus.payout.report'].with_context(active_id=records.id).action_generate()
+            if action:
+                raise RedirectAction(action)
+        </field>
+    </record>
+
+</odoo>

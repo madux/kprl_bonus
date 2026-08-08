@@ -354,6 +354,10 @@
   margin-bottom: 24px;
 }
 
+.kprl-owl-table-section>* {
+  min-width: 0;
+  overflow-x: auto;
+}
 .kprl-owl-section-heading {
   font-size: 14px;
   font-weight: 700;
@@ -510,5 +514,321 @@
   .kprl-owl-controls {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+/* ============================================================
+   TERRITORY PERFORMANCE — Split Grid
+   ============================================================ */
+.kprl-owl-split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kprl-owl-split-grid .kprl-owl-table-section {
+  margin-bottom: 0;
+}
+
+.kprl-owl-split-grid>* {
+  min-width: 0;
+  overflow-x: auto;
+}
+
+@media (max-width: 1100px) {
+  .kprl-owl-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Territory Achievement Progress Bar --- */
+.kprl-territory-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.kprl-territory-progress-track {
+  flex: 1;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.kprl-territory-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+.kprl-territory-pct {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  min-width: 48px;
+  text-align: right;
+}
+
+/* --- Achievement Bar Colors (4-tier) --- */
+.kprl-achieve-green {
+  background: #28a745;
+}
+
+.kprl-achieve-yellow {
+  background: #ffc107;
+}
+
+.kprl-achieve-orange {
+  background: #fd7e14;
+}
+
+.kprl-achieve-red {
+  background: #dc3545;
+}
+
+/* --- Source Badge --- */
+.kprl-source-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.kprl-badge-rsm {
+  background: #e3f2fd;
+  color: #0d47a1;
+  border: 1px solid #bbdefb;
+}
+
+.kprl-badge-team {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  border: 1px solid #e1bee7;
+}
+
+/* ============================================================
+   EMPLOYEE SELF-SERVICE PANEL
+   ============================================================ */
+.kprl-owl-self-service {
+  background: #fff;
+  border-radius: 4px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.kprl-owl-ss-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.kprl-owl-ss-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  margin-right: 8px;
+}
+
+.kprl-owl-employee-select-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.kprl-owl-employee-select {
+  padding: 6px 14px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'Work Sans', sans-serif;
+  color: #333;
+  background: #fff;
+  min-width: 300px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.kprl-owl-employee-select:focus {
+  border-color: #71496f;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(113, 73, 111, 0.15);
+}
+
+.kprl-owl-ss-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #6c757d;
+  font-size: 14px;
+  gap: 10px;
+}
+
+.kprl-owl-ss-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* --- Employee Info Row --- */
+.kprl-owl-ss-info-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.kprl-owl-ss-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #71496f;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.kprl-owl-ss-details {
+  flex: 1;
+}
+
+.kprl-owl-ss-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 4px;
+}
+
+.kprl-owl-ss-meta {
+  font-size: 12px;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kprl-owl-ss-sep {
+  color: #dee2e6;
+}
+
+/* --- Payout Figures Grid --- */
+.kprl-owl-ss-figures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.kprl-owl-ss-figure-card {
+  text-align: center;
+  padding: 16px 12px;
+  border-radius: 6px;
+  background: #f8f9fa;
+  transition: transform 0.2s;
+}
+
+.kprl-owl-ss-figure-card:hover {
+  transform: translateY(-2px);
+}
+
+.kprl-owl-ss-figure-total {
+  background: #e8f0fe;
+  border: 1px solid #d2e3fc;
+}
+
+.kprl-owl-ss-figure-label {
+  font-size: 11px;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.kprl-owl-ss-figure-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 4px;
+}
+
+.kprl-owl-ss-figure-total .kprl-owl-ss-figure-value {
+  color: #1a73e8;
+}
+
+.kprl-owl-ss-figure-sub {
+  font-size: 11px;
+  color: #adb5bd;
+}
+
+/* --- Multiplier Breakdown --- */
+.kprl-owl-ss-breakdown {
+  padding: 12px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 4px 24px;
+}
+
+.kprl-owl-ss-bd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+  color: #495057;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.kprl-owl-ss-bd-val {
+  font-weight: 700;
+  color: #212529;
+}
+
+/* --- No Data State --- */
+.kprl-owl-ss-no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .kprl-owl-ss-figures {
+    grid-template-columns: 1fr;
+  }
+
+  .kprl-owl-ss-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .kprl-owl-employee-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .kprl-owl-ss-breakdown {
+    grid-template-columns: 1fr;
   }
 }

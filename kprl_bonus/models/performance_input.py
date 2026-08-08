@@ -12,6 +12,7 @@ class PerformanceInput(models.Model):
                                   required=True)
     department_id = fields.Many2one(related='employee_id.department_id',
                                     string='Department', store=True)
+    period_end = fields.Date(related='period_id.date_end', store=True, index=True)
 
     appraisal_score = fields.Float(string='Appraisal Score', digits=(5, 2))
     retain_score = fields.Float(string='Retain Score', digits=(5, 2))

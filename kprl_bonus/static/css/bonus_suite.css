@@ -4,7 +4,7 @@
 */
 
 .o_payout_form {
-    --payout-ink: #1c2333;
+    --payout-ink: #703f6c;
     --payout-muted: #6b7280;
     --payout-line: #e5e8ef;
     --payout-surface: #ffffff;
@@ -95,12 +95,16 @@
 
 /* ---------- Hero statement (total payout) ---------- */
 .o_payout_form .o_payout_statement {
-    background: #8784D2;
+    background: #703f6c;
     border-radius: var(--payout-radius);
     padding: 28px 28px 24px;
     margin-bottom: 20px;
     color: #ffffff;
     box-shadow: 0 10px 30px rgba(79, 95, 224, 0.28);
+    -webkit-border-radius: var(--payout-radius);
+        -moz-border-radius: var(--payout-radius);
+        -ms-border-radius: var(--payout-radius);
+        -o-border-radius: var(--payout-radius);
 }
 
 .o_payout_form .o_payout_statement_label {
@@ -343,4 +347,10 @@
     letter-spacing: 0.03em;
     color: var(--payout-muted);
     font-weight: 600;
+}
+.o_list_renderer .o_list_table>thead>tr> :first-child,
+.o_list_renderer .o_list_table>tbody>tr> :first-child,
+.o_list_renderer .o_list_table>tfoot>tr> :first-child {
+    padding-left: var(--ListRenderer-table-padding-x);
+    padding-top: 28px !important;
 }

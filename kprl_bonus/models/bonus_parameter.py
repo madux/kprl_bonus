@@ -7,6 +7,20 @@ class BonusParameter(models.Model):
     _description = 'Bonus Parameter Configuration'
     _rec_name = 'period_id'
 
+    def open_record(self):
+        view_id = self.env.ref('kprl_bonus.view_kprl_bonus_parameter_form')
+        val = {
+            'name':'Control panel',
+            'view_mode': 'form',
+            'view_id': view_id.id,
+            'view_type': 'form',
+            'res_model': 'kprl.bonus.parameter',
+            'type': 'ir.actions.act_window',
+            'res_id': self.id,
+            'target': 'current'
+            }
+        return val
+    
     period_id = fields.Many2one('kprl.bonus.period', string='Period',
                                 required=True)
     state = fields.Selection([
@@ -21,6 +35,7 @@ class BonusParameter(models.Model):
 
     approver_id = fields.Many2one('res.users', string='Approved By')
     approval_date = fields.Datetime(string='Approval Date')
+    submitted_by = fields.Many2one('res.users', string='Submitted By', readonly=True)
     notes = fields.Text(string='Change Notes')
 
     # -- Section A: Main Bonus Pool Parameters (Board approval required) --
@@ -60,21 +75,31 @@ class BonusParameter(models.Model):
     full_gate_floor_min = fields.Float(default=20)
     full_gate_floor_max = fields.Float(default=30)
     full_gate_floor_approver = fields.Char(default='Board')
+        # ── L4: Grand Pool → OPM (input) / SUP (auto-remainder) ──
+    l4_opm_share_pct = fields.Float(
+        string='OPM Share (%)', digits=(5, 2), default=60,
+        help="OPM's share of the Grand Pool. "
+             "SUP pool auto-computes as 100% minus this value.")
+    l4_sup_share_pct = fields.Float(
+        string='SUP Share (%)', digits=(5, 2),
+        compute='_compute_l4_sup_share', store=True,
+        help="Auto-computed: 100 − OPM share")
+    l4_opm_share_pct_min = fields.Float(default=20)
+    l4_opm_share_pct_max = fields.Float(default=80)
+    l4_opm_share_pct_approver = fields.Char(default='Finance Director')
 
-    opm_subpool_share = fields.Float(string='OPM Sub-Pool Share', digits=(5, 4))
-    opm_subpool_share_min = fields.Float(default=0.50)
-    opm_subpool_share_max = fields.Float(default=0.80)
-    opm_subpool_share_approver = fields.Char(default='Finance Director')
-
-    sen_mgt_share = fields.Float(string='Senior Mgmt Share of Sub-Pool', digits=(5, 4))
-    sen_mgt_share_min = fields.Float(default=0.60)
-    sen_mgt_share_max = fields.Float(default=0.80)
-    sen_mgt_share_approver = fields.Char(default='Finance Director')
-
-    ops_sup_share = fields.Float(string='Ops/Sup Share of Sub-Pool', digits=(5, 4))
-    ops_sup_share_min = fields.Float(default=0.20)
-    ops_sup_share_max = fields.Float(default=0.40)
-    ops_sup_share_approver = fields.Char(default='Finance Director')
+    # ── L5: SUP Pool → Senior-Mgmt (input) / Ops-Support (auto-remainder) ──
+    l5_senior_mgmt_share_pct = fields.Float(
+        string='Senior-Mgmt Share (%)', digits=(5, 2), default=70,
+        help="Senior-Mgmt's share of the SUP Pool. "
+             "Ops-Support auto-computes as 100% minus this value.")
+    l5_ops_support_share_pct = fields.Float(
+        string='Ops-Support Share (%)', digits=(5, 2),
+        compute='_compute_l5_ops_share', store=True,
+        help="Auto-computed: 100 − Senior-Mgmt share")
+    l5_senior_mgmt_share_pct_min = fields.Float(default=50)
+    l5_senior_mgmt_share_pct_max = fields.Float(default=80)
+    l5_senior_mgmt_share_pct_approver = fields.Char(default='Finance Director')
 
     aip_annual_rate = fields.Float(string='AIP Annual Rate', digits=(5, 4))
     aip_annual_rate_min = fields.Float(default=0.001)
@@ -247,6 +272,15 @@ class BonusParameter(models.Model):
         for rec in self:
             rec.funded_pool_after_both_gate = rec.profitability_gate_factor * rec.base_bonus_pool * rec.gmp_gate_factor
 
+    @api.depends('l4_opm_share_pct')
+    def _compute_l4_sup_share(self):
+        for rec in self:
+            rec.l4_sup_share_pct = 100.0 - (rec.l4_opm_share_pct or 0.0)
+
+    @api.depends('l5_senior_mgmt_share_pct')
+    def _compute_l5_ops_share(self):
+        for rec in self:
+            rec.l5_ops_support_share_pct = 100.0 - (rec.l5_senior_mgmt_share_pct or 0.0)
 
     _sql_constraints = [
         ('period_unique', 'UNIQUE(period_id)',
@@ -267,9 +301,8 @@ class BonusParameter(models.Model):
             ('partial_gate_floor', 'partial_gate_floor_min', 'partial_gate_floor_max'),
             ('full_gate_floor', 'full_gate_floor_min', 'full_gate_floor_max'),
             ('max_pool_rate', 'max_pool_rate_min', 'max_pool_rate_max'),
-            ('opm_subpool_share', 'opm_subpool_share_min', 'opm_subpool_share_max'),
-            ('sen_mgt_share', 'sen_mgt_share_min', 'sen_mgt_share_max'),
-            ('ops_sup_share', 'ops_sup_share_min', 'ops_sup_share_max'),
+            ('l4_opm_share_pct', 'l4_opm_share_pct_min', 'l4_opm_share_pct_max'),
+            ('l5_senior_mgmt_share_pct', 'l5_senior_mgmt_share_pct_min', 'l5_senior_mgmt_share_pct_max'),
             ('aip_annual_rate', 'aip_annual_rate_min', 'aip_annual_rate_max'),
             ('aip_deferral_rate', 'aip_deferral_rate_min', 'aip_deferral_rate_max'),
             ('revenue_weight', 'revenue_weight_min', 'revenue_weight_max'),
@@ -338,17 +371,6 @@ class BonusParameter(models.Model):
                         rec.full_gate_floor / 100,
                     ))
 
-    @api.constrains('opm_subpool_share', 'sen_mgt_share', 'ops_sup_share')
-    def _check_pool_shares_sum(self):
-        for rec in self:
-            total = (rec.opm_subpool_share + rec.sen_mgt_share +
-                     rec.ops_sup_share)
-            if total: #  
-                if total != 100: #(0.99 <= total <= 1.01):
-                    raise ValidationError(_(
-                        'Pool shares must sum to 100%%. Current total: %s%%'
-                    ) % (total))
-
     @api.depends('revenue_weight', 'ebitda_weight', 'gmp_weight',
                  'extended_kpi_weight')
     def _compute_kpi_weight_total(self):
@@ -370,6 +392,7 @@ class BonusParameter(models.Model):
                 )
 
     def action_submit(self):
+        self.submitted_by = self.env.user.id
         self.state = 'pending_approval'
 
     GOVERNANCE_FIELDS = [
@@ -383,10 +406,10 @@ class BonusParameter(models.Model):
         'full_gate_floor_min', 'full_gate_floor_max',
         'full_gate_floor_approver',
         'max_pool_rate_min', 'max_pool_rate_max', 'max_pool_rate_approver',
-        'opm_subpool_share_min', 'opm_subpool_share_max',
-        'opm_subpool_share_approver',
-        'sen_mgt_share_min', 'sen_mgt_share_max', 'sen_mgt_share_approver',
-        'ops_sup_share_min', 'ops_sup_share_max', 'ops_sup_share_approver',
+        'l4_opm_share_pct_min', 'l4_opm_share_pct_max',
+        'l4_opm_share_pct_approver',
+        'l5_senior_mgmt_share_pct_min', 'l5_senior_mgmt_share_pct_max',
+        'l5_senior_mgmt_share_pct_approver',
         'aip_annual_rate_min', 'aip_annual_rate_max',
         'aip_annual_rate_approver',
         'aip_deferral_rate_min', 'aip_deferral_rate_max',
@@ -409,6 +432,13 @@ class BonusParameter(models.Model):
         return super().write(vals)
 
     def action_approve(self):
+        for rec in self:
+            if rec.submitted_by and rec.submitted_by.id == self.env.user.id:
+                raise ValidationError(_(
+                    'You cannot approve this configuration because you submitted it. '
+                    'The person who submitted must not be the same person who approves. '
+                    'Only the CEO / Superadmin may approve.'
+                ))
         self.write({
             'state': 'approved',
             'is_locked': True,
