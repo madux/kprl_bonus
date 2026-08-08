@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_payout_register">
+        <t t-call="web.html_container">
+            <t t-foreach="doc_ids" t-as="doc_id">
+                <t t-set="doc" t-value="docs.filtered(lambda r: r.id == doc_id)[0]"
+                   t-if="docs.filtered(lambda r: r.id == doc_id)"/>
+                <t t-if="not doc" t-set="doc" t-value="docs[0]"/>
+                <t t-call="kprl_bonus.report_payout_register_content"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_payout_register_content">
+        <t t-set="lines" t-value="docs or [doc]"/>
+        <t t-set="period" t-value="lines[0].period_id if lines else None"/>
+        <t t-set="today" t-value="time.strftime('%d %B %Y')"/>
+
+        <div class="kprl-payout-report" style="font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0;">
+            <!-- Letterhead / Header -->
+            <div class="kprl-payout-header" style="border-bottom: 3px solid #1a3c6e; padding-bottom: 12px; margin-bottom: 16px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 60%;">
+                            <h1 style="font-size: 22px; color: #1a3c6e; margin: 0;">KPRL</h1>
+                            <h2 style="font-size: 14px; color: #555; margin: 4px 0 0 0; font-weight: 400;">
+                                Bonus &amp; Commission Payroll Register
+                            </h2>
+                        </td>
+                        <td style="width: 40%; text-align: right;">
+                            <p style="font-size: 11px; color: #666; margin: 2px 0;">
+                                <strong>Period:</strong>
+                                <t t-esc="period.name if period else 'N/A'"/>
+                            </p>
+                            <p style="font-size: 11px; color: #666; margin: 2px 0;">
+                                <strong>Date:</strong>
+                                <t t-esc="today"/>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- KPI Summary Cards -->
+            <div class="kprl-payout-kpi-row" style="display: flex; gap: 8px; margin-bottom: 16px;">
+                <div class="kprl-payout-kpi-card" style="flex: 1; background: #e8f0fe; border-radius: 6px; padding: 10px 12px; text-align: center;">
+                    <div style="font-size: 10px; color: #1a3c6e; text-transform: uppercase; letter-spacing: 0.5px;">Total Ops Payout</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #1a3c6e; margin-top: 4px;">
+                        <t t-esc="'{:,.2f}'.format(sum(l.total_ops_payout for l in lines))"/>
+                    </div>
+                </div>
+                <div class="kprl-payout-kpi-card" style="flex: 1; background: #e8f8ee; border-radius: 6px; padding: 10px 12px; text-align: center;">
+                    <div style="font-size: 10px; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Headcount</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #166534; margin-top: 4px;">
+                        <t t-esc="len(lines)"/>
+                    </div>
+                </div>
+                <div class="kprl-payout-kpi-card" style="flex: 1; background: #fef3e8; border-radius: 6px; padding: 10px 12px; text-align: center;">
+                    <div style="font-size: 10px; color: #9a3412; text-transform: uppercase; letter-spacing: 0.5px;">Total Sales Comm</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #9a3412; margin-top: 4px;">
+                        <t t-esc="'{:,.2f}'.format(sum(l.total_sales_commission for l in lines))"/>
+                    </div>
+                </div>
+                <div class="kprl-payout-kpi-card" style="flex: 1; background: #f3e8ff; border-radius: 6px; padding: 10px 12px; text-align: center;">
+                    <div style="font-size: 10px; color: #4a1d96; text-transform: uppercase; letter-spacing: 0.5px;">Total Qtr Payout</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #4a1d96; margin-top: 4px;">
+                        <t t-esc="'{:,.2f}'.format(sum(l.total_quarterly_payout for l in lines))"/>
+                    </div>
+                </div>
+                <div class="kprl-payout-kpi-card" style="flex: 1; background: #fff3cd; border-radius: 6px; padding: 10px 12px; text-align: center;">
+                    <div style="font-size: 10px; color: #856404; text-transform: uppercase; letter-spacing: 0.5px;">Payout vs Revenue</div>
+                    <div style="font-size: 16px; font-weight: 700; color: #856404; margin-top: 4px;">
+                        <t t-esc="'{:,.2f}%'.format(sum(l.payout_pct_revenue for l in lines) / (len(lines) or 1))"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Table -->
+            <table class="kprl-payout-table" style="width: 100%; border-collapse: collapse; font-size: 9px;" repeat="1">
+                <thead>
+                    <tr style="background: #1a3c6e; color: #fff;">
+                        <th style="padding: 6px 4px; text-align: center; width: 28px;">#</th>
+                        <th style="padding: 6px 4px; text-align: left;">Emp ID</th>
+                        <th style="padding: 6px 4px; text-align: left;">Staff Name</th>
+                        <th style="padding: 6px 4px; text-align: left;">Department</th>
+                        <th style="padding: 6px 4px; text-align: left;">Grade</th>
+                        <th style="padding: 6px 4px; text-align: center;">Track</th>
+                        <th style="padding: 6px 4px; text-align: right;">Ops Bonus (?)</th>
+                        <th style="padding: 6px 4px; text-align: right;">Sales Comm (?)</th>
+                        <th style="padding: 6px 4px; text-align: right;">TOTAL (?)</th>
+                        <th style="padding: 6px 4px; text-align: center;">AIP</th>
+                        <th style="padding: 6px 4px; text-align: left;">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="lines" t-as="line">
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 4px; text-align: center;">
+                                <t t-esc="line_index + 1"/>
+                            </td>
+                            <td style="padding: 4px;">
+                                <t t-esc="line.employee_id.staff_id or ''"/>
+                            </td>
+                            <td style="padding: 4px;">
+                                <t t-esc="line.employee_name"/>
+                            </td>
+                            <td style="padding: 4px;">
+                                <t t-esc="line.kprl_department_id.name or ''"/>
+                            </td>
+                            <td style="padding: 4px;">
+                                <t t-esc="line.grade_id.name or ''"/>
+                            </td>
+                            <td style="padding: 4px; text-align: center;">
+                                <t t-if="line.comp_track == 'ops'">Ops</t>
+                                <t t-if="line.comp_track == 'sales'">Sales</t>
+                                <t t-if="line.comp_track == 'both'">Ops+Sales</t>
+                            </td>
+                            <td style="padding: 4px; text-align: right; font-family: 'Work Sans', sans-serif;">
+                                <t t-esc="'{:,.2f}'.format(line.ops_bonus or 0.0)"/>
+                            </td>
+                            <td style="padding: 4px; text-align: right; font-family: 'Work Sans', sans-serif;">
+                                <t t-esc="'{:,.2f}'.format(line.sales_commission or 0.0)"/>
+                            </td>
+                            <td style="padding: 4px; text-align: right; font-family: 'Work Sans', sans-serif; font-weight: 700;">
+                                <t t-esc="'{:,.2f}'.format(line.total_payout or 0.0)"/>
+                            </td>
+                            <td style="padding: 4px; text-align: center;">
+                                <t t-if="line.aip_eligible">Yes</t>
+                                <t t-if="not line.aip_eligible">No</t>
+                            </td>
+                            <td style="padding: 4px; font-size: 8px; color: #555; max-width: 80px;">
+                                <t t-esc="line.notes or ''"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+                <!-- Totals Footer -->
+                <tfoot>
+                    <tr style="background: #f0f0f0; font-weight: 700; border-top: 2px solid #1a3c6e;">
+                        <td colspan="6" style="padding: 6px 4px; text-align: right; font-size: 10px;">TOTALS</td>
+                        <td style="padding: 6px 4px; text-align: right; font-family: 'Work Sans', sans-serif; font-size: 10px;">
+                            <t t-esc="'{:,.2f}'.format(sum(l.ops_bonus or 0.0 for l in lines))"/>
+                        </td>
+                        <td style="padding: 6px 4px; text-align: right; font-family: 'Work Sans', sans-serif; font-size: 10px;">
+                            <t t-esc="'{:,.2f}'.format(sum(l.sales_commission or 0.0 for l in lines))"/>
+                        </td>
+                        <td style="padding: 6px 4px; text-align: right; font-family: 'Work Sans', sans-serif; font-size: 10px; color: #1a3c6e;">
+                            <t t-esc="'{:,.2f}'.format(sum(l.total_payout or 0.0 for l in lines))"/>
+                        </td>
+                        <td colspan="2" style="padding: 6px 4px;"/>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- Signature Section -->
+            <div class="kprl-payout-signatures" style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 16px;">
+                <table style="width: 100%; font-size: 11px;">
+                    <tr>
+                        <td style="width: 33%; text-align: center;">
+                            <div style="border-top: 1px solid #333; width: 80%; margin: 0 auto 4px auto; padding-top: 4px;">
+                                _________________________
+                            </div>
+                            <strong>Prepared By</strong><br/>
+                            <span style="font-size: 10px; color: #666;">Finance / HR</span>
+                        </td>
+                        <td style="width: 33%; text-align: center;">
+                            <div style="border-top: 1px solid #333; width: 80%; margin: 0 auto 4px auto; padding-top: 4px;">
+                                _________________________
+                            </div>
+                            <strong>Reviewed By</strong><br/>
+                            <span style="font-size: 10px; color: #666;">CFO / Head of HR</span>
+                        </td>
+                        <td style="width: 33%; text-align: center;">
+                            <div style="border-top: 1px solid #333; width: 80%; margin: 0 auto 4px auto; padding-top: 4px;">
+                                _________________________
+                            </div>
+                            <strong>Approved By</strong><br/>
+                            <span style="font-size: 10px; color: #666;">CEO / MD</span>
+                        </td>
+                    </tr>
+                </table>
+                <p style="text-align: center; font-size: 9px; color: #888; margin-top: 12px;">
+                    KPRL Bonus &amp; Commission System &#8212; This is a computer-generated document.
+                </p>
+            </div>
+        </div>
+    </template>
+</odoo>

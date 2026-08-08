@@ -14,7 +14,7 @@
     """,
     'author': 'KPRL',
     'website': '',
-    'depends': ['base', 'hr', 'mail', 'web', 'auth_totp'],
+    'depends': ['base', 'hr', 'mail', 'web', 'auth_totp', 'stock'],
     'data': [
         'security/kprl_bonus_groups.xml',
         'security/ir.model.access.csv',
@@ -30,6 +30,7 @@
         'views/tenure_multiplier_views.xml',
         'views/department_views.xml',
         'views/dept_kpi_multiplier_views.xml',
+        'views/kpi_store_views.xml',
         'views/subpool_views.xml',
         'views/role_parameter_views.xml',
         'views/product_views.xml',
@@ -45,6 +46,8 @@
         'views/governance_event_views.xml',
         'views/risk_register_views.xml',
         'views/audit_trail_views.xml',
+        'views/payout_report_views.xml',
+        'views/payout_report_paper.xml',
         'views/governance_action.xml',
         'views/menu_views.xml',
         
@@ -52,11 +55,13 @@
     ],
     'assets': {
         'web.assets_backend': [
+            'kprl_bonus/static/css/kprl_shared.css',
             'kprl_bonus/static/css/backend_css.scss',
             'kprl_bonus/static/css/bonus_suite.css',
             'kprl_bonus/static/css/index.css',
             'kprl_bonus/static/css/bonus_params.css',
             'kprl_bonus/static/css/employee_form.css',
+            'kprl_bonus/static/css/payout_report.css',
             'kprl_bonus/static/src/dashboard/kprl_dashboard.js',
             'kprl_bonus/static/src/dashboard/kprl_dashboard.xml',
             'kprl_bonus/static/src/dashboard/kprl_dashboard.css',

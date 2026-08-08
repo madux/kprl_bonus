@@ -74,7 +74,7 @@
     }
 
     .o_payout_amount {
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'Work Sans', sans-serif;
       font-size: 2.6rem;
       font-weight: 600;
       color: #fff;
@@ -119,7 +119,7 @@
       .o_field_widget {
         color: #fff;
         font-weight: 600;
-        font-family: 'IBM Plex Mono', monospace;
+        font-family: 'Work Sans', sans-serif;
         background: transparent;
         border: none;
         pointer-events: none;
@@ -140,7 +140,7 @@
   .o_payout_card .o_field_widget[name$='payout'] input,
   .o_payout_card .o_field_widget[name$='commission'] input,
   .o_payout_card .o_field_widget[name$='contribution'] input {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'Work Sans', sans-serif;
     font-weight: 600;
   }
 

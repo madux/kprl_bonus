@@ -26,12 +26,12 @@
   *{box-sizing:border-box;}
   body{
     background:var(--bg);
-    font-family:'Inter',sans-serif;
+    font-family:'Work Sans', sans-serif;
     color:var(--ink);
     padding:32px 0 64px;
   }
-  .display{font-family:'Sora',sans-serif;}
-  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Work Sans', sans-serif;}
+  .mono{font-family:'Work Sans', sans-serif;}
   .shell{max-width:1040px;margin:0 auto;padding:0 20px;}
 
   /* Top bar */
@@ -104,10 +104,10 @@
   .field-box.editable:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);}
   .field-box input, .field-box textarea{
     border:none;background:transparent;width:100%;padding:0;
-    font-family:'Inter',sans-serif;font-weight:600;font-size:.95rem;color:var(--ink);
+    font-family:'Work Sans', sans-serif;font-weight:600;font-size:.95rem;color:var(--ink);
   }
   .field-box input:focus, .field-box textarea:focus{outline:none;}
-  .field-box.mono-box input{font-family:'IBM Plex Mono',monospace;}
+  .field-box.mono-box input{font-family:'Work Sans', sans-serif;}
 
   .badge-status{
     font-size:.74rem;font-weight:700;padding:5px 12px;border-radius:20px;
@@ -127,7 +127,7 @@
     border-radius:50%;background:radial-gradient(circle,rgba(36,84,255,.35),transparent 70%);
   }
   .statement .label{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:#9FB0CE;margin-bottom:8px;}
-  .statement .amount{font-family:'IBM Plex Mono',monospace;font-size:2.6rem;font-weight:600;line-height:1;}
+  .statement .amount{font-family:'Work Sans', sans-serif;font-size:2.6rem;font-weight:600;line-height:1;}
   .statement .amount span{font-size:1.2rem;color:#9FB0CE;margin-left:8px;}
   .split-bar{
     display:flex;height:10px;border-radius:6px;overflow:hidden;margin-top:20px;background:#1E2C42;

@@ -1,16 +1,49 @@
 from odoo import models, fields, api
 from datetime import date
 
-
-
+class HrEmployee(models.Model):
+    _inherit = 'hr.employee'
+    staff_id = fields.Char()
 class Employee(models.Model):
     _name = 'kprl.employee'
     _description = 'Employee Master'
     _order = 'employee_id'
     _rec_name = 'name'
 
+    # _inherits = {"hr.employee": "employee_id"}
+
+    employee_id = fields.Many2one(
+        "hr.employee",
+        string="HR Employee",
+        required=False,
+        ondelete="cascade",
+    )
+    employee_id_num = fields.Integer(related='employee_id.id', string='Employee ID', readonly=True)
+
+    kprl_number = fields.Char()
+    staff_id = fields.Char(string='Staff ID', required=True)
+
     name = fields.Char(string='Employee Name', required=True)
-    employee_id = fields.Char(string='Employee ID', required=True)
+    work_email = fields.Char()
+    mobile_phone = fields.Char()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+
+        for record in records:
+            hr_employee = self.env["hr.employee"].create({
+                "name": record.name,
+                "work_email": record.work_email,
+                "mobile_phone": record.mobile_phone,
+                "staff_id": record.staff_id,
+            })
+
+            record.employee_id = hr_employee.id
+
+        return records
+    # related fields from hr.employee
+    # employee_id = fields.Char(string='Employee ID', required=True) 
     department_id = fields.Many2one('kprl.department', string='Department')
     grade_id = fields.Many2one('kprl.grade', string='Grade')
     job_title = fields.Char(string='Job Title')
@@ -40,6 +73,30 @@ class Employee(models.Model):
     phone = fields.Char(string='Phone')
     is_active = fields.Boolean(string='Active', default=True)
     image = fields.Binary(string='Photo', attachment=True)
+
+    user_role = fields.Char(string='User Role', compute='_compute_user_role')
+
+    @api.depends_context('uid')
+    def _compute_user_role(self):
+        user = self.env.user
+        if user.has_group('base.group_system'):
+            role = 'Administrator'
+        elif user.has_group('kprl_bonus.group_kprl_ceo'):
+            role = 'CEO / Superadmin'
+        elif user.has_group('kprl_bonus.group_kprl_exec_director'):
+            role = 'Exec Director'
+        elif user.has_group('kprl_bonus.group_kprl_finance'):
+            role = 'Finance'
+        elif user.has_group('kprl_bonus.group_kprl_admin'):
+            role = 'Admin'
+        elif user.has_group('kprl_bonus.group_kprl_hr'):
+            role = 'HR'
+        elif user.has_group('kprl_bonus.group_kprl_user'):
+            role = 'Users / Employee'
+        else:
+            role = 'Guest'
+        for rec in self:
+            rec.user_role = role
 
     _sql_constraints = [
         ('employee_id_unique', 'UNIQUE(employee_id)', 'Employee ID must be unique!'),
@@ -81,6 +138,8 @@ class Employee(models.Model):
     deferral_rate_payout = fields.Float(related='latest_payout_id.deferral_rate', string='Deferral Rate', store=False)
     behaviour_05 = fields.Float(related='latest_payout_id.behaviour_05', string='Behavioural /25', store=False)
     appraisal_score_payout = fields.Float(related='latest_payout_id.appraisal_score', string='Appraisal Score', store=False)
+    appraisal_max = fields.Float(related='latest_payout_id.appraisal_max', string='Appraisal Max', store=False)
+    behaviour_max = fields.Float(related='latest_payout_id.behaviour_max', string='Behaviour Max', store=False)
 
     # ── One2many for inline lists in tabs ──
     payout_ids = fields.One2many('kprl.bonus.payout', 'employee_id', string='Payout History')
@@ -94,6 +153,7 @@ class Employee(models.Model):
                                         compute='_compute_latest_performance', store=False)
     dept_kpi_score = fields.Float(string='Dept KPI Score',
                                 compute='_compute_latest_performance', store=False)
+    dept_kpi_score_max = fields.Float(string='Dept KPI Max', compute='_compute_latest_performance', store=False)
 
     # ── Deferred summary (computed) ──
     total_deferred = fields.Float(string='Total Deferred', compute='_compute_deferred_summary', store=False)
@@ -135,23 +195,25 @@ class Employee(models.Model):
     def _compute_latest_payout(self):
         for rec in self:
             latest = self.env['kprl.bonus.payout'].search(
-                [('employee_id', '=', rec.id)], order='period_id.date_end desc', limit=1)
+                [('employee_id', '=', rec.id)], order='period_end desc', limit=1)
             rec.latest_payout_id = latest
 
     def _compute_latest_performance(self):
         for rec in self:
             perf = self.env['kprl.performance.input'].search(
-                [('employee_id', '=', rec.id)], order='period_id.date_end desc', limit=1)
+                [('employee_id', '=', rec.id)], order='period_end desc', limit=1)
             rec.latest_appraisal_score = perf.appraisal_score if perf else 0.0
-            rec.latest_behaviour_score = perf.team_pct if perf else 0.0  # or another field
+            rec.latest_behaviour_score = perf.team_pct if perf else 0.0
             # dept KPI score from latest dept multiplier
             if rec.department_id:
                 dept_kpi = self.env['kprl.dept.kpi.multiplier'].search(
                     [('department_id', '=', rec.department_id.id)],
-                    order='period_id.date_end desc', limit=1)
+                    order='period_end desc', limit=1)
                 rec.dept_kpi_score = dept_kpi.kpi_score if dept_kpi else 0.0
+                rec.dept_kpi_score_max = dept_kpi.kpi_score_max if dept_kpi else 100.0
             else:
                 rec.dept_kpi_score = 0.0
+                rec.dept_kpi_score_max = 100.0
 
     def _compute_deferred_summary(self):
         for rec in self:

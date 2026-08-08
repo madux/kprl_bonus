@@ -73,6 +73,12 @@
               action="action_kprl_territory"
               sequence="55"/>
 
+    <menuitem id="menu_kprl_kpi_store"
+              name="KPI Store (Appraisal)"
+              parent="menu_kprl_ops"
+              action="action_kprl_kpi_store"
+              sequence="42"/>
+              
     <!-- Bonus Operations -->
     <menuitem id="menu_kprl_ops"
               name="Operations"
@@ -121,6 +127,7 @@
               parent="menu_kprl_bonus_root"
               sequence="30"/>
 
+
     <menuitem id="menu_kprl_bonus_payout"
               name="Staff Payouts"
               parent="menu_kprl_payouts"
@@ -133,12 +140,24 @@
               action="action_kprl_territory_payout"
               sequence="20"/>
 
+    <menuitem id="menu_kprl_payout_report"
+              name="Payout Register"
+              parent="menu_kprl_payouts"
+              action="action_kprl_payout_report"
+              sequence="25"/>
+              
     <menuitem id="menu_kprl_deferred"
               name="Deferred Ledger"
               parent="menu_kprl_payouts"
               action="action_kprl_deferred_ledger"
               sequence="30"/>
 
+    <menuitem id="menu_kprl_simulate_payout"
+              name="Simulate Payout"
+              parent="menu_kprl_payouts"
+              action="action_kprl_simulate_payout"
+              sequence="35"/>
+              
     <!-- Governance -->
     <menuitem id="menu_kprl_governance"
               name="Governance"

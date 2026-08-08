@@ -804,3 +804,8 @@
   padding: 16px 4px 4px 4px;
   background-color: #f6f4f6;
 }
+/* ---------- Engine form: group label tweaks ---------- */
+.o_engine_form group>label {
+  text-transform: none !important;
+  font-size: 12px;
+}

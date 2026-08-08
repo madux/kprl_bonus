@@ -55,7 +55,7 @@ body {
     flex-grow: 1;
     padding: 0 24px 40px 24px;
     background-color: #f4f6f9;
-    min-width: calc(100vw - 64px);
+    min-width: 100%;
     min-height: 100vh;
 }
 

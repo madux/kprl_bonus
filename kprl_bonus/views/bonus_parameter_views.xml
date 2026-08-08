@@ -64,6 +64,7 @@
                         </group>
                         <group>
                             <field name="is_locked"/>
+                            <field name="submitted_by"/>
                             <field name="approver_id"/>
                             <field name="approval_date"/>
                         </group>
@@ -93,10 +94,15 @@
                                     <field name="full_gate_floor"/>
                                     <field name="max_pool_rate"/>
                                 </group>
-                                <group string="Sub-Pool Allocation">
-                                    <field name="opm_subpool_share"/>
-                                    <field name="sen_mgt_share"/>
-                                    <field name="ops_sup_share"/>
+                                   <group string="Pool Distribution – Two Independent Levels">
+                                    <group string="Grand Pool → OPM (input) / SUP (auto)">
+                                        <field name="l4_opm_share_pct" string="OPM Share (%)"/>
+                                        <field name="l4_sup_share_pct" string="SUP Share (%) – auto" readonly="1"/>
+                                    </group>
+                                    <group string="SUP Pool → Senior-Mgmt (input) / Ops-Support (auto)">
+                                        <field name="l5_senior_mgmt_share_pct" string="Senior-Mgmt Share (%)"/>
+                                        <field name="l5_ops_support_share_pct" string="Ops-Support Share (%) – auto" readonly="1"/>
+                                    </group>
                                 </group>
                                 <group string="AIP Parameters">
                                     <field name="aip_annual_rate"/>
@@ -127,16 +133,15 @@
                                     <field name="max_pool_rate_max" string="Max Pool Rate — Upper Bound"/>
                                     <field name="max_pool_rate_approver"/>
                                 </group>
-                                <group string="Sub-Pool Share Bounds">
-                                    <field name="opm_subpool_share_min" string="OPM — Lower Bound"/>
-                                    <field name="opm_subpool_share_max" string="OPM — Upper Bound"/>
-                                    <field name="opm_subpool_share_approver"/>
-                                    <field name="sen_mgt_share_min" string="Senior Mgmt — Lower Bound"/>
-                                    <field name="sen_mgt_share_max" string="Senior Mgmt — Upper Bound"/>
-                                    <field name="sen_mgt_share_approver"/>
-                                    <field name="ops_sup_share_min" string="Ops/Sup — Lower Bound"/>
-                                    <field name="ops_sup_share_max" string="Ops/Sup — Upper Bound"/>
-                                    <field name="ops_sup_share_approver"/>
+                                <group string="OPM Share Bounds">
+                                    <field name="l4_opm_share_pct_min" string="OPM Share - Lower Bound"/>
+                                    <field name="l4_opm_share_pct_max" string="OPM Share - Upper Bound"/>
+                                    <field name="l4_opm_share_pct_approver"/>
+                                </group>
+                                <group string="Senior-Mgmt Share Bounds">
+                                    <field name="l5_senior_mgmt_share_pct_min" string="Senior-Mgmt - Lower Bound"/>
+                                    <field name="l5_senior_mgmt_share_pct_max" string="Senior-Mgmt - Upper Bound"/>
+                                    <field name="l5_senior_mgmt_share_pct_approver"/>
                                 </group>
                                 <group string="AIP &amp; KPI Bounds">
                                     <field name="aip_annual_rate_min" string="AIP Annual — Lower Bound"/>
@@ -291,9 +296,12 @@
                                 <field name="period_id"/>
                                 <span class="kprl_version">v<field name="version"/></span>
                             </div>
-                            <span t-if="record.is_locked.raw_value" class="kprl_lock">
+                            <!-- <span t-if="record.is_locked.raw_value" class="kprl_lock">
                                 <i class="fa fa-lock"/>
-                            </span>
+                            </span> -->
+                            <a class="kprl_lock" type="object" name="open_record">
+                                <i class="fa fa-eye"/>
+                            </a>
                         </div>
                         <div class="kprl_card_state">
                             <field name="state" widget="badge"/>

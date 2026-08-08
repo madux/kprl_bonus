@@ -193,7 +193,7 @@ export class KprlGovernance extends Component {
   }
 
   fmtCurrency(val) {
-    return val ? CURRENCY.format(val) : '₦0';
+    return val != null ? CURRENCY.format(val) : '₦0:00';
   }
 
   fmtDate(val) {

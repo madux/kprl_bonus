@@ -1,0 +1,72 @@
+/* KPRL Payout Report Styles - PDF & Backend */
+
+.kprl-payout-report {
+  font-family: 'Work Sans', sans-serif;
+  color: #222;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.kprl-payout-header {
+  border-bottom: 3px solid #1a3c6e;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.kprl-payout-kpi-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.kprl-payout-kpi-card {
+  flex: 1;
+  border-radius: 6px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.kprl-payout-kpi-card .kprl-payout-kpi-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kprl-payout-kpi-card .kprl-payout-kpi-value {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.kprl-payout-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+
+.kprl-payout-table thead {
+  background: #1a3c6e;
+  color: #fff;
+}
+
+.kprl-payout-table th {
+  padding: 6px 4px;
+}
+
+.kprl-payout-table td {
+  padding: 4px;
+  border-bottom: 1px solid #ddd;
+}
+
+.kprl-payout-table tfoot tr {
+  background: #f0f0f0;
+  font-weight: 700;
+  border-top: 2px solid #1a3c6e;
+}
+
+.kprl-payout-signatures {
+  margin-top: 40px;
+  border-top: 1px solid #ccc;
+  padding-top: 16px;
+}

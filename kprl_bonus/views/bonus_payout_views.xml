@@ -90,6 +90,25 @@
                     <group>
                         <field name="state"/>
                     </group>
+                    <notebook>
+                        <page string="Governance &amp; Malus">
+                            <field name="governance_event_ids" readonly="1">
+                                <tree editable="bottom">
+                                    <field name="ref"/>
+                                    <field name="trigger_type" widget="badge"/>
+                                    <field name="severity" widget="badge"/>
+                                    <field name="malus_pct"/>
+                                    <field name="malus_amount" widget="monetary"/>
+                                    <field name="clawback_amount" widget="monetary"/>
+                                    <field name="status" widget="badge"/>
+                                    <field name="description" optional="hide"/>
+                                </tree>
+                            </field>
+                            <group>
+                                <field name="total_governance_deduction" widget="monetary" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -109,6 +128,10 @@
             </search>
         </field>
     </record>
-
+    <record id="action_kprl_simulate_payout" model="ir.actions.act_url">
+        <field name="name">Simulate Payout</field>
+        <field name="url">/kprl/simulate</field>
+        <field name="target">self</field>
+    </record>
    
 </odoo>

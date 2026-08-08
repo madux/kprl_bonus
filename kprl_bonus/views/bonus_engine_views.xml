@@ -27,7 +27,7 @@
         <field name="name">kprl.bonus.engine.form</field>
         <field name="model">kprl.bonus.engine</field>
         <field name="arch" type="xml">
-            <form class="o_payout_form">
+            <form class="o_payout_form o_engine_form">
                 <header>
                     <button name="action_compute" type="object"
                             string="Run Computation"
@@ -145,17 +145,16 @@
                         </div>
                         <group>
                             <separator string="EFFECTIVE POOLS"/>
-                            <group>
-                                <field name="opm_pool_split"/>
-                                <field name="sup_pool_split"/>
+                              <group string="Grand Pool → OPM / SUP">
+                                <field name="opm_pool_split" string="OPM Share (%)"/>
+                                <field name="sup_pool_split" string="SUP Share (%) – auto" readonly="1"/>
                                 <field name="opm_pool" widget="monetary" readonly="1"/>
                                 <field name="sub_pool" widget="monetary" readonly="1"/>
-                                
                             </group>
-                            <group>
-                                <field name="senior_management_sub_pool"/>
+                            <group string="SUP Pool → Senior-Mgmt / Ops-Support">
+                                <field name="senior_management_sub_pool" string="Senior-Mgmt Share (%)"/>
+                                <field name="ops_sub_pool_percentage" string="Ops-Support Share (%) – auto" readonly="1"/>
                                 <field name="senior_management_pool" widget="monetary" readonly="1"/>
-                                <field name="ops_sub_pool_percentage"/>
                                 <field name="ops_sub_pool" widget="monetary" readonly="1"/>
                             </group>
                         </group> 

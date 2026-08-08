@@ -33,11 +33,17 @@
                                 <t t-esc="periods and periods[0]['name'] or 'Dashboard'"/> Dashboard
                             </span>
                         </div>
-                        <div class="kprl-user-actions">
-                            <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
-                            <button class="kprl-icon-btn"><i class="fa fa-question-circle-o"></i></button>
-                            <div class="kprl-user-badge" t-esc="request.env.user.name"/>
-                        </div>
+                    <div class="kprl-user-actions">
+                      <t t-if="request.env.user.has_group('kprl_bonus.group_kprl_admin')">
+                            <a href="/web#action=114&amp;cids=1&amp;menu_id=74" class="kprl-btn kprl-btn-outline" style="font-size:12px;padding:5px 12px;text-decoration:none;"><i class="fa fa-arrow-left"></i> Admin Panel</a>
+                        </t>
+                      <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
+                      <button class="kprl-icon-btn"><i class="fa fa-question-circle-o"></i></button>
+                      <div class="kprl-role-badge" t-esc="request.env.user.name"/>
+                      <a href="/web/session/logout" class="kprl-icon-btn" title="Logout">
+                         Logout <i class="fa fa-sign-out"></i>
+                      </a>
+                  </div>
                     </header>
 
                     <section class="kprl-control-bar">
@@ -226,13 +232,16 @@
                     <span class="kprl-nav-breadcrumbs">
                         <span class="kprl-muted">KPRL Bonus System</span>
                         <i class="fa fa-angle-right kprl-crumb-sep"></i>
-                        Employees / <t t-esc="employee.employee_id"/> — <t t-esc="employee.name"/>
+                        Employees / <t t-esc="employee.staff_id"/> — <t t-esc="employee.name"/>
                     </span>
                 </div>
-                <div class="kprl-user-actions">
+                    <div class="kprl-user-actions">
                     <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
                     <button class="kprl-icon-btn"><i class="fa fa-question-circle-o"></i></button>
                     <div class="kprl-role-badge" t-esc="request.env.user.name"/>
+                    <a href="/web/session/logout" class="kprl-icon-btn" title="Logout">
+                       Logout <i class="fa fa-sign-out"></i>
+                    </a>
                 </div>
             </header>
 
@@ -258,89 +267,319 @@
                     <button class="kprl-filter-item">Inactive</button>
                 </div>
                 <div class="kprl-right-actions">
+                    <a class="kprl-btn kprl-btn-primary" t-attf-href="/kprl/simulate/{{employee.id}}"><i class="fa fa-calculator"></i> Simulate Payout</a>
                     <a class="kprl-btn kprl-btn-outline" href="/kprl/employees">Back to List</a>
                 </div>
             </section>
 
             <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-profile">
                 <div class="kprl-card kprl-profile-card">
-                    <div class="kprl-avatar-wrapper">
-                        <div class="kprl-avatar" t-esc="(employee.name or '??').split(' ')[0][0] + (employee.name or '??').split(' ')[-1][0]"/>
+
+                    <div class="kprl-profile-header">
+                        <div class="kprl-avatar-wrapper">
+                            <div class="kprl-avatar" t-esc="(employee.name or '??').split(' ')[0][0] + (employee.name or '??').split(' ')[-1][0]"/>
+                        </div>
+                        <h2 class="kprl-employee-name" t-esc="employee.name"/>
+                        <div class="kprl-employee-code" t-esc="employee.staff_id"/>
+                        <div class="kprl-badge-row">
+                            <t t-if="employee.status and employee.status.lower() == 'active'">
+                                <span class="kprl-status-pill kprl-pill-active" t-esc="employee.status.upper()"/>
+                            </t>
+                            <t t-if="not employee.status or employee.status.lower() != 'active'">
+                                <span class="kprl-status-pill kprl-pill-inactive" t-esc="employee.status.upper()"/>
+                            </t>
+                            <t t-if="employee.is_sales">
+                                <span class="kprl-status-pill kprl-pill-track">SALES TRACK</span>
+                            </t>
+                            <t t-if="not employee.is_sales">
+                                <span class="kprl-status-pill kprl-pill-track">OPS TRACK</span>
+                            </t>
+                        </div>
                     </div>
-                    <h2 class="kprl-employee-name" t-esc="employee.name"/>
-                    <div class="kprl-employee-code" t-esc="employee.employee_id"/>
-                    <div class="kprl-badge-row">
-                        <span class="kprl-status-pill kprl-pill-green" t-esc="employee.status.upper()"/>
-                        <t t-if="employee.is_sales">
-                            <span class="kprl-status-pill kprl-pill-blue">SALES TRACK</span>
-                        </t>
-                        <t t-if="not employee.is_sales">
-                            <span class="kprl-status-pill kprl-pill-blue">OPS TRACK</span>
-                        </t>
+
+                    <div class="kprl-profile-body">
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="4" width="18" height="16" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                    <circle cx="9" cy="10.5" r="1.8" stroke="#62325E" stroke-width="1.4"/>
+                                    <path d="M6 16c.6-1.8 2-2.7 3-2.7s2.4.9 3 2.7" stroke="#62325E" stroke-width="1.4" stroke-linecap="round"/>
+                                    <path d="M14 9h4M14 12h4" stroke="#62325E" stroke-width="1.4" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Employee ID</label>
+                                <div class="kprl-info-value" t-esc="employee.staff_id"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 21V6l7-3 7 3v15" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                    <path d="M9 21v-5h6v5" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                    <path d="M9 10h.01M12 10h.01M15 10h.01M9 13h.01M12 13h.01M15 13h.01" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Department</label>
+                                <div class="kprl-info-value" t-esc="employee.department_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="8" width="18" height="12" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M3 13h18" stroke="#62325E" stroke-width="1.6"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Job Title</label>
+                                <div class="kprl-info-value" t-esc="employee.job_title or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3 6.5 7 .9-5.1 4.8 1.3 6.9L12 17.8 5.8 21.1l1.3-6.9L2 9.4l7-.9L12 2z" stroke="#62325E" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Grade</label>
+                                <div class="kprl-info-value" t-esc="employee.grade_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M3 10h18" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M8 3v4M16 3v4" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Date Hired</label>
+                                <div class="kprl-info-value" t-esc="employee.date_hired or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="9" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M12 7v5l3.5 2" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Tenure (yrs)</label>
+                                <div class="kprl-info-value" t-esc="employee.tenure_years"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row kprl-info-row-last">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="8" r="3.2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M5 20c1-4 4-6 7-6s6 2 7 6" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Reporting Manager</label>
+                                <div class="kprl-info-value" t-esc="employee.manager_id.name or ''"/>
+                            </div>
+                        </div>
+
                     </div>
-                    <hr class="kprl-divider"/>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Employee ID</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.employee_id" readonly="readonly"/>
+                </div>
+
+                <div class="kprl-card kprl-contact-card">
+                    <h3 class="kprl-card-title">Contact &amp; Communication</h3>
+                    <div class="kprl-contact-row">
+                        <span class="kprl-contact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="4" width="18" height="16" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                <path d="M4 6l8 6 8-6" stroke="#62325E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <div class="kprl-contact-text">
+                            <label class="kprl-info-label">Work Email</label>
+                            <a t-attf-href="mailto:{{employee.work_email or ''}}" class="kprl-contact-link" t-esc="employee.work_email or '—'"/>
+                        </div>
                     </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Department</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.department_id.name or ''" readonly="readonly"/>
+                    <div class="kprl-contact-row">
+                        <span class="kprl-contact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.9 19.9 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.3 1.4.8 2.7 1.5 3.9a2 2 0 0 1-.5 2.2l-1.2 1.2a16 16 0 0 0 6.3 6.3l1.2-1.2a2 2 0 0 1 2.2-.5c1.2.7 2.6 1.2 4 1.5a2 2 0 0 1 1.7 2z" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <div class="kprl-contact-text">
+                            <label class="kprl-info-label">Mobile Phone</label>
+                            <a t-attf-href="tel:{{employee.mobile_phone or ''}}" class="kprl-contact-link" t-esc="employee.mobile_phone or '—'"/>
+                        </div>
                     </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Job Title</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.job_title or ''" readonly="readonly"/>
+                    <div class="kprl-contact-row">
+                        <span class="kprl-contact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                <circle cx="12" cy="10" r="3" stroke="#62325E" stroke-width="1.6"/>
+                            </svg>
+                        </span>
+                        <div class="kprl-contact-text">
+                            <label class="kprl-info-label">Territory</label>
+                            <span class="kprl-contact-value" t-esc="employee.territory_id.name or '—'"/>
+                        </div>
                     </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Grade</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.grade_id.name or ''" readonly="readonly"/>
-                    </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Date Hired</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.date_hired or ''" readonly="readonly"/>
-                    </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Tenure (yrs)</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.tenure_years" readonly="readonly"/>
-                    </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Reporting Manager</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.manager_id.name or ''" readonly="readonly"/>
+                </div>
+
+                <div class="kprl-card kprl-stats-card">
+                    <h3 class="kprl-card-title">Quick Stats</h3>
+                    <div class="kprl-stats-grid">
+                        <div class="kprl-stat-item">
+                            <span class="kprl-stat-icon kprl-stat-tenure">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.8"/>
+                                    <path d="M12 7v5l3.5 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <span class="kprl-stat-value" t-esc="employee.tenure_years"/>
+                            <span class="kprl-stat-label">Years Tenure</span>
+                        </div>
+                        <div class="kprl-stat-item">
+                            <span class="kprl-stat-icon kprl-stat-grade">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3 6.5 7 .9-5.1 4.8 1.3 6.9L12 17.8 5.8 21.1l1.3-6.9L2 9.4l7-.9L12 2z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <span class="kprl-stat-value" t-esc="employee.grade_id.code or '—'"/>
+                            <span class="kprl-stat-label">Grade Level</span>
+                        </div>
+                        <div class="kprl-stat-item">
+                            <span class="kprl-stat-icon kprl-stat-pool">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="3" width="7" height="7" rx="1" stroke="#fff" stroke-width="1.8"/>
+                                    <rect x="14" y="3" width="7" height="7" rx="1" stroke="#fff" stroke-width="1.8"/>
+                                    <rect x="3" y="14" width="7" height="7" rx="1" stroke="#fff" stroke-width="1.8"/>
+                                    <rect x="14" y="14" width="7" height="7" rx="1" stroke="#fff" stroke-width="1.8"/>
+                                </svg>
+                            </span>
+                            <span class="kprl-stat-value" t-esc="employee.subpool_id.name or '—'"/>
+                            <span class="kprl-stat-label">Sub-Pool</span>
+                        </div>
+                        <div class="kprl-stat-item">
+                            <span class="kprl-stat-icon kprl-stat-role">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                    <circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.8"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.9" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                    <path d="M16 3.1a4 4 0 0 1 0 7.8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <span class="kprl-stat-value" t-esc="employee.sales_role and employee.sales_role.replace('_',' ').title() or '—'"/>
+                            <span class="kprl-stat-label">Sales Role</span>
+                        </div>
                     </div>
                 </div>
             </main>
 
             <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-grade-pool" style="display:none;">
-                <div class="kprl-card kprl-profile-card">
-                    <div class="kprl-avatar-wrapper">
-                        <div class="kprl-avatar" t-esc="(employee.name or '??').split(' ')[0][0] + (employee.name or '??').split(' ')[-1][0]"/>
-                    </div>
+                      <div class="kprl-card kprl-profile-card">
+
+                    <div class="kprl-profile-header">
+                       <div class="kprl-avatar-wrapper">
+                         <div class="kprl-avatar" t-esc="(employee.name or '??').split(' ')[0][0] + (employee.name or '??').split(' ')[-1][0]"/>
+                        </div>
+                    
                     <h2 class="kprl-employee-name" t-esc="employee.name"/>
-                    <div class="kprl-employee-code" t-esc="employee.employee_id"/>
+                    <div class="kprl-employee-code" t-esc="employee.staff_id"/>
                     <div class="kprl-badge-row">
-                        <span class="kprl-status-pill kprl-pill-green" t-esc="employee.status.upper()"/>
+                        <t t-if="employee.status and employee.status.lower() == 'active'">
+                            <span class="kprl-status-pill kprl-pill-active" t-esc="employee.status.upper()"/>
+                        </t>
+                        <t t-if="not employee.status or employee.status.lower() != 'active'">
+                            <span class="kprl-status-pill kprl-pill-inactive" t-esc="employee.status.upper()"/>
+                        </t>
+                        <t t-if="employee.is_sales">
+                            <span class="kprl-status-pill kprl-pill-track">SALES TRACK</span>
+                        </t>
+                        <t t-if="not employee.is_sales">
+                            <span class="kprl-status-pill kprl-pill-track">OPS TRACK</span>
+                        </t>
                     </div>
-                    <hr class="kprl-divider"/>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Department</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.department_id.name or ''" readonly="readonly"/>
-                    </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Job Title</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.job_title or ''" readonly="readonly"/>
-                    </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Grade</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.grade_id.name or ''" readonly="readonly"/>
-                    </div>
-                    <div class="kprl-info-group">
-                        <label class="kprl-info-label">Tenure (yrs)</label>
-                        <input type="text" class="kprl-info-value-input" t-att-value="employee.tenure_years" readonly="readonly"/>
+                   </div>
+                    <div class="kprl-profile-body">
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 21V6l7-3 7 3v15" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                    <path d="M9 21v-5h6v5" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                    <path d="M9 10h.01M12 10h.01M15 10h.01M9 13h.01M12 13h.01M15 13h.01" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Department</label>
+                                <div class="kprl-info-value" t-esc="employee.department_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="8" width="18" height="12" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M3 13h18" stroke="#62325E" stroke-width="1.6"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Job Title</label>
+                                <div class="kprl-info-value" t-esc="employee.job_title or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3 6.5 7 .9-5.1 4.8 1.3 6.9L12 17.8 5.8 21.1l1.3-6.9L2 9.4l7-.9L12 2z" stroke="#62325E" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Grade</label>
+                                <div class="kprl-info-value" t-esc="employee.grade_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row kprl-info-row-last">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="9" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M12 7v5l3.5 2" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Tenure (yrs)</label>
+                                <div class="kprl-info-value" t-esc="employee.tenure_years"/>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <div class="kprl-card kprl-param-card">
-                    <h3 class="kprl-card-title">Grade &amp; Compensation Parameters</h3>
+                <div class="kprl-card kprl-grade-comp-card">
+                    <div class="kprl-card-title-row">
+                        <span class="kprl-card-title-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 3l9 5-9 5-9-5 9-5z" stroke="#C9B6FF" stroke-width="1.6" stroke-linejoin="round"/>
+                                <path d="M3 13l9 5 9-5" stroke="#C9B6FF" stroke-width="1.6" stroke-linejoin="round"/>
+                                <path d="M3 17.5l9 5 9-5" stroke="#C9B6FF" stroke-width="1.6" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <h3 class="kprl-card-title">Grade &amp; Compensation Parameters</h3>
+                    </div>
                     <div class="kprl-table-row">
                         <span class="kprl-table-label">Grade Code</span>
                         <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.code or ''"/>
@@ -368,7 +607,7 @@
                     <div class="kprl-table-row">
                         <span class="kprl-table-label">Deferral Rate</span>
                         <span class="kprl-table-value-group">
-                            <span class="kprl-text-bold" t-esc="'%s%%' % (employee.grade_id.deferral_rate or 0)"/>
+                            <span class="kprl-text-bold" t-esc="employee.grade_id.deferral_rate or 0"/>%
                         </span>
                     </div>
                     <div class="kprl-table-row">
@@ -386,7 +625,15 @@
                 </div>
 
                 <div class="kprl-card kprl-payout-card">
-                    <h3 class="kprl-card-title">Payout Summary</h3>
+                    <div class="kprl-card-title-row">
+                        <span class="kprl-card-title-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" stroke="#C9B6FF" stroke-width="1.6" stroke-linejoin="round"/>
+                                <path d="M9 8h6M9 12h6M9 16h3" stroke="#C9B6FF" stroke-width="1.6" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <h3 class="kprl-card-title">Payout Summary</h3>
+                    </div>
                     <div id="kprl-payout-content">
                         <div class="kprl-table-row"><span class="kprl-table-label">Loading payout data...</span></div>
                     </div>
@@ -441,7 +688,7 @@
                 <div class="kprl-card" style="grid-column:1/-1;">
                     <h3 class="kprl-card-title">Payout History</h3>
                     <div id="kprl-history-content">
-                        <div class="kprl-table-row"><span class="kprl-table-label">Loading history...</span></div>
+                        <p style="color:#7A8296;font-size:13px;">Loading history...</p>
                     </div>
                 </div>
             </main>
@@ -619,14 +866,7 @@
             <link rel="stylesheet" href="/kprl_bonus/static/css/simulation.css"/>
             <meta name="csrf-token" t-att-content="request.csrf_token()"/>
 
-            <div class="kprl-dashboard-container">
-                <aside class="kprl-sidebar">
-                    <a href="/kprl/dashboard" style="text-decoration:none;">
-                        <div class="kprl-logo-box">
-                            <i class="fa fa-th-large kprl-logo-icon"></i>
-                        </div>
-                    </a>
-                </aside>
+            <div class="kprl-sim-wrapper">
                 <main class="kprl-main-content">
                     <header class="kprl-header">
                         <div class="kprl-brand-group">
@@ -674,7 +914,7 @@
                                 <div class="kprl-avatar" t-esc="(employee.name or '??').split(' ')[0][0] + (employee.name or '??').split(' ')[-1][0]"/>
                             </div>
                             <h2 class="kprl-employee-name" t-esc="employee.name"/>
-                            <div class="kprl-employee-code" t-esc="employee.employee_id"/>
+                            <div class="kprl-employee-code" t-esc="employee.staff_id"/>
                             <div class="kprl-badge-row">
                                 <span class="kprl-status-pill kprl-pill-green" t-esc="employee.status.upper()"/>
                             </div>
@@ -911,6 +1151,14 @@
             </script>
             <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
             <script type="text/javascript" src="/kprl_bonus/static/js/simulation.js"/>
+
+        <template id="backend_work_sans_font" inherit_id="web.layout" name="Work Sans Font">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;display=swap" rel="stylesheet"/>
+        </xpath>
+    </template>
         </t>
     </template>
 </odoo>

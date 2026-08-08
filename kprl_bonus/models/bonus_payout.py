@@ -25,40 +25,26 @@ class BonusPayout(models.Model):
                                   default=0.0, compute="compute_appraisal_mult")
     behavioural_mult = fields.Float(string='Behavioural Multiplier', digits=(5, 4),
                                     default=1.0)
+    period_end = fields.Date(related='period_id.date_end', store=True, index=True)
     
     @api.depends('employee_id', 'appraisal_score')
     def compute_appraisal_mult(self):
-        """
-        Calculate performance factor based on appraisal score.
-
-        Args:
-            employee: Employee record or any truthy value.
-            appraisal_score (float): Appraisal score as a decimal (e.g. 0.82 for 82%).
-
-        Returns:
-            float or None
-        """
         for rec in self:
-            employee = rec.employee_id
-            appraisal_score = rec.appraisal_score
-            result = 0
-            if not employee:
-                result = None
-
-            if appraisal_score < 0.65:
-                result = 0.0
-
-            elif appraisal_score in range (60, 75):
-                result = 0.6 + (appraisal_score - 0.65) * 0.15
-
-            elif appraisal_score >= 0.75 and appraisal_score < 0.90:
-                result = 0.75 + (appraisal_score - 0.75) * 1.0
-            elif appraisal_score >= 0.90 and appraisal_score < 1.1:
-                result = 0.90 + (appraisal_score - 0.90) * 2.0
-
-            elif appraisal_score >= 1.1: 
-                result = 1.10
-            rec.appraisal_mult = result
+            if not rec.employee_id:
+                rec.appraisal_mult = 0.0
+                continue
+            raw = rec.appraisal_score or 0.0
+            score = raw / 100.0
+            if score < 0.65:
+                rec.appraisal_mult = 0.0
+            elif score < 0.75:
+                rec.appraisal_mult = 0.6 + (score - 0.65) * 0.15
+            elif score < 0.90:
+                rec.appraisal_mult = 0.75 + (score - 0.75) * 1.0
+            elif score < 1.10:
+                rec.appraisal_mult = 0.90 + (score - 0.90) * 2.0
+            else:
+                rec.appraisal_mult = 1.10
 
     exception_premium = fields.Float(string='Exception Premium (₦)',
                                      digits='Product Price')
@@ -78,9 +64,19 @@ class BonusPayout(models.Model):
     
     tenure_years = fields.Float(string='Tenure years', store=True, related='employee_id.tenure_years', compute='_compute_tenure_mult')
     deferral_rate = fields.Float(string='Deferral Rate (%)', digits=(5, 4), compute='_compute_deferred_rate', default=0.0)
+    # appraisal_score = fields.Float(
+    #     string='Appraisal Score (%)', digits=(5, 4),
+    #     compute='_compute_appraisal_score', store=True,
+    # )
+
+       # change appraisal_score BACK to a regular stored field:
     appraisal_score = fields.Float(string='Appraisal Score (%)', digits=(5, 4))
+
     adjusted_amount = fields.Float(string='Adjusted (₦)', digits=(5, 4), compute='_compute_adjusted')
     behaviour_05 = fields.Float(string='Behavioure /25', digits=(5, 4), default=23)
+    appraisal_max = fields.Float(string='Appraisal Max', default=1.0)
+    behaviour_max = fields.Float(string='Behaviour Max', default=25.0)
+    
     deferred_amount = fields.Float(string='Deferred Amount (₦)',
                                    digits='Product Price', help="rec.final_floor * (rec.deferral_rate / 100.0)",
                                    compute='_compute_deferred', store=True)
@@ -226,3 +222,66 @@ class BonusPayout(models.Model):
 
     def action_paid(self):
         self.state = 'paid'
+
+    @api.onchange('employee_id', 'period_id')
+    def _onchange_fetch_appraisal(self):
+        if self.employee_id and self.period_id:
+            perf = self.env['kprl.performance.input'].search([
+                ('employee_id', '=', self.employee_id.id),
+                ('period_id', '=', self.period_id.id),
+            ], limit=1)
+            if perf:
+                self.appraisal_score = perf.appraisal_score
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('appraisal_score') and vals.get('employee_id') and vals.get('period_id'):
+                perf = self.env['kprl.performance.input'].search([
+                    ('employee_id', '=', vals['employee_id']),
+                    ('period_id', '=', vals['period_id']),
+                ], limit=1)
+                if perf:
+                    vals['appraisal_score'] = perf.appraisal_score
+        return super().create(vals_list)
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'employee_id' in vals or 'period_id' in vals:
+            for rec in self:
+                if rec.employee_id and rec.period_id:
+                    perf = self.env['kprl.performance.input'].search([
+                        ('employee_id', '=', rec.employee_id.id),
+                        ('period_id', '=', rec.period_id.id),
+                    ], limit=1)
+                    if perf:
+                        rec.appraisal_score = perf.appraisal_score
+        return res
+    governance_event_ids = fields.Many2many(
+    'kprl.governance.event',
+    compute='_compute_governance_events',
+    string='Governance Events'
+)
+
+    total_governance_deduction = fields.Float(
+        string='Total Governance Deduction',
+        compute='_compute_governance_events',
+        store=False
+    )
+
+    @api.depends('employee_id', 'period_id')
+    def _compute_governance_events(self):
+        for rec in self:
+            if rec.employee_id and rec.period_id:
+                events = self.env['kprl.governance.event'].search([
+                    ('employee_id', '=', rec.employee_id.id),
+                    ('period_id', '=', rec.period_id.id),
+                    ('trigger_type', 'in', ('malus', 'clawback')),
+                ])
+                rec.governance_event_ids = events
+                rec.total_governance_deduction = sum(
+                    events.mapped('malus_amount') + events.mapped('clawback_amount')
+                )
+            else:
+                rec.governance_event_ids = self.env['kprl.governance.event']
+                rec.total_governance_deduction = 0.0

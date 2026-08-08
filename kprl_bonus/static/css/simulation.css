@@ -7,6 +7,17 @@
     margin: 0 auto;
 }
 
+.kprl-sim-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: #F7F9FC;
+}
+
+.kprl-sim-wrapper .kprl-main-content {
+    margin-left: 0;
+    width: 100%;
+}
 .kprl-header {
     display: flex; justify-content: space-between; align-items: center;
     padding-bottom: 12px; border-bottom: 1px solid #e2e7ee; margin-bottom: 8px;
