@@ -4,6 +4,7 @@ from datetime import date
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
     staff_id = fields.Char()
+
 class Employee(models.Model):
     _name = 'kprl.employee'
     _description = 'Employee Master'
@@ -71,7 +72,8 @@ class Employee(models.Model):
     territory_id = fields.Many2one('kprl.territory', string='Territory')
     email = fields.Char(string='Email')
     phone = fields.Char(string='Phone')
-    is_active = fields.Boolean(string='Active', default=True)
+    is_active = fields.Boolean(string='Is Active', default=True)
+    active = fields.Boolean(string='Active', default=True)
     image = fields.Binary(string='Photo', attachment=True)
 
     user_role = fields.Char(string='User Role', compute='_compute_user_role')
