@@ -37,8 +37,8 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_fetch_kpi"
-                            string="Fetch KPI"
+                    <button name="get_api_response_value"
+                            string="Fetch KPI Values"
                             type="object"
                             class="btn-primary"
                             invisible="state == 'completed'"/>

@@ -18,10 +18,12 @@ class KpiStore(models.Model):
 
     api_url = fields.Char(
         string='Appraisal API URL',
+        required=True,
         default='https://kachelan.odoo.com/api/pms/appraisal',
     )
     token = fields.Char(
         string='API Token',
+        required=True,
         default='MY_STATIC_SECRET_TOKEN_123456',
     )
     staff_id = fields.Char(
@@ -59,28 +61,116 @@ class KpiStore(models.Model):
                 rec.employee_id = False
 
     def action_fetch_kpi(self):
-        URL = "https://kachelan.odoo.com/api/pms/appraisal"
-        TOKEN = "MY_STATIC_SECRET_TOKEN_123456"
+        URL = self.api_url or "https://kachelan.odoo.com/api/pms/appraisal"
+        TOKEN = self.token or "MY_STATIC_SECRET_TOKEN_123456"
         headers = {
             "Authorization": f"Bearer {TOKEN}",
             "Content-Type": "application/json"
         }
         payload = {
-            "employee_number": "KPRL/0016",
-            "date_from": False # "2026-01-01"      # Optional
+            "employee_number": self.staff_id or False,
+            "date_from": self.date_from.strftime("%Y-%m-%d") if self.date_from else None, # "2026-01-01"      # Optional
         }
+        _logger.info("Payroll Rallies", payload)
         response = requests.post(
             URL,
             headers=headers,
             json=payload,
             timeout=30
         )
-
+        response.raise_for_status()
         _logger.info("Status Code:", response.status_code)
         _logger.info(response.json())
+        result = response.json()
+        return result
 
-    def get_response_value(self, responseData):
-        pass
+    def get_department(self, name):
+        department = self.env['hr.department'].sudo().search([('name', '=ilike', name)], limit =1)
+        if not department:
+            department = self.env['hr.department'].sudo().create({
+                'name': name
+            })
+        kprl_department = self.env['kprl.department'].sudo().search([('name', '=ilike', name)], limit =1)
+        if not kprl_department:
+            kprl_department = self.env['kprl.department'].sudo().create({
+                'name': name
+            })
+        return department.id, kprl_department.id
+
+    def get_api_response_value(self):
+        result = self.action_fetch_kpi()
+        if not result.get('result', {}).get('success'):
+            raise ValidationError(
+                result.get('result', {}).get('message', 'Unable to fetch appraisal data')
+            )
+        data = result.get('result', {}).get('data', [])
+        period = self.period_id
+        period = period or self.env['kprl.bonus.period'].search([
+            ('date_start', '<=', self.date_from),
+            ('date_end', '>=', self.date_from),
+        ], limit=1)
+        for rec in data:
+            staff_id = rec.get('employee_number')
+            employee_name = rec.get('employee_name')
+            work_email = rec.get('work_email')
+            department_name = rec.get('department_name')
+            phone = rec.get('phone')
+            if not staff_id:
+                continue
+            # --------------------------------------------------
+            # HR EMPLOYEE
+            # --------------------------------------------------
+            hr_employee = self.env['hr.employee'].search([
+                ('staff_id', '=', staff_id)
+            ], limit=1)
+
+            if not hr_employee:
+                hr_employee = self.env['hr.employee'].create({
+                    'name': employee_name,
+                    'staff_id': staff_id,
+                })
+
+            # --------------------------------------------------
+            # KPRL EMPLOYEE
+            # --------------------------------------------------
+            kprl_employee = self.env['kprl.employee'].search([
+                ('name', '=', employee_name),
+                ('staff_id', '=', staff_id)
+            ], limit=1)
+
+            if not kprl_employee:
+                department, kprl_department = self.get_department(department_name)
+                kprl_employee = self.env['kprl.employee'].create({
+                    'name': employee_name,
+                    'staff_id': staff_id,
+                    'employee_id': hr_employee.id,
+                    'work_email': work_email,
+                    'phone': phone,
+                    'department_id': kprl_department
+                })
+            else:
+                kprl_employee.write({
+                    'employee_id': hr_employee.id,
+                })
+            # --------------------------------------------------
+            # PERFORMANCE INPUT
+            # --------------------------------------------------
+            performance_input = self.env['kprl.performance.input'].search([
+                ('employee_id', '=', kprl_employee.id),
+                ('period_id', '=', period.id)
+            ], limit=1)
+            vals = {
+                'period_id': period.id,
+                'employee_id': kprl_employee.id,
+                # API average_aggregate mapped to appraisal score
+                'appraisal_score': rec.get('average_aggregate', 0.0),
+                'retain_score': rec.get('overall_score', 0.0),
+            }
+            if performance_input:
+                performance_input.write(vals)
+            else:
+                self.env['kprl.performance.input'].create(vals)
+                    
     # def action_fetch_kpixxxx(self):
     #     for rec in self:
     #         icp = self.env['ir.config_parameter'].sudo()
