@@ -39,12 +39,12 @@
         if (!form) return;
 
         const fields = [
-            { key: 'min_pool_rate', label: 'Min Pool Rate (EBITDA < 18%)', pct: true },
-            { key: 'ebitda_scaling_start', label: 'EBITDA Threshold — Scaling Begins', pct: true },
-            { key: 'ebitda_max_rate_threshold', label: 'EBITDA Threshold — Max Rate Reached', pct: true },
-            { key: 'partial_gate_floor', label: 'Partial Gate Floor (EBITDA 18%)', pct: true },
-            { key: 'full_gate_floor', label: 'Full Gate Floor (EBITDA 22%)', pct: true },
-            { key: 'max_pool_rate', label: 'Max Pool Rate (EBITDA >= 22%)', pct: true },
+            { key: 'min_pool_rate', label: 'Pool Rate Min (floor) (EBITDA < 18%)', pct: true },
+            { key: 'ebitda_scaling_start', label: 'EBITDA threshold Scaling Begins', pct: true },
+            { key: 'ebitda_max_rate_threshold', label: 'EBITDA threshold Max Rate Reached', pct: true },
+            { key: 'partial_gate_floor', label: 'Profitability Gate (Partial unlock) (EBITDA 18%)', pct: true },
+            { key: 'full_gate_floor', label: 'Profitability Gate (full unlock) (EBITDA 22%)', pct: true },
+            { key: 'max_pool_rate', label: 'Pool Rate Max (ceiling) (EBITDA >= 22%)', pct: true },
             { key: 'opm_subpool_share', label: 'OPM Sub-Pool Share', pct: true },
             { key: 'sen_mgt_share', label: 'Senior Mgmt Share of Sub-Pool', pct: true },
             { key: 'ops_sup_share', label: 'Ops/Sup Share of Sub-Pool', pct: true },
@@ -232,12 +232,12 @@
 
     function getMinMaxBounds(key) {
         const bounds = {
-            min_pool_rate: { min: 0.0, max: 0.01, label: 'Min Pool Rate' },
-            ebitda_scaling_start: { min: 0.10, max: 0.15, label: 'EBITDA Scaling Start' },
-            ebitda_max_rate_threshold: { min: 0.25, max: 0.70, label: 'EBITDA Max Rate Threshold' },
-            partial_gate_floor: { min: 0.001, max: 0.015, label: 'Partial Gate Floor' },
-            full_gate_floor: { min: 0.015, max: 0.03, label: 'Full Gate Floor' },
-            max_pool_rate: { min: 0.015, max: 0.03, label: 'Max Pool Rate' },
+            min_pool_rate: { min: 0.0, max: 0.01, label: 'Pool Rate Min (floor)' },
+            ebitda_scaling_start: { min: 0.10, max: 0.15, label: 'EBITDA threshold Scaling Start' },
+            ebitda_max_rate_threshold: { min: 0.25, max: 0.70, label: 'EBITDA threshold Max Rate' },
+            partial_gate_floor: { min: 0.001, max: 0.015, label: 'Profitability Gate (Partial unlock)' },
+            full_gate_floor: { min: 0.015, max: 0.03, label: 'Profitability Gate (full unlock)' },
+            max_pool_rate: { min: 0.015, max: 0.03, label: 'Pool Rate Max (ceiling)' },
             opm_subpool_share: { min: 0.50, max: 0.80, label: 'OPM Sub-Pool Share' },
             sen_mgt_share: { min: 0.60, max: 0.80, label: 'Senior Mgmt Share' },
             ops_sup_share: { min: 0.20, max: 0.40, label: 'Ops/Sup Share' },
@@ -304,28 +304,28 @@
             // Cross-field consistency: A < B (min pool rate < max pool rate)
             if (data.min_pool_rate != null && data.max_pool_rate != null) {
                 if (data.min_pool_rate >= data.max_pool_rate) {
-                    errors.push('Min Pool Rate (' + (data.min_pool_rate * 100).toFixed(2) + '%) must be below Max Pool Rate (' + (data.max_pool_rate * 100).toFixed(2) + '%)');
+                    errors.push('Pool Rate Min (floor) (' + (data.min_pool_rate * 100).toFixed(2) + '%) must be below Pool Rate Max (ceiling) (' + (data.max_pool_rate * 100).toFixed(2) + '%)');
                 }
             }
 
             // Cross-field consistency: C <= E (EBITDA scaling start <= full gate floor)
             if (data.ebitda_scaling_start != null && data.full_gate_floor != null) {
                 if (data.ebitda_scaling_start > data.full_gate_floor) {
-                    errors.push('EBITDA Scaling Start (' + (data.ebitda_scaling_start * 100).toFixed(2) + '%) must not exceed Full Gate Floor (' + (data.full_gate_floor * 100).toFixed(2) + '%)');
+                    errors.push('EBITDA threshold Scaling Start (' + (data.ebitda_scaling_start * 100).toFixed(2) + '%) must not exceed Profitability Gate (full unlock) (' + (data.full_gate_floor * 100).toFixed(2) + '%)');
                 }
             }
 
             // Cross-field consistency: D > E (EBITDA max rate threshold > full gate floor)
             if (data.ebitda_max_rate_threshold != null && data.full_gate_floor != null) {
                 if (data.ebitda_max_rate_threshold <= data.full_gate_floor) {
-                    errors.push('EBITDA Max Rate Threshold (' + (data.ebitda_max_rate_threshold * 100).toFixed(2) + '%) must exceed Full Gate Floor (' + (data.full_gate_floor * 100).toFixed(2) + '%)');
+                    errors.push('EBITDA threshold Max Rate (' + (data.ebitda_max_rate_threshold * 100).toFixed(2) + '%) must exceed Profitability Gate (full unlock) (' + (data.full_gate_floor * 100).toFixed(2) + '%)');
                 }
             }
 
             // Cross-field consistency: F < E (partial gate floor < full gate floor)
             if (data.partial_gate_floor != null && data.full_gate_floor != null) {
                 if (data.partial_gate_floor >= data.full_gate_floor) {
-                    errors.push('Partial Gate Floor (' + (data.partial_gate_floor * 100).toFixed(2) + '%) must be below Full Gate Floor (' + (data.full_gate_floor * 100).toFixed(2) + '%)');
+                    errors.push('Profitability Gate (Partial unlock) (' + (data.partial_gate_floor * 100).toFixed(2) + '%) must be below Profitability Gate (full unlock) (' + (data.full_gate_floor * 100).toFixed(2) + '%)');
                 }
             }
 

@@ -39,24 +39,24 @@ class BonusParameter(models.Model):
     notes = fields.Text(string='Change Notes')
 
     # -- Section A: Main Bonus Pool Parameters (Board approval required) --
-    min_pool_rate = fields.Float(string='Min Pool Rate (EBITDA < 18%)', digits=(5, 4), 
+    min_pool_rate = fields.Float(string='Pool Rate Min (floor)', digits=(5, 4),
                                  default=0.61)
-    min_pool_rate_min = fields.Float(string='Min Limit', digits=(5, 4), default=0.3)
-    min_pool_rate_max = fields.Float(string='Max Limit', digits=(5, 4), default=0.8)
+    min_pool_rate_min = fields.Float(string='Pool Rate Min (floor) — Lower Bound', digits=(5, 4), default=0.3)
+    min_pool_rate_max = fields.Float(string='Pool Rate Min (floor) — Upper Bound', digits=(5, 4), default=0.8)
     min_pool_rate_approver = fields.Char(string='Approver', default='Board')
 
-    max_pool_rate = fields.Float(string="""Max Pool Rate (15% - 30%)""", digits=(5, 4),
+    max_pool_rate = fields.Float(string='Pool Rate Max (ceiling)', digits=(5, 4),
                                  default=1.70
                                  )
-    
-    max_pool_rate_min = fields.Float(default=1.50)
-    max_pool_rate_max = fields.Float(default=2.0)
+
+    max_pool_rate_min = fields.Float(string='Pool Rate Max (ceiling) — Lower Bound', default=1.50)
+    max_pool_rate_max = fields.Float(string='Pool Rate Max (ceiling) — Upper Bound', default=2.0)
     max_pool_rate_approver = fields.Char(default='Board')
 
-    ebitda_scaling_start = fields.Float(string='EBITDA Threshold — Scaling Begins',
+    ebitda_scaling_start = fields.Float(string='EBITDA threshold Scaling Start',
                                         digits=(5, 4), default=12.0)
-    ebitda_scaling_start_min = fields.Float(default=10)
-    ebitda_scaling_start_max = fields.Float(default=15)
+    ebitda_scaling_start_min = fields.Float(string='EBITDA threshold Scaling Start — Lower Bound', default=10)
+    ebitda_scaling_start_max = fields.Float(string='EBITDA threshold Scaling Start — Upper Bound', default=15)
     ebitda_scaling_start_approver = fields.Char(default='Board')
 
     ebitda_max_rate_threshold = fields.Float(string='EBITDA Threshold — Max Rate Reached',
@@ -65,31 +65,31 @@ class BonusParameter(models.Model):
     ebitda_max_rate_threshold_max = fields.Float(default=70.00)
     ebitda_max_rate_threshold_approver = fields.Char(default='Board')
 
-    partial_gate_floor = fields.Float(string='Partial Gate Floor (EBITDA 18%)',
+    partial_gate_floor = fields.Float(string='Profitability Gate (Partial unlock)',
                                       digits=(5, 4), default=18.0)
-    partial_gate_floor_min = fields.Float(default=15.0)
-    partial_gate_floor_max = fields.Float(default=22.0)
+    partial_gate_floor_min = fields.Float(string='Profitability Gate (Partial unlock) — Lower Bound', default=15.0)
+    partial_gate_floor_max = fields.Float(string='Profitability Gate (Partial unlock) — Upper Bound', default=22.0)
     partial_gate_floor_approver = fields.Char(default='Board')
 
-    full_gate_floor = fields.Float(string='Full Gate Floor (EBITDA 22%)', digits=(5, 4), default=22.0)
-    full_gate_floor_min = fields.Float(default=20)
-    full_gate_floor_max = fields.Float(default=30)
+    full_gate_floor = fields.Float(string='Profitability Gate (full unlock)', digits=(5, 4), default=22.0)
+    full_gate_floor_min = fields.Float(string='Profitability Gate (full unlock) — Lower Bound', default=20)
+    full_gate_floor_max = fields.Float(string='Profitability Gate (full unlock) — Upper Bound', default=30)
     full_gate_floor_approver = fields.Char(default='Board')
-        # ── L4: Grand Pool → OPM (input) / SUP (auto-remainder) ──
+        # ── Grand Pool → OPM (input) / SUP (auto-remainder) ──
     l4_opm_share_pct = fields.Float(
-        string='OPM Share (%)', digits=(5, 2), default=60,
+        string='Opm Share Pct (%)', digits=(5, 2), default=60,
         help="OPM's share of the Grand Pool. "
              "SUP pool auto-computes as 100% minus this value.")
     l4_sup_share_pct = fields.Float(
         string='SUP Share (%)', digits=(5, 2),
         compute='_compute_l4_sup_share', store=True,
         help="Auto-computed: 100 − OPM share")
-    l4_opm_share_pct_min = fields.Float(default=20)
-    l4_opm_share_pct_max = fields.Float(default=80)
-    l4_opm_share_pct_approver = fields.Char(default='Finance Director')
+    l4_opm_share_pct_min = fields.Float(string='Opm Share Pct — Lower Bound', default=20)
+    l4_opm_share_pct_max = fields.Float(string='Opm Share Pct — Upper Bound', default=80)
+    l4_opm_share_pct_approver = fields.Char(string='Opm Share Pct Approver', default='Finance Director')
 
     # ── L5: SUP Pool → Senior-Mgmt (input) / Ops-Support (auto-remainder) ──
-    l5_senior_mgmt_share_pct = fields.Float(
+    senior_mgmt_share_pct = fields.Float(
         string='Senior-Mgmt Share (%)', digits=(5, 2), default=70,
         help="Senior-Mgmt's share of the SUP Pool. "
              "Ops-Support auto-computes as 100% minus this value.")
@@ -97,13 +97,14 @@ class BonusParameter(models.Model):
         string='Ops-Support Share (%)', digits=(5, 2),
         compute='_compute_l5_ops_share', store=True,
         help="Auto-computed: 100 − Senior-Mgmt share")
-    l5_senior_mgmt_share_pct_min = fields.Float(default=50)
-    l5_senior_mgmt_share_pct_max = fields.Float(default=80)
-    l5_senior_mgmt_share_pct_approver = fields.Char(default='Finance Director')
+    senior_mgmt_share_pct_min = fields.Float(default=50)
+    senior_mgmt_share_pct_max = fields.Float(default=80)
+    senior_mgmt_share_pct_approver = fields.Char(default='Finance Director')
 
-    aip_annual_rate = fields.Float(string='AIP Annual Rate', digits=(5, 4))
-    aip_annual_rate_min = fields.Float(default=0.001)
-    aip_annual_rate_max = fields.Float(default=0.01)
+    aip_annual_rate = fields.Float(string='AIP Annual Rate', digits=(5, 4),
+                                   help='% of annual revenue for year-end management bonus')
+    aip_annual_rate_min = fields.Float(default=5.0)
+    aip_annual_rate_max = fields.Float(default=6.0)
     aip_annual_rate_approver = fields.Char(default='Board')
 
     aip_deferral_rate = fields.Float(string='AIP Deferral Rate', digits=(5, 4))
@@ -198,7 +199,7 @@ class BonusParameter(models.Model):
     entry_level_sales_retrieval_max = fields.Float(default=1.00)
 
     # -- Section D: AIP & Deferred Parameters --
-    aip_eligibility_threshold = fields.Float(string='AIP Eligibility Threshold',
+    aip_eligibility_threshold = fields.Float(string='AIP Eligibility Threshold (%)',
                                              digits=(5, 2))
     senior_mgmt_deferred_rate = fields.Float(string='Senior Mgmt Deferred Rate (%)',
                                              digits=(5, 4))
@@ -208,8 +209,8 @@ class BonusParameter(models.Model):
                                        digits=(5, 4))
     aip_deferred_rate_param = fields.Float(string='AIP Deferred Rate (%)',
                                            digits=(5, 4))
-    minimum_floor = fields.Float(string='Minimum Floor', digits='Product Price')
-    maximum_cap = fields.Float(string='Maximum Cap', digits='Product Price')
+    minimum_floor = fields.Float(string='MIN floor - Hygiene/Security(₦)', digits='Product Price')
+    maximum_cap = fields.Float(string='MIN floor — Junior Staff (₦)', digits='Product Price')
 
     # -- Section E: KPI Weights (must sum to 100%) --
     revenue_weight = fields.Float(string='Revenue Achievement Weight (%)',
@@ -277,10 +278,10 @@ class BonusParameter(models.Model):
         for rec in self:
             rec.l4_sup_share_pct = 100.0 - (rec.l4_opm_share_pct or 0.0)
 
-    @api.depends('l5_senior_mgmt_share_pct')
+    @api.depends('senior_mgmt_share_pct')
     def _compute_l5_ops_share(self):
         for rec in self:
-            rec.l5_ops_support_share_pct = 100.0 - (rec.l5_senior_mgmt_share_pct or 0.0)
+            rec.l5_ops_support_share_pct = 100.0 - (rec.senior_mgmt_share_pct or 0.0)
 
     _sql_constraints = [
         ('period_unique', 'UNIQUE(period_id)',
@@ -302,7 +303,7 @@ class BonusParameter(models.Model):
             ('full_gate_floor', 'full_gate_floor_min', 'full_gate_floor_max'),
             ('max_pool_rate', 'max_pool_rate_min', 'max_pool_rate_max'),
             ('l4_opm_share_pct', 'l4_opm_share_pct_min', 'l4_opm_share_pct_max'),
-            ('l5_senior_mgmt_share_pct', 'l5_senior_mgmt_share_pct_min', 'l5_senior_mgmt_share_pct_max'),
+            ('senior_mgmt_share_pct', 'senior_mgmt_share_pct_min', 'senior_mgmt_share_pct_max'),
             ('aip_annual_rate', 'aip_annual_rate_min', 'aip_annual_rate_max'),
             ('aip_deferral_rate', 'aip_deferral_rate_min', 'aip_deferral_rate_max'),
             ('revenue_weight', 'revenue_weight_min', 'revenue_weight_max'),
@@ -329,7 +330,7 @@ class BonusParameter(models.Model):
             if rec.min_pool_rate and rec.max_pool_rate:
                 if rec.min_pool_rate >= rec.max_pool_rate:
                     raise ValidationError(_(
-                        'Min Pool Rate (%s%%) must be below Max Pool Rate (%s%%).'
+                        'Pool Rate Min (floor) (%s%%) must be below Pool Rate Max (ceiling) (%s%%).'
                     ) % (
                         rec.min_pool_rate / 100,
                         rec.max_pool_rate / 100,
@@ -342,8 +343,8 @@ class BonusParameter(models.Model):
             if rec.ebitda_scaling_start and rec.full_gate_floor:
                 if rec.ebitda_scaling_start > rec.full_gate_floor: # 11 > 22
                     raise ValidationError(_(
-                        'EBITDA Scaling Start (%s%%) must not exceed '
-                        'Full Gate Floor (%s%%) — prevents dead zone.'
+                        'EBITDA threshold Scaling Start (%s%%) must not exceed '
+                        'Profitability Gate (full unlock) (%s%%) — prevents dead zone.'
                     ) % (
                         rec.ebitda_scaling_start / 100,
                         rec.full_gate_floor / 100,
@@ -352,7 +353,7 @@ class BonusParameter(models.Model):
                 if rec.ebitda_max_rate_threshold <= rec.full_gate_floor:
                     raise ValidationError(_(
                         'EBITDA Max Rate Threshold (%s%%) must exceed '
-                        'Full Gate Floor (%s%%) — ensures scaling in full zone.'
+                        'Profitability Gate (full unlock) (%s%%) — ensures scaling in full zone.'
                     ) % (
                         rec.ebitda_max_rate_threshold / 100,
                         rec.full_gate_floor / 100,
@@ -364,8 +365,8 @@ class BonusParameter(models.Model):
             if rec.partial_gate_floor and rec.full_gate_floor:
                 if rec.partial_gate_floor >= rec.full_gate_floor:
                     raise ValidationError(_(
-                        'Partial Gate Floor (%s%%) must be below '
-                        'Full Gate Floor (%s%%).'
+                        'Profitability Gate (Partial unlock) (%s%%) must be below '
+                        'Profitability Gate (full unlock) (%s%%).'
                     ) % (
                         rec.partial_gate_floor / 100,
                         rec.full_gate_floor / 100,
@@ -408,8 +409,8 @@ class BonusParameter(models.Model):
         'max_pool_rate_min', 'max_pool_rate_max', 'max_pool_rate_approver',
         'l4_opm_share_pct_min', 'l4_opm_share_pct_max',
         'l4_opm_share_pct_approver',
-        'l5_senior_mgmt_share_pct_min', 'l5_senior_mgmt_share_pct_max',
-        'l5_senior_mgmt_share_pct_approver',
+        'senior_mgmt_share_pct_min', 'senior_mgmt_share_pct_max',
+        'senior_mgmt_share_pct_approver',
         'aip_annual_rate_min', 'aip_annual_rate_max',
         'aip_annual_rate_approver',
         'aip_deferral_rate_min', 'aip_deferral_rate_max',

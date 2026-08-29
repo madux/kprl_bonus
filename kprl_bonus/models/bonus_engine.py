@@ -55,9 +55,9 @@ class BonusEngine(models.Model):
                                compute='_compute_headcount', store=True)
     aip_pool = fields.Float(string='AIP Pool (Annual)', digits='Product Price') 
     # company_kpi_score = fields.Float(string='Company KPI Score', digits=(5, 4)) duplicate field, already defined above
-        # ── L4: Grand Pool split ──
+        # ── Grand Pool split ──
     opm_pool_split = fields.Float(
-        string='OPM Share (%)', digits=(5, 2), default=60,
+        string='Opm Share Pct (%)', digits=(5, 2), default=60,
         help="User input: OPM's share of the Grand Pool")
     sup_pool_split = fields.Float(
         string='SUP Share (%)', digits=(5, 2),

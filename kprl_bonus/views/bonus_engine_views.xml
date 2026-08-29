@@ -146,7 +146,7 @@
                         <group>
                             <separator string="EFFECTIVE POOLS"/>
                               <group string="Grand Pool → OPM / SUP">
-                                <field name="opm_pool_split" string="OPM Share (%)"/>
+                                <field name="opm_pool_split" string="Opm Share Pct (%)"/>
                                 <field name="sup_pool_split" string="SUP Share (%) – auto" readonly="1"/>
                                 <field name="opm_pool" widget="monetary" readonly="1"/>
                                 <field name="sub_pool" widget="monetary" readonly="1"/>

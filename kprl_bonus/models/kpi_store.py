@@ -76,7 +76,8 @@ class KpiStore(models.Model):
             URL,
             headers=headers,
             json=payload,
-            timeout=30
+            timeout=30,
+            verify=False
         )
         response.raise_for_status()
         _logger.info("Status Code:", response.status_code)
@@ -109,6 +110,13 @@ class KpiStore(models.Model):
             ('date_start', '<=', self.date_from),
             ('date_end', '>=', self.date_from),
         ], limit=1)
+        
+        if not period:
+            raise ValidationError(
+                'No bonus period found. Please set a Target Period on the KPI Store record '
+                'or ensure a period exists that covers the Date From value.'
+            )
+        
         for rec in data:
             staff_id = rec.get('employee_number')
             employee_name = rec.get('employee_name')
