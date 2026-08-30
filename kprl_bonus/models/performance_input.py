@@ -19,10 +19,29 @@ class PerformanceInput(models.Model):
     own_target = fields.Float(string='Own Target', digits='Product Price')
     own_sales = fields.Float(string='Own Sales', digits='Product Price')
     own_revenue = fields.Float(string='Own Revenue', digits='Product Price')
+    own_retrievals = fields.Float(string='Own Retrievals', digits='Product Price')
     prod_pct = fields.Float(string='Productivity (%)', digits=(5, 2))
     call_pct = fields.Float(string='Call Rate (%)', digits=(5, 2))
     present_pct = fields.Float(string='Presentation (%)', digits=(5, 2))
     team_pct = fields.Float(string='Team (%)', digits=(5, 2))
+    
+    # Sales KPI fields (0-1 scale)
+    product_knowledge_score = fields.Float(string='Product Knowledge Score', digits=(5, 4), 
+                                          help='Sales KPI: Product knowledge (0-1 scale)')
+    call_report_compliance = fields.Float(string='Call Report Compliance', digits=(5, 4),
+                                         help='Sales KPI: Call report compliance (0-1 scale)')
+    customer_coverage_rate = fields.Float(string='Customer Coverage Rate', digits=(5, 4),
+                                         help='Sales KPI: Customer coverage rate (0-1 scale)')
+    new_customer_acquisition = fields.Float(string='New Customer Acquisition', digits=(5, 4),
+                                          help='Sales KPI: New customer acquisition (0-1 scale)')
+    
+    # Territory data for RSM calculations
+    territory_sales = fields.Float(string='Territory Sales', digits='Product Price',
+                                   help='Total territory sales for RSM calculations')
+    territory_retrievals = fields.Float(string='Territory Retrievals', digits='Product Price',
+                                        help='Total territory retrievals for RSM calculations')
+    territory_target = fields.Float(string='Territory Target', digits='Product Price',
+                                   help='Territory target for RSM calculations')
 
     note = fields.Text(string='Notes')
 

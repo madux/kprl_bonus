@@ -28,6 +28,15 @@ class BonusPeriod(models.Model):
     payout_ids = fields.One2many('kprl.bonus.payout', 'period_id', string='Payout Lines')
     product_pool_ids = fields.One2many('kprl.product.pool', 'period_id', string='Product Pool')
     territory_payout_ids = fields.One2many('kprl.territory.payout', 'period_id', string='Territory Payouts')
+    sales_engine_ids = fields.One2many('kprl.sales.engine', 'period_id', string='Sales Engine Runs')
+    
+    # National sales targets and actuals for sales commission calculations
+    national_sales_target = fields.Float(string='National Quarterly Sales Target', digits='Product Price')
+    national_retrieval_target = fields.Float(string='National Quarterly Retrieval Target', digits='Product Price')
+    national_actual_sales = fields.Float(string='National Actual Sales', digits='Product Price',
+                                        compute='_compute_national_actuals', store=True)
+    national_actual_retrievals = fields.Float(string='National Actual Retrievals', digits='Product Price',
+                                             compute='_compute_national_actuals', store=True)
 
     sla_status = fields.Char(string='SLA Status', compute='_compute_sla_status')
 
@@ -41,6 +50,16 @@ class BonusPeriod(models.Model):
                 rec.sla_status = 'OVERDUE'
             else:
                 rec.sla_status = 'ON TRACK'
+
+    @api.depends('performance_ids.own_sales', 'performance_ids.own_retrievals')
+    def _compute_national_actuals(self):
+        for rec in self:
+            # Sum of all sales staff's own sales and retrievals
+            sales_staff_perfs = rec.performance_ids.filtered(
+                lambda p: p.employee_id.is_sales and p.employee_id.sales_role != 'none'
+            )
+            rec.national_actual_sales = sum(p.own_sales for p in sales_staff_perfs)
+            rec.national_actual_retrievals = sum(p.own_retrievals for p in sales_staff_perfs)
 
     _sql_constraints = [
         ('name_unique', 'UNIQUE(name)', 'Period name must be unique!'),

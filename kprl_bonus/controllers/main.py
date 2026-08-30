@@ -648,18 +648,60 @@ class KprlPages(http.Controller):
                 ('period_id', '=', period.id),
             ], limit=1)
             if param:
+                engine = request.env['kprl.bonus.engine'].search([('period_id', '=', period.id)], limit=1, order='create_date desc')
+                perf = request.env['kprl.performance.input'].search([('employee_id', '=', emp.id), ('period_id', '=', period.id)], limit=1)
+                dept_kpi = request.env['kprl.dept.kpi.multiplier'].search([('department_id', '=', emp.department_id.id), ('period_id', '=', period.id)], limit=1) if emp.department_id else None
+                tenure_mult = 1.0
+                tenure_years = emp.tenure_years or 0
+                tenure_rec = request.env['kprl.tenure.multiplier'].search([('years_of_service', '<=', tenure_years)], order='years_of_service desc', limit=1)
+                if tenure_rec:
+                    tenure_mult = tenure_rec.multiplier
+                else:
+                    if tenure_years < 3: tenure_mult = 1.00
+                    elif tenure_years < 6: tenure_mult = 1.03
+                    elif tenure_years < 9: tenure_mult = 1.06
+                    elif tenure_years < 12: tenure_mult = 1.09
+                    else: tenure_mult = 1.12
+                value_per_point = 0
+                base_eligible = 0
+                if engine:
+                    code = (emp.grade_id.subpool_id.code or 'OPM') if emp.grade_id and emp.grade_id.subpool_id else 'OPM'
+                    mapping = {'SENMGT': 'senior_mgt_value_point', 'OPM': 'opm_value_point', 'OPSSUP': 'ops_sup_value_point'}
+                    field = mapping.get(code, 'opm_value_point')
+                    value_per_point = getattr(engine, field) or 0
+                    base_eligible = (emp.grade_id.total_points or 0) * value_per_point
+                else:
+                    base_eligible = (emp.grade_id.total_points or 0) * 10000 if emp.grade_id else 0
                 sim_params = {
-                    'period_name': period.name,
-                    'base_eligible': emp.grade_id.token_rate * emp.grade_id.total_points if emp.grade_id else 0,
-                    'deferral_rate': emp.grade_id.deferral_rate if emp.grade_id else 0,
-                    'tenure_mult': 1.0,
-                    'gmp_factor': 1.0,
-                    'proration_factor': 1.0,
-                    'min_floor': param.minimum_floor or 30000,
-                    'max_cap': param.maximum_cap or 500000,
+                    "period_name": period.name,
+                    "period_id": period.id,
+                    "is_sales": bool(emp.is_sales),
+                    "sales_role": emp.sales_role or 'none',
+                    "base_eligible": round(base_eligible, 2),
+                    "value_per_point": round(value_per_point, 2),
+                    "dept_kpi_mult": dept_kpi.multiplier if dept_kpi else (emp.department_id.kpi_multiplier if emp.department_id else 1.0),
+                    "tenure_mult": tenure_mult,
+                    "gmp_factor": 1.0 if (not dept_kpi or dept_kpi.gmp_status=='clean') else 0.9,
+                    "proration_factor": engine.proration_factor if engine else 1.0,
+                    "min_floor": (param.minimum_floor if 'HYGIENE' in (emp.grade_id.name or '').upper() else param.maximum_cap) if param else 0,
+                    "g_individual_cap": param.g_individual_quarterly_cap if param and hasattr(param, 'g_individual_quarterly_cap') and param.g_individual_quarterly_cap else 2000000,
+                    "i4_stretch_cap": param.i4_stretch_individual_cap if param and hasattr(param, 'i4_stretch_individual_cap') and param.i4_stretch_individual_cap else 5000000,
+                    "deferral_rate": emp.grade_id.deferral_rate if emp.grade_id else 0,
+                    "nat_sales": getattr(period, 'national_actual_sales', 0) or 0,
+                    "nat_retr": getattr(period, 'national_actual_retrievals', 0) or 0,
+                    "sales_comm_rate": (param.sales_commission_rate / 100.0) if param and param.sales_commission_rate else 0.003,
+                    "retr_comm_rate": (param.retrieval_commission_rate / 100.0) if param and param.retrieval_commission_rate else 0.007,
+                    "h1_top_sales_floor": (param.h1_top_mgmt_sales_floor / 100.0) if param and hasattr(param, 'h1_top_mgmt_sales_floor') and param.h1_top_mgmt_sales_floor else 0.50,
+                    "b34_min": (param.b34_top_mgmt_min_sales_attainment / 100.0) if param and hasattr(param, 'b34_top_mgmt_min_sales_attainment') and param.b34_top_mgmt_min_sales_attainment else 0.65,
+                    "kpi_floor": param.kpi_multiplier_floor if param and hasattr(param,'kpi_multiplier_floor') and param.kpi_multiplier_floor else 0.80,
+                    "kpi_range": param.kpi_multiplier_range if param and hasattr(param,'kpi_multiplier_range') and param.kpi_multiplier_range else 0.40,
+                    "accel_kick": (param.i1_accelerator_kick_in/100.0) if param and hasattr(param,'i1_accelerator_kick_in') and param.i1_accelerator_kick_in else 1.00,
                 }
 
+        import json as _json
+        sim_params_json = _json.dumps(sim_params) if sim_params else '{}'
         return request.render('kprl_bonus.simulation_page', {
             'employee': emp,
             'sim_params': sim_params,
+            'sim_params_json': sim_params_json,
         })

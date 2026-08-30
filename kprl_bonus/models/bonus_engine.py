@@ -30,6 +30,17 @@ class BonusEngine(models.Model):
     ebitda_margin = fields.Float(string='EBITDA Margin (%)', digits=(5, 2))
     gate_factor = fields.Float(string='Gate Factor', digits=(5, 4),
                                compute='_compute_gate_factor', store=True)
+    
+    # New fields for proper pool rate calculation
+    auto_pool_rate = fields.Float(string='Auto Pool Rate (%)', digits=(5, 4),
+                                 compute='_compute_auto_pool_rate', store=True,
+                                 help='Linearly interpolated pool rate based on EBITDA margin')
+    company_performance_multiplier = fields.Float(string='Company Performance Multiplier', digits=(5, 4),
+                                                compute='_compute_company_performance_multiplier', store=True,
+                                                help='Multiplier based on Company KPI Score')
+    points_weighted_dept_multiplier = fields.Float(string='Points-Weighted Dept Multiplier', digits=(5, 4),
+                                                  compute='_compute_points_weighted_dept_multiplier', store=True,
+                                                  help='Weighted average of department KPI multipliers by staff points')
 
     gmp_status = fields.Selection([
         ('clean', 'Clean'),
@@ -189,16 +200,147 @@ class BonusEngine(models.Model):
             else:
                 rec.gate_status = 'closed'
 
-    @api.depends('gate_status')
-    def _compute_gate_factor(self):
+    @api.depends('ebitda_margin', 'period_id')
+    def _compute_auto_pool_rate(self):
+        """Calculate auto pool rate using linear interpolation as per specification"""
         for rec in self:
-            params = rec.period_id.parameter_ids
-            if rec.gate_status == 'full':
-                rec.gate_factor = params.max_pool_rate if params else 0.02
-            elif rec.gate_status == 'partial':
-                rec.gate_factor = params.partial_gate_floor if params else 0.0025
+            params = rec.period_id.parameter_ids if rec.period_id else None
+            if not params:
+                rec.auto_pool_rate = 0.0
+                continue
+
+            # Get parameters from specification
+            min_rate = params.min_pool_rate / 100.0 if params.min_pool_rate else 0.00606
+            max_rate = params.max_pool_rate / 100.0 if params.max_pool_rate else 0.017
+            ebitda_floor = params.ebitda_scaling_start / 100.0 if params.ebitda_scaling_start else 0.12
+            ebitda_target = params.ebitda_max_rate_threshold / 100.0 if params.ebitda_max_rate_threshold else 0.30
+
+            actual_ebitda = rec.ebitda_margin / 100.0 if rec.ebitda_margin else 0.0
+
+            # Linear interpolation formula from specification:
+            # Auto Pool Rate = Pool Rate Min + [(Actual EBITDA - EBITDA Floor) / (EBITDA Target - EBITDA Floor)] × (Pool Rate Max - Pool Rate Min)
+            if actual_ebitda <= ebitda_floor:
+                rec.auto_pool_rate = min_rate
+            elif actual_ebitda >= ebitda_target:
+                rec.auto_pool_rate = max_rate
             else:
-                rec.gate_factor = params.min_pool_rate if params else 0.0
+                interpolation_factor = (actual_ebitda - ebitda_floor) / (ebitda_target - ebitda_floor)
+                rec.auto_pool_rate = min_rate + (interpolation_factor * (max_rate - min_rate))
+
+    @api.depends('ebitda_margin', 'period_id')
+    def _compute_gate_factor(self):
+        """Calculate gate factor with continuous ramp for partial gate"""
+        for rec in self:
+            params = rec.period_id.parameter_ids if rec.period_id else None
+            if not params:
+                rec.gate_factor = 0.0
+                continue
+
+            partial_unlock = params.partial_gate_floor / 100.0 if params.partial_gate_floor else 0.18
+            full_unlock = params.full_gate_floor / 100.0 if params.full_gate_floor else 0.22
+            actual_ebitda = rec.ebitda_margin / 100.0 if rec.ebitda_margin else 0.0
+
+            # Profitability Gate Factor with continuous ramp
+            if actual_ebitda >= full_unlock:
+                rec.gate_factor = 1.0  # Fully open
+            elif actual_ebitda <= partial_unlock:
+                rec.gate_factor = 0.0  # Closed
+            else:
+                # Linear ramp from 0 at partial to 1.0 at full
+                rec.gate_factor = (actual_ebitda - partial_unlock) / (full_unlock - partial_unlock)
+            
+            # Update gate status based on continuous calculation
+            if actual_ebitda >= full_unlock:
+                rec.gate_status = 'full'
+            elif actual_ebitda >= partial_unlock:
+                rec.gate_status = 'partial'
+            else:
+                rec.gate_status = 'closed'
+
+    @api.depends('period_id.company_kpi', 'period_id.parameter_ids.company_mult_baseline', 'period_id.parameter_ids.company_mult_k_factor')
+    def _compute_company_performance_multiplier(self):
+        for rec in self:
+            company_kpi = rec.period_id.company_kpi if rec.period_id else 0.0
+            params = rec.period_id.parameter_ids[:1] if rec.period_id else None
+            baseline = params.company_mult_baseline if params and params.company_mult_baseline else 0.90
+            k_factor = params.company_mult_k_factor if params and params.company_mult_k_factor else 0.20
+            if company_kpi >= baseline:
+                rec.company_performance_multiplier = 1.0 + ((company_kpi - baseline) * k_factor)
+            else:
+                rec.company_performance_multiplier = 1.0  # No boost below baseline
+
+    @api.depends('period_id')
+    def _compute_points_weighted_dept_multiplier(self):
+        """Calculate points-weighted average of department KPI multipliers"""
+        for rec in self:
+            if not rec.period_id:
+                rec.points_weighted_dept_multiplier = 1.0
+                continue
+
+            # Get all departments with their KPI multipliers for this period
+            dept_kpis = self.env['kprl.dept.kpi.multiplier'].search([
+                ('period_id', '=', rec.period_id.id)
+            ])
+            
+            if not dept_kpis:
+                rec.points_weighted_dept_multiplier = 1.0
+                continue
+
+            # Calculate weighted average by staff points
+            total_weighted_mult = 0.0
+            total_points = 0.0
+            
+            for dept_kpi in dept_kpis:
+                # Get total points for employees in this department
+                dept_employees = self.env['kprl.employee'].search([
+                    ('department_id', '=', dept_kpi.department_id.id),
+                    ('status', '=', 'active')
+                ])
+                dept_points = sum(emp.total_points for emp in dept_employees)
+                
+                if dept_points > 0:
+                    total_weighted_mult += dept_kpi.multiplier * dept_points
+                    total_points += dept_points
+            
+            rec.points_weighted_dept_multiplier = (total_weighted_mult / total_points) if total_points > 0 else 1.0
+
+    @api.depends('ebitda_margin', 'period_id')
+
+
+    @api.depends('period_id', 'period_id.department_ids')
+    def _compute_points_weighted_dept_multiplier(self):
+        """Calculate points-weighted average of department KPI multipliers"""
+        for rec in self:
+            if not rec.period_id:
+                rec.points_weighted_dept_multiplier = 1.0
+                continue
+
+            # Get all departments with their KPI multipliers for this period
+            dept_kpis = self.env['kprl.dept.kpi.multiplier'].search([
+                ('period_id', '=', rec.period_id.id)
+            ])
+            
+            if not dept_kpis:
+                rec.points_weighted_dept_multiplier = 1.0
+                continue
+
+            # Calculate weighted average by staff points
+            total_weighted_mult = 0.0
+            total_points = 0.0
+            
+            for dept_kpi in dept_kpis:
+                # Get total points for employees in this department
+                dept_employees = self.env['kprl.employee'].search([
+                    ('department_id', '=', dept_kpi.department_id.id),
+                    ('status', '=', 'active')
+                ])
+                dept_points = sum(emp.total_points for emp in dept_employees)
+                
+                if dept_points > 0:
+                    total_weighted_mult += dept_kpi.multiplier * dept_points
+                    total_points += dept_points
+            
+            rec.points_weighted_dept_multiplier = (total_weighted_mult / total_points) if total_points > 0 else 1.0
     
     @api.depends('grade_level_ids')
     def _compute_total_employee_on_grade(self):
@@ -226,19 +368,34 @@ class BonusEngine(models.Model):
 
     def action_compute(self):
         self.ensure_one()
-        params = self.period_id.parameter_ids
-        self.quarterly_revenue = self.period_id.revenue_target
+        params = self.period_id.parameter_ids[:1] if self.period_id else None
+        # SKU source Sec4→5A: BasePool = Σ contributions, not revenue_target
+        pool_lines = self.env['kprl.product.pool'].search([('period_id','=',self.period_id.id)])
+        base_pool = sum(pool_lines.mapped('pool_contribution')) if pool_lines else 0.0
+        quarterly_rev = sum(pool_lines.mapped('quantity_revenue')) if pool_lines else (self.period_id.revenue_target or 0.0)
+        self.quarterly_revenue = quarterly_rev
+        self.pool_contribution = base_pool
         self.ebitda_margin = self.period_id.ebitda_margin
-
-        effective_rate = self.gate_factor * self.gmp_factor
-        self.effective_pool = self.quarterly_revenue * effective_rate
-        self.pool_contribution = self.effective_pool
+        funded_pool = base_pool * self.gate_factor * self.gmp_factor
+        performance_blend = (0.6 * self.company_performance_multiplier) + (0.4 * self.points_weighted_dept_multiplier)
+        effective = funded_pool * performance_blend
+        # Cap Sec5I: Effective ≤ 12%*EBITDA
+        ebitda_amt = quarterly_rev * (self.ebitda_margin/100.0) if quarterly_rev else 0.0
+        cap_pct = (params.g_bonus_pool_cap_pct / 100.0) if params and getattr(params, 'g_bonus_pool_cap_pct', None) else 0.12
+        cap = ebitda_amt * cap_pct
+        self.effective_pool = min(effective, cap) if cap else effective
 
         payouts = self.env['kprl.bonus.payout'].search([
             ('period_id', '=', self.period_id.id),
         ])
         self.ops_payout = sum(p.gross_payable for p in payouts)
-        # self.sales_commission = self.ops_payout * 0.0
+        
+        # Calculate sales commission from sales engine
+        sales_engines = self.env['kprl.sales.engine'].search([
+            ('period_id', '=', self.period_id.id),
+        ])
+        self.sales_commission = sum(se.final_sales_payout for se in sales_engines)
+        
         self.total_payout = self.ops_payout + self.sales_commission
         self.aip_pool = self.quarterly_revenue * (params.aip_annual_rate or 0.002)
 

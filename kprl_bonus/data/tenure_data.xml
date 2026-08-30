@@ -4,37 +4,32 @@
         <record id="kprl_tenure_0" model="kprl.tenure.multiplier">
             <field name="years_of_service">0</field>
             <field name="multiplier">1.00</field>
-            <field name="note">Entry level</field>
+            <field name="note">Entry level (0-3 years)</field>
         </record>
-        <record id="kprl_tenure_2" model="kprl.tenure.multiplier">
-            <field name="years_of_service">2</field>
-            <field name="multiplier">1.02</field>
-            <field name="note">2+ years</field>
+        <record id="kprl_tenure_3" model="kprl.tenure.multiplier">
+            <field name="years_of_service">3</field>
+            <field name="multiplier">1.03</field>
+            <field name="note">3+ years</field>
         </record>
-        <record id="kprl_tenure_5" model="kprl.tenure.multiplier">
-            <field name="years_of_service">5</field>
-            <field name="multiplier">1.04</field>
-            <field name="note">5+ years</field>
-        </record>
-        <record id="kprl_tenure_8" model="kprl.tenure.multiplier">
-            <field name="years_of_service">8</field>
+        <record id="kprl_tenure_6" model="kprl.tenure.multiplier">
+            <field name="years_of_service">6</field>
             <field name="multiplier">1.06</field>
-            <field name="note">8+ years</field>
+            <field name="note">6+ years</field>
+        </record>
+        <record id="kprl_tenure_9" model="kprl.tenure.multiplier">
+            <field name="years_of_service">9</field>
+            <field name="multiplier">1.09</field>
+            <field name="note">9+ years</field>
         </record>
         <record id="kprl_tenure_12" model="kprl.tenure.multiplier">
             <field name="years_of_service">12</field>
-            <field name="multiplier">1.08</field>
+            <field name="multiplier">1.12</field>
             <field name="note">12+ years</field>
         </record>
         <record id="kprl_tenure_15" model="kprl.tenure.multiplier">
             <field name="years_of_service">15</field>
-            <field name="multiplier">1.10</field>
-            <field name="note">15+ years</field>
-        </record>
-        <record id="kprl_tenure_20" model="kprl.tenure.multiplier">
-            <field name="years_of_service">20</field>
             <field name="multiplier">1.12</field>
-            <field name="note">20+ years</field>
+            <field name="note">15+ years (capped)</field>
         </record>
     </data>
 </odoo>

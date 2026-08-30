@@ -20,4 +20,5 @@ from . import governance_event
 from . import risk_register
 from . import audit_trail
 from . import payout_report
-from . import kpi_store 
+from . import kpi_store
+from . import sales_engine 

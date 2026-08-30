@@ -172,31 +172,13 @@ class BonusParameter(models.Model):
     rsm_asm_dual_factor_max = fields.Float(default=1.00)
     rsm_asm_dual_factor_approver = fields.Char(default='Finance Director')
 
-    # -- Section C: Sales Eligibility Thresholds --
-    top_mgmt_min_sales = fields.Float(string='Top Mgmt Min Sales',
-                                      digits='Product Price', default=75)
-    top_mgmt_min_sales_min = fields.Float(default=65)
-    top_mgmt_min_sales_max = fields.Float(default=100)
-
-    sen_mgmt_min_sales = fields.Float(string='Senior Mgmt Min Sales',
-                                      digits='Product Price')
-    sen_mgmt_min_sales_min = fields.Float(default=0.20)
-    sen_mgmt_min_sales_max = fields.Float(default=1.00)
-
-    mid_mgmt_min_sales = fields.Float(string='Mid Mgmt Min Sales',
-                                      digits='Product Price')
-    mid_mgmt_min_sales_min = fields.Float(default=0.20)
-    mid_mgmt_min_sales_max = fields.Float(default=1.00)
-
-    first_entrant_sales_threshold = fields.Float(string='First Entrant Threshold',
-                                                 digits='Product Price')
-    first_entrant_sales_threshold_min = fields.Float(default=0.20)
-    first_entrant_sales_threshold_max = fields.Float(default=1.00)
-
-    entry_level_sales_retrieval = fields.Float(string='Entry Level Sales Retrieval',
-                                               digits=(5, 4))
-    entry_level_sales_retrieval_min = fields.Float(default=0.20)
-    entry_level_sales_retrieval_max = fields.Float(default=1.00)
+    # -- Section C: Sales Eligibility Thresholds (Finance + HR Director) --
+    b34_top_mgmt_min_sales_attainment = fields.Float(string='Top Management — Min Sales Attainment (%)', digits=(5, 2), default=65.0, help='Min attainment to unlock commission at full strength; distinct from entry floor Sec H')
+    b35_top_mgmt_min_retrieval_rate = fields.Float(string='Top Management — Min Retrieval Rate (%)', digits=(5, 2), default=75.0)
+    b36_rsm_min_territory_sales_attainment = fields.Float(string='RSM — Min Territory Sales Attainment (%)', digits=(5, 2), default=75.0)
+    b37_rsm_min_territory_retrieval_rate = fields.Float(string='RSM — Min Territory Retrieval Rate (%)', digits=(5, 2), default=75.0)
+    b38_asm_min_personal_sales_attainment = fields.Float(string='ASM — Min Personal Sales Attainment (%)', digits=(5, 2), default=70.0)
+    b39_asm_min_personal_retrieval_rate = fields.Float(string='ASM — Min Personal Retrieval Rate (%)', digits=(5, 2), default=70.0)
 
     # -- Section D: AIP & Deferred Parameters --
     aip_eligibility_threshold = fields.Float(string='AIP Eligibility Threshold (%)',
@@ -238,6 +220,40 @@ class BonusParameter(models.Model):
     kpi_weight_valid = fields.Boolean(string='KPI Weights Valid',
                                       compute='_compute_kpi_weight_total', store=True)
 
+    # -- Section E2: Sales KPI Weights (must sum to 100%) --
+    sales_pk_weight = fields.Float(string='Product Knowledge Weight (%)',
+                                   digits=(5, 2), default=40,
+                                   help='Sales KPI: Product Knowledge weight')
+    sales_call_weight = fields.Float(string='Call Report Compliance Weight (%)',
+                                     digits=(5, 2), default=10,
+                                     help='Sales KPI: Call Report Compliance weight')
+    sales_coverage_weight = fields.Float(string='Customer Coverage Weight (%)',
+                                         digits=(5, 2), default=30,
+                                         help='Sales KPI: Customer Coverage weight')
+    sales_new_cust_weight = fields.Float(string='New Customer Acquisition Weight (%)',
+                                        digits=(5, 2), default=20,
+                                        help='Sales KPI: New Customer Acquisition weight')
+    
+    sales_kpi_weight_total = fields.Float(string='Sales KPI Weight Total', digits=(5, 2),
+                                         compute='_compute_sales_kpi_weight_total', store=True)
+    sales_kpi_weight_valid = fields.Boolean(string='Sales KPI Weights Valid',
+                                           compute='_compute_sales_kpi_weight_total', store=True)
+    
+    # -- KPI Multiplier Band Parameters --
+    kpi_multiplier_floor = fields.Float(string='KPI Multiplier Floor', digits=(5, 4),
+                                       default=0.80, help='J1: Multiplier at zero KPI score')
+    kpi_multiplier_range = fields.Float(string='KPI Multiplier Range', digits=(5, 4),
+                                       default=0.40, help='J2: Span above floor (top multiplier = floor + range)')
+        # -- Company Performance Multiplier (configurable, Sec 5D governance-tuned) --
+    company_mult_baseline = fields.Float(string='CompanyMult Baseline', digits=(5, 4), default=0.90,
+        help='KPI baseline where boost starts (spec approx 0.90, workbook 0.909775→1.01955)')
+    company_mult_k_factor = fields.Float(string='CompanyMult K-Factor', digits=(5, 4), default=0.20,
+        help='Boost slope: Mult = 1 + max(0, KPI-Baseline)*KFactor. Spec approx 0.2')
+    
+    pk_normalization_enabled = fields.Boolean(string='PK Score Normalization',
+                                             default=False,
+                                             help='If On, min-max rescales product knowledge across the team')
+
     # -- Section F: National Targets --
     quarterly_revenue_target = fields.Float(string='Quarterly Revenue Target',
                                             digits='Product Price')
@@ -248,20 +264,47 @@ class BonusParameter(models.Model):
     tenure_default_mult = fields.Float(string='Default Tenure Multiplier',
                                        digits=(5, 4), default=1.0)
 
-    # -- Sales Entry Gate Ramp --
-    ramp_new_hire_months = fields.Integer(string='New Hire Ramp Period (months)',
-                                          default=3)
-    ramp_entry_mult = fields.Float(string='Entry Gate Multiplier', digits=(5, 4),
-                                   default=0.5)
+    # -- Section G: Governance, Caps & Policy (Board-approved) --
+    g_bonus_pool_cap_pct = fields.Float(string='Bonus Pool Cap (% of EBITDA)', digits=(5, 2), default=12.0, help='Hard ceiling: effective pool cannot exceed this share of EBITDA')
+    g_individual_quarterly_cap = fields.Float(string='Individual Quarterly Cap (N)', digits='Product Price', default=2000000, help='Max any one person can receive per quarter')
+    g_leadership_premium = fields.Float(string='Leadership Premium (manager vs top subordinate)', digits=(5, 2), default=1.10, help='RSM / RSM+ASM commission floored at this multiple of the top subordinate in territory')
+    g_gmp_self_report_relief = fields.Float(string='GMP Self-Report Relief (penalty x)', digits=(5, 2), default=0.50, help='If GMP issue is self-reported, the penalty is multiplied by this (0.5 = halved)')
+    g_company_gmp_self_reported = fields.Boolean(string='Company GMP Self-Reported?', default=False)
 
-    # -- Sales Accelerators --
-    accelerator_threshold_1 = fields.Float(string='Accelerator Threshold 1 (%)',
-                                           digits=(5, 2))
+    # -- Section H: Sales Entry-Gate Ramp Floors (v9) --
+    h1_top_mgmt_sales_floor = fields.Float(string='Top Mgmt — Sales Entry Floor (%)', digits=(5, 2), default=50.0, help='Ramp start for GM/NSM/HeadTech sales. Below this = 0')
+    h2_rsm_sales_floor = fields.Float(string='RSM — Sales Entry Floor (%)', digits=(5, 2), default=65.0, help='Ramp start for RSM/RSM+ASM territory sales')
+    h3_asm_sales_floor = fields.Float(string='ASM — Sales Entry Floor (%)', digits=(5, 2), default=65.0)
+    h4_top_mgmt_retrieval_floor = fields.Float(string='Top Mgmt — Retrieval Entry Floor (%)', digits=(5, 2), default=65.0, help='Ramp start for the retrieval leg (secondary gate)')
+    h5_rsm_retrieval_floor = fields.Float(string='RSM — Retrieval Entry Floor (%)', digits=(5, 2), default=70.0)
+    h6_asm_retrieval_floor = fields.Float(string='ASM — Retrieval Entry Floor (%)', digits=(5, 2), default=70.0, help='If Floor = Min the gate becomes a HARD CLIFF at Min')
+
+    # -- Section I: Sales Accelerators & Stretch Cap (v10) --
+    i1_accelerator_kick_in = fields.Float(string='Accelerator Kick-in (%)', digits=(5, 2), default=100.0, help='Attainment where boost begins')
+    i2_accelerator_ceiling = fields.Float(string='Accelerator Ceiling (%)', digits=(5, 2), default=150.0, help='Attainment at which the full boost applies')
+    i3_accelerator_boost = fields.Float(string='Accelerator Boost (%)', digits=(5, 2), default=50.0, help='Max extra multiplier (up to +50% on eligible commission)')
+    i4_stretch_individual_cap = fields.Float(string='Stretch Individual Cap (N)', digits='Product Price', default=5000000, help='Higher cap for genuine over-performers when attainment > kick-in')
+    # Legacy accelerators (kept for migration, use i1-i4)
+    accelerator_threshold_1 = fields.Float(string='Accelerator Threshold 1 (%)', digits=(5, 2))
     accelerator_mult_1 = fields.Float(string='Accelerator Multiplier 1', digits=(5, 4))
-    accelerator_threshold_2 = fields.Float(string='Accelerator Threshold 2 (%)',
-                                           digits=(5, 2))
+    accelerator_threshold_2 = fields.Float(string='Accelerator Threshold 2 (%)', digits=(5, 2))
     accelerator_mult_2 = fields.Float(string='Accelerator Multiplier 2', digits=(5, 4))
     individual_cap = fields.Float(string='Individual Cap (%)', digits=(5, 2))
+
+    # -- Section K: RSM+ASM (Dual Role) Separate Thresholds (v15) --
+    k1_dual_min_sales = fields.Float(string='RSM+ASM — Min Territory Sales Attainment (%)', digits=(5, 2), default=75.0, help='Full-credit point for dual-role territory sales')
+    k2_dual_min_retrieval = fields.Float(string='RSM+ASM — Min Territory Retrieval Rate (%)', digits=(5, 2), default=75.0)
+    k3_dual_sales_floor = fields.Float(string='RSM+ASM — Sales Entry Floor (%)', digits=(5, 2), default=65.0, help='Below this = 0; floor->min ramps 0->100%')
+    k4_dual_retrieval_floor = fields.Float(string='RSM+ASM — Retrieval Entry Floor (%)', digits=(5, 2), default=70.0)
+
+    # -- Section L: Company Scorecard & Engine Switches (v23) --
+    l1_pool_funding_method = fields.Selection([('sku','SKU Contributions'),('ebitda','EBITDA-scaled Rate')], string='Pool Funding Method', default='sku', help='L1: SKU Contributions vs EBITDA-scaled Rate')
+    l2_manual_pool_rate_override = fields.Float(string='Manual Pool Rate Override (%)', digits=(5, 4), help='L2: blank = auto (uses Auto Pool Rate)')
+    l3_gmp_compliance_status = fields.Selection([('clean','Clean'),('minor','Minor'),('major','Major'),('critical','Critical')], string='GMP Compliance Status', default='clean', help='L3')
+    l_score_rev_weight = fields.Float(string='Revenue Achievement Weight (%)', digits=(5, 2), default=33.0)
+    l_score_ebitda_weight = fields.Float(string='EBITDA Margin Achievement Weight (%)', digits=(5, 2), default=30.0)
+    l_score_gmp_weight = fields.Float(string='GMP & Quality Compliance Weight (%)', digits=(5, 2), default=25.0)
+    l_score_people_weight = fields.Float(string='People Weight (%)', digits=(5, 2), default=12.0)
     # TODO TEST THE FUNCTIONS
     funded_pool_after_both_gate = fields.Float(default=0, compute="_compute_funded_pool")
     profitability_gate_factor = fields.Float(default=1,string="Profitability Gate Factor (continuous ramp)")
@@ -381,6 +424,15 @@ class BonusParameter(models.Model):
             rec.kpi_weight_total = total
             rec.kpi_weight_valid = abs(total - 100.0) < 0.01
 
+    @api.depends('sales_pk_weight', 'sales_call_weight', 'sales_coverage_weight',
+                 'sales_new_cust_weight')
+    def _compute_sales_kpi_weight_total(self):
+        for rec in self:
+            total = (rec.sales_pk_weight + rec.sales_call_weight +
+                     rec.sales_coverage_weight + rec.sales_new_cust_weight)
+            rec.sales_kpi_weight_total = total
+            rec.sales_kpi_weight_valid = abs(total - 100.0) < 0.01
+
     @api.constrains('revenue_weight', 'ebitda_weight', 'gmp_weight',
                     'extended_kpi_weight')
     def _check_kpi_weights(self):
@@ -390,6 +442,17 @@ class BonusParameter(models.Model):
             if not (99.99 <= total <= 100.01):
                 raise ValidationError(
                     _('KPI weights must sum to 100%%. Current total: %s%%') % total
+                )
+
+    @api.constrains('sales_pk_weight', 'sales_call_weight', 'sales_coverage_weight',
+                    'sales_new_cust_weight')
+    def _check_sales_kpi_weights(self):
+        for rec in self:
+            total = (rec.sales_pk_weight + rec.sales_call_weight +
+                     rec.sales_coverage_weight + rec.sales_new_cust_weight)
+            if not (99.99 <= total <= 100.01):
+                raise ValidationError(
+                    _('Sales KPI weights must sum to 100%%. Current total: %s%%') % total
                 )
 
     def action_submit(self):

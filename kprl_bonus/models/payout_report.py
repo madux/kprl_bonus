@@ -83,6 +83,7 @@ class BonusPayoutReport(models.Model):
     def _compute_financials(self):
         Payout = self.env['kprl.bonus.payout']
         TerritoryPayout = self.env['kprl.territory.payout']
+        SalesEngine = self.env['kprl.sales.engine']
         for rec in self:
             rec.ops_bonus = 0.0
             rec.sales_commission = 0.0
@@ -95,13 +96,23 @@ class BonusPayoutReport(models.Model):
             ], limit=1)
             if payout:
                 rec.ops_bonus = payout.net_immediate or 0.0
-            # Sales commission from territory payout
+            # Sales commission from sales engine (new implementation)
             emp = rec.employee_id
-            if emp.is_sales and emp.territory_id:
-                t_payout = TerritoryPayout.search([
-                    ('territory_id', '=', emp.territory_id.id),
+            if emp.is_sales and emp.sales_role and emp.sales_role != 'none':
+                sales_engine = SalesEngine.search([
+                    ('employee_id', '=', emp.id),
                     ('period_id', '=', rec.period_id.id),
                 ], limit=1)
+                if sales_engine:
+                    rec.sales_commission = sales_engine.final_sales_payout or 0.0
+            # Fallback to territory payout for backward compatibility
+            if emp.is_sales:
+                se = self.env['kprl.sales.engine'].search([('employee_id','=',emp.id),('period_id','=',rec.period_id.id)], limit=1)
+                if se:
+                    rec.sales_commission = se.final_sales_payout or 0.0
+                elif emp.territory_id:
+                    t_payout = self.env['kprl.territory.payout'].search([('territory_id','=',emp.territory_id.id),('period_id','=',rec.period_id.id)], limit=1)
+                    rec.sales_commission = t_payout.commission_payable or 0.0 if t_payout else 0.0
                 if t_payout:
                     rec.sales_commission = t_payout.commission_payable or 0.0
 

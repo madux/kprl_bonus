@@ -886,7 +886,8 @@
 
                     <nav class="kprl-sub-nav">
                         <div class="kprl-tabs" id="kprl-sim-tabs">
-                            <button class="kprl-tab-item kprl-active-tab" data-tab="simulator">Simulator</button>
+                            <button class="kprl-tab-item kprl-active-tab" data-tab="simulator">Ops Simulator</button>
+                            <button class="kprl-tab-item" data-tab="sales" id="kprl-tab-sales-btn" style="display:none;">Sales Simulator</button>
                             <button class="kprl-tab-item" data-tab="what-if">What-If Analysis</button>
                         </div>
                     </nav>
@@ -1067,6 +1068,25 @@
                         </div>
                     </main>
 
+                    <!-- Sales Simulation Tab (for sales track) -->
+                    <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-sales" style="display:none;">
+                        <div class="kprl-card kprl-param-card">
+                            <h3 class="kprl-card-title">Sales Performance Inputs</h3>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Target (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-target" value="66000000" step="1000000"/><span class="kprl-input-note">Personal/territory target</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Sales (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-own" value="45814086" step="1000000"/><span class="kprl-input-note">Actual sales</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Retrievals (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-retr" value="33158079" step="1000000"/><span class="kprl-input-note">Actual retrievals</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Product Knowledge (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-pk" value="0.90" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1 scale</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Call Report (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-call" value="0.88" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Coverage (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-cov" value="0.97" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">New Customer (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-new" value="0.80" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-sim-read-only"><h4 class="kprl-read-only-title">Computed Gates &amp; Multipliers</h4><div class="kprl-table-row"><span class="kprl-table-label">Sales Attainment</span><span class="kprl-table-value" id="kprl-sales-attain">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Retr Rate</span><span class="kprl-table-value" id="kprl-sales-retr-rate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Sales Gate</span><span class="kprl-table-value" id="kprl-sales-gate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Retr Gate</span><span class="kprl-table-value" id="kprl-sales-retr-gate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">KPI Mult</span><span class="kprl-table-value" id="kprl-sales-kpi-mult">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Accel Factor</span><span class="kprl-table-value" id="kprl-sales-accel">-</span></div></div>
+                        </div>
+                        <div class="kprl-card kprl-result-card">
+                            <h3 class="kprl-card-title">Projected Sales Commission</h3>
+                            <div class="kprl-result-breakdown"><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Gross Commission</span><span class="kprl-breakdown-value" id="kprl-sales-gross">-</span></div><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Eligible (after gates)</span><span class="kprl-breakdown-value" id="kprl-sales-eligible">-</span></div><div class="kprl-breakdown-item kprl-breakdown-total"><span class="kprl-breakdown-label">Final Sales Payout</span><span class="kprl-breakdown-value" id="kprl-sales-final">-</span></div><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Cap Check</span><span class="kprl-breakdown-value" id="kprl-sales-cap-status">-</span></div></div>
+                        </div>
+                    </main>
+
                     <!-- What-If Analysis Tab -->
                     <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-what-if" style="display:none;">
                         <div class="kprl-card" style="grid-column:1/-1;">
@@ -1147,7 +1167,7 @@
 
             <script type="text/javascript">
                 window.KPRL_EMPLOYEE_ID = <t t-esc="employee.id"/>;
-                window.KPRL_SIM_PARAMS = <t t-esc="sim_params or '{}'" />;
+                window.KPRL_SIM_PARAMS = <t t-raw="sim_params_json or '{}'"/>;
             </script>
             <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
             <script type="text/javascript" src="/kprl_bonus/static/js/simulation.js"/>

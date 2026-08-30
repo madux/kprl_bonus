@@ -38,7 +38,7 @@ class ProductPool(models.Model):
         for rec in self:
             rec.pool_contribution = rec.quantity_revenue * (rec.sku_rate / 100.0)
 
-    @api.depends('unit_price', 'sku_rate')
+    @api.depends('quantity_units', 'unit_price')
     def _compute_quarterly_revenue(self):
         for record in self:
-            record.quarterly_revenue = record.unit_price * record.sku_rate
+            record.quarterly_revenue = record.quantity_units * record.unit_price

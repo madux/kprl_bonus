@@ -131,74 +131,47 @@ class BonusPayout(models.Model):
         'tenure_mult',
         'payable'
     )
+    @api.depends('payable', 'tenure_mult')
     def _compute_tenure_enhance(self):
         for rec in self:
-            rec.tenure_enhance = rec.payable * rec.tenure_mult
-            rec.final_floor = rec.payable * rec.tenure_mult
-    
-    @api.depends(
-        'employee_id.tenure_years'
-    )
-    def _compute_tenure_mult(self):
-        for rec in self:
-            rec.tenure_mult = (rec.employee_id.tenure_years / 3) * 0.03
-            rec.tenure_years = rec.employee_id.tenure_years
-            
-    @api.depends(
-        'proration_factor',
-        'gross_payable'
-    )
+            payable_tenured = rec.payable * rec.tenure_mult
+            # Floor Sec6 Step16: Hygiene 20k (B47) / Junior 30k (B48)
+            grade_name = (rec.employee_id.grade_id.name or '').upper()
+            is_hygiene = 'HYGIENE' in grade_name
+            is_junior = 'JUNIOR' in grade_name
+            floor = 0.0
+            if is_hygiene:
+                floor = 20000.0
+                if rec.period_id.parameter_ids:
+                    floor = rec.period_id.parameter_ids[0].minimum_floor or 20000.0
+            elif is_junior:
+                floor = 30000.0
+                if rec.period_id.parameter_ids:
+                    floor = rec.period_id.parameter_ids[0].maximum_cap or 30000.0
+            rec.tenure_enhance = payable_tenured
+            rec.final_floor = max(payable_tenured, floor)
+
+    @api.depends('gross_payable', 'proration_factor')
     def _compute_payable(self):
         for rec in self:
             rec.payable = rec.gross_payable * rec.proration_factor
 
-    @api.depends(
-        'employee_id.grade_id.subpool_id.code',
-        'period_id',
-        'period_id.engine_ids.senior_mgt_value_point',
-        'period_id.engine_ids.ops_sup_value_point',
-        'period_id.engine_ids.opm_value_point',
-        'base_eligible',
-    )
-    def _compute_value_point(self):
-        grade_mapping = {
-            'SENMGT': 'senior_mgt_value_point',
-            'OPM': 'opm_value_point',
-            'OPSSUP': 'ops_sup_value_point',
-        }
-
-        for rec in self:
-            rec.value_point = 0.0
-
-            if not rec.employee_id or not rec.period_id:
-                continue
-
-            engine = rec.period_id.engine_ids[:1]
-            if not engine:
-                continue
-            # else:
-            #     raise ValidationError()
-            grade_code = rec.employee_id.grade_id.subpool_id.code # or rec.employee_id.grade_id.code or ''
-            field_name = grade_mapping.get(grade_code, 'opm_value_point')
-
-            rec.value_point = getattr(engine, field_name)
-
-    @api.depends('base_eligible', 'dept_kpi_mult', 'appraisal_mult',
-                 'behavioural_mult', 'exception_premium', 'proration_factor',
-                 'tenure_mult', 'gmp_factor', 'malus_amount')
+    @api.depends('base_eligible', 'dept_kpi_mult', 'appraisal_mult', 'behavioural_mult', 'exception_premium', 'malus_amount')
     def _compute_gross_payable(self):
         for rec in self:
-            gross = (rec.base_eligible *
-                     rec.dept_kpi_mult *
-                     rec.appraisal_mult *
-                     rec.behavioural_mult *
-                     rec.proration_factor *
-                     rec.tenure_mult *
-                     rec.gmp_factor)
-            gross += rec.exception_premium
-            gross -= rec.malus_amount
-            rec.gross_payable = max(gross, 0.0)
-
+            # Spec Sec6 Step12: Adjusted = Base * Dept * Apprais * Behav
+            # Behav 23/25 -> 1.084, so we derive it if empty
+            if rec.behaviour_05:
+                behav = 0.80 + (rec.behaviour_05 / 25.0) * 0.20
+            else:
+                behav = rec.behavioural_mult or 1.0
+            adjusted = rec.base_eligible * rec.dept_kpi_mult * rec.appraisal_mult * behav
+            rec.adjusted_amount = adjusted
+            # Spec Step13: Exception = 10% of Adjusted if exceptional
+            exc = adjusted * 0.10 if rec.appraisal_mult >= 1.10 else 0.0
+            if rec.exception_premium and rec.exception_premium > exc:
+                exc = rec.exception_premium
+            rec.gross_payable = max(adjusted + exc - (rec.malus_amount or 0.0), 0.0)
     @api.depends('period_id', 'employee_id', 'gross_payable', 'deferral_rate')
     def _compute_deferred(self):
         for rec in self:
