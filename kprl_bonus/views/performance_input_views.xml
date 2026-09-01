@@ -43,6 +43,7 @@
                         <group>
                             <field name="own_target" widget="monetary"/>
                             <field name="own_sales" widget="monetary"/>
+                            <field name="own_retrievals" widget="monetary"/>
                             <field name="own_revenue" widget="monetary"/>
                         </group>
                         <group>

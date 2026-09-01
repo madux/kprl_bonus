@@ -19,7 +19,7 @@ class PerformanceInput(models.Model):
     own_target = fields.Float(string='Own Target', digits='Product Price')
     own_sales = fields.Float(string='Own Sales', digits='Product Price')
     own_revenue = fields.Float(string='Own Revenue', digits='Product Price')
-    own_retrievals = fields.Float(string='Own Retrievals', digits='Product Price')
+    own_retrievals = fields.Float(string='Own Retrievals', digits='Product Price', default=35762597)
     prod_pct = fields.Float(string='Productivity (%)', digits=(5, 2))
     call_pct = fields.Float(string='Call Rate (%)', digits=(5, 2))
     present_pct = fields.Float(string='Presentation (%)', digits=(5, 2))

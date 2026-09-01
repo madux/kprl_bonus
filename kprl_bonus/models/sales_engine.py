@@ -21,13 +21,21 @@ class SalesEngine(models.Model):
                                   related='employee_id.territory_id', store=True)
 
     # Performance inputs
-    own_target = fields.Float(string='Own Target', digits='Product Price')
-    own_sales = fields.Float(string='Own Sales', digits='Product Price')
-    own_retrievals = fields.Float(string='Own Retrievals', digits='Product Price')
-    territory_sales = fields.Float(string='Territory Sales', digits='Product Price')
-    territory_retrievals = fields.Float(string='Territory Retrievals', digits='Product Price')
-    territory_target = fields.Float(string='Territory Target', digits='Product Price')
+    own_target = fields.Float(string='Own Target', digits='Product Price', compute="employee_performance_input")
+    own_sales = fields.Float(string='Own Sales', digits='Product Price', compute="employee_performance_input")
+    own_retrievals = fields.Float(string='Own Retrievals', digits='Product Price', compute="employee_performance_input")
+    territory_sales = fields.Float(string='Territory Sales', digits='Product Price', compute="employee_performance_input")
+    territory_retrievals = fields.Float(string='Territory Retrievals', digits='Product Price', compute="employee_performance_input")
+    territory_target = fields.Float(string='Territory Target', digits='Product Price', compute="employee_performance_input")
 
+    @api.depends('period_id', 'employee_id')
+    def employee_performance_input(self):
+        perf_input = self.env['kprl.performance.input'].sudo()
+        employee_perf_input=perf_input.search([('period_id', '=', self.period_id.id), ('employee_id', '=', self.employee_id.id)], limit=1)
+
+        self.own_target = employee_perf_input.own_target
+        self.own_sales = employee_perf_input.own_sales
+        self.own_retrievals = employee_perf_input.own_retrievals
     # Attainment calculations
     sales_attainment = fields.Float(string='Sales Attainment (%)', digits=(5, 4),
                                    compute='_compute_attainment', store=True)

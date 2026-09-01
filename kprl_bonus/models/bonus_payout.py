@@ -49,8 +49,8 @@ class BonusPayout(models.Model):
     exception_premium = fields.Float(string='Exception Premium (₦)',
                                      digits='Product Price')
     proration_factor = fields.Float(string='Proration', digits=(5, 4), default=1.0)
-    tenure_mult = fields.Float(string='Tenure Multiplier', digits=(5, 4), default=1.0, help="(rec.employee_id.tenure_years / 3) * 0.03",
-                               compute='_compute_tenure_mult',)
+    tenure_mult = fields.Float(string='Tenure Multiplier', digits=(5, 4), default=1.0, help="(rec.employee_id.tenure_years / 3) * 0.03",)
+                            #    compute='_compute_tenure_mult',)
     gmp_factor = fields.Float(string='GMP Factor', digits=(5, 4), default=1.0)
     malus_amount = fields.Float(string='Malus (₦)', digits='Product Price')
 
