@@ -28,7 +28,9 @@ class BonusPeriod(models.Model):
     payout_ids = fields.One2many('kprl.bonus.payout', 'period_id', string='Payout Lines')
     product_pool_ids = fields.One2many('kprl.product.pool', 'period_id', string='Product Pool')
     territory_payout_ids = fields.One2many('kprl.territory.payout', 'period_id', string='Territory Payouts')
-    sales_engine_ids = fields.One2many('kprl.sales.engine', 'period_id', string='Sales Engine Runs')
+    # sales_engine_ids = fields.One2many('kprl.sales.engine', 'period_id', string='Sales Engine Runs')
+    sales_territory_engine_ids = fields.One2many('kprl.territory.engine', 'period_id', string='Sales Engine')
+    sales_territory_engine_line_ids = fields.One2many('kprl.territory.engine', 'period_id', string='Sales Engine Lines')
     
     # National sales targets and actuals for sales commission calculations
     national_sales_target = fields.Float(string='National Quarterly Sales Target', digits='Product Price')

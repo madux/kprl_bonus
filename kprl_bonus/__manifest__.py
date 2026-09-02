@@ -50,8 +50,7 @@
         'views/payout_report_paper.xml',
         'views/governance_action.xml',
         'views/menu_views.xml',
-        
-
+        'views/sales_engine_main.xml'
     ],
     'assets': {
         'web.assets_backend': [
@@ -76,6 +75,6 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'icon': '/kprl_bonus/static/description/icon.svg',
+    'icon': '/kprl_bonus/static/description/icons.svg',
     'license': 'LGPL-3',
 }

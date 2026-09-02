@@ -485,6 +485,12 @@
     padding: 16px 0;
 }
 
+.o_form_view .o_notebook > .tab-content > .tab-pane > :first-child:not(.o_group) .o_field_x2many.o_field_x2many_list .o_list_renderer, .o_form_view .o_notebook > .tab-content > .tab-pane > :first-child.o_invisible_modifier .o_field_x2many.o_field_x2many_list .o_list_renderer {
+    /* --ListRenderer-margin-x: var(--notebook-margin-x); */
+    --ListRenderer-margin-x: none;
+    --ListRenderer-table-padding-x: var(--notebook-padding-x);
+    margin-top: -16px;
+}
 /* ==========================================================================
    Inline Tree Lists (inside notebook pages)
    ========================================================================== */

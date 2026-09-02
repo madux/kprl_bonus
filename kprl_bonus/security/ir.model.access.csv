@@ -109,3 +109,6 @@ access_kprl_kpi_store_line_user,kprl.kpi.store.line.user,model_kprl_kpi_store_li
 access_kprl_kpi_store_line_hr,kprl.kpi.store.line.hr,model_kprl_kpi_store_line,group_kprl_hr,1,1,1,0
 access_kprl_kpi_store_line_admin,kprl.kpi.store.line.admin,model_kprl_kpi_store_line,group_kprl_admin,1,1,1,0
 access_kprl_kpi_store_line_ceo,kprl.kpi.store.line.ceo,model_kprl_kpi_store_line,group_kprl_ceo,1,1,1,1
+access_kprl_territory_engine_user,kprl.territory.engine user,model_kprl_territory_engine,base.group_user,1,1,1,1
+access_kprl_territory_engine_lines_user,kprl.territory.engine.lines user,model_kprl_territory_engine_lines,base.group_user,1,1,1,1
+access_kprl_role_share_lines_user,kprl_role_share_lines user,model_kprl_role_share_lines,base.group_user,1,1,1,1
