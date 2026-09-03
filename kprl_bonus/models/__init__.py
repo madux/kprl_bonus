@@ -24,3 +24,4 @@ from . import kpi_store
 # from . import sales_engine 
 from . import sales_engine_main 
 from . import sales_engine_main_line
+from . import sale_engine_config

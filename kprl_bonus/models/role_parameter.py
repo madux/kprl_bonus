@@ -14,10 +14,20 @@ class RoleParameter(models.Model):
         ('asm', 'ASM'),
         ('rsm_asm', 'RSM + ASM'),
     ], string='Sales Role', required=True)
-    
+    sales_floor = fields.Float(
+        string='Sales Floor',
+        default=0.0,
+        digits=(5, 4),
+        help=(
+            "Minimum Sales Attainment Floor configured for this role. "
+            "This value is used by the Territory Engine to calculate "
+            "the Sales Gate.\n\n"
+            "Excel equivalent:\n"
+            "INDEX(RP_SalesFloor, MATCH(Role, RP_Role, 0))"
+        ),
+    )
     # Gate thresholds according to specification
-    sales_floor = fields.Float(string='Sales Entry Floor', digits=(5, 4),
-                              help='Minimum attainment for entry gate (ramp start)')
+     
     min_sales_attainment = fields.Float(string='Min Sales Attainment', digits=(5, 4),
                                        help='Full credit point for sales attainment')
     retr_floor = fields.Float(string='Retrieval Entry Floor', digits=(5, 4),

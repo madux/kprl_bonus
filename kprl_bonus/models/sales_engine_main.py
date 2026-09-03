@@ -77,6 +77,9 @@ class KprlTerritoryEngine(models.Model):
     total_call_rep = fields.Float(
         string='Total Call Rep'
     )
+    total_kpi_mult = fields.Float(
+            string='Total KPI MULTI'
+        )
 
     total_coverage = fields.Float(
         string='Total Coverage'
@@ -137,6 +140,9 @@ class KprlTerritoryEngine(models.Model):
     total_own_target = fields.Float(
         string='Total Own Target'
     )
+    total_territory_retrival = fields.Float(
+            string='Total Own Target'
+        )
 
     retrival_commission_rate = fields.Float(
         string='Retrival Commission Rate',
@@ -165,6 +171,11 @@ class KprlTerritoryEngine(models.Model):
         'kprl.territory.engine.lines',
         'territory_engine_id',
         string='Employee Engine Lines'
+    )
+    sale_territory_config_ids = fields.One2many(
+        'sale.territory.config',
+        'territory_engine_id',
+        string='Sales Territory Configuration',
     )
 
     @api.depends(

@@ -1,8 +1,25 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError, AccessError
 
 class KprlTerritoryEngineLines(models.Model):
     _name = 'kprl.territory.engine.lines'
     _description = 'KPRL Territory Engine Lines'
+
+    @api.constrains('territory_id', 'territory_engine_id')
+    def _check_territory_configuration(self):
+        for line in self:
+            if not line.territory_engine_id or not line.territory_id:
+                continue
+
+            config = line.territory_engine_id.sale_territory_config_ids.filtered(
+                lambda c: c.territory_id == line.territory_id
+            )
+
+            if not config:
+                raise ValidationError(
+                    'No Sales Territory Configuration exists for territory "%s".'
+                    % line.territory_id.display_name
+                )
 
     territory_engine_id = fields.Many2one(
         'kprl.territory.engine',
@@ -41,6 +58,16 @@ class KprlTerritoryEngineLines(models.Model):
         help="Gets all the sum of all lines with same territory. ie if employee with the same own sales in NW territory, sum of the both"
     )
 
+    # Sales KPI fields (0-1 scale)
+    product_knowledge_score = fields.Float(string='Product Knowledge Score', digits=(5, 4), 
+                                            help='Sales KPI: Product knowledge (0-1 scale)')
+    call_report_compliance = fields.Float(string='Call Report Compliance', digits=(5, 4),
+                                            help='Sales KPI: Call report compliance (0-1 scale)')
+    customer_coverage_rate = fields.Float(string='Customer Coverage Rate', digits=(5, 4),
+                                            help='Sales KPI: Customer coverage rate (0-1 scale)')
+    new_customer_acquisition = fields.Float(string='New Customer Acquisition', digits=(5, 4),
+                                            help='Sales KPI: New customer acquisition (0-1 scale)')
+    
     @api.depends(
         'employee_id',
         'territory_id',
@@ -69,17 +96,36 @@ class KprlTerritoryEngineLines(models.Model):
             )
 
     @api.onchange("employee_id")
-    def changeOfEmployee(self):
+    def onchange_employee(self):
+        self.updateEmployee()
+
+    def updateEmployee(self):
         '''get staff sales performance'''
-        emp = self.employee_id
+        emp = self.env['kprl.performance.input'].search([('employee_id', '=', self.employee_id.id)], limit=1)
         if emp:
             self.own_sales= emp.own_sales
-            self.own_retrival= emp.own_retrival
+            self.own_retrival= emp.own_retrievals
             self.own_target= emp.own_target
+            self.call_rep= emp.call_rep
+            self.coverage= emp.coverage
+            self.new_cust= emp.new_cust
+            self.prod_know= emp.prod_know
+            self.call_report_compliance = emp.call_report_compliance
+            self.customer_coverage_rate= emp.customer_coverage_rate
+            self.product_knowledge_score= emp.product_knowledge_score
+            self.new_customer_acquisition = emp.new_customer_acquisition
         else:
-            self.own_sales= ''
-            self.own_retrival= ''
-            self.own_target= ''
+            self.own_sales= 0
+            self.own_retrival= 0
+            self.own_target= 0
+            self.call_rep= 0
+            self.coverage= 0
+            self.new_cust = 0
+            self.prod_know= 0
+            self.call_report_compliance= 0 
+            self.customer_coverage_rate= 0 
+            self.product_knowledge_score= 0 
+            self.new_customer_acquisition= 0
 
     territory_retrival = fields.Float(
         string='Territory Retrival',
@@ -489,7 +535,7 @@ class KprlTerritoryEngineLines(models.Model):
 
         for engine in self.mapped('territory_engine_id'):
             lines = engine.kprl_employee_engine_line_ids
-            engine.commission_sales = 0.0
+            engine.total_commission_sales = 0.0
 
             if not engine.period_id:
                 for line in lines:
@@ -665,12 +711,69 @@ class KprlTerritoryEngineLines(models.Model):
                 )
 
     gross_commission = fields.Float(
-        string='Gross Commission'
+        string='Gross Commission',
+        compute='_compute_gross_commission',
+        store=True,
     )
 
-    eligible_commission = fields.Float(
-        string='Eligible Commission'
+    @api.depends(
+        'employee_id',
+        'commission_sales',
+        'commission_retrival',
     )
+    def _compute_gross_commission(self):
+        for line in self:
+            line.gross_commission = 0.0
+
+            if not line.employee_id:
+                continue
+
+            line.gross_commission = (
+                (line.commission_sales or 0.0)
+                + (line.commission_retrival or 0.0)
+            )
+
+            if line.territory_engine_id:
+                line.territory_engine_id.total_gross_commission = (
+                    line.gross_commission
+                )
+
+    eligible_commission = fields.Float(
+        string='Eligible Commission',
+        compute='_compute_eligible_commission',
+        store=True,
+        help='''Eligible Commission = Sales Gate × (Commission Sales + Retrieval Gate × Commission Retrieval)'''
+    )
+
+    @api.depends(
+        'employee_id',
+        'sales_gate',
+        'commission_sales',
+        'retrival_gate',
+        'commission_retrival',
+    )
+    def _compute_eligible_commission(self):
+        for line in self:
+            line.eligible_commission = 0.0
+
+            if not line.employee_id:
+                continue
+
+            line.eligible_commission = (
+                (line.sales_gate or 0.0)
+                * (
+                    (line.commission_sales or 0.0)
+                    + (
+                        (line.retrival_gate or 0.0)
+                        * (line.commission_retrival or 0.0)
+                    )
+                )
+            )
+
+            if line.territory_engine_id:
+                line.territory_engine_id.total_eligible_commission = (
+                    line.eligible_commission
+                )
 
     prod_know = fields.Float(
         string='Prod Know'
@@ -689,52 +792,715 @@ class KprlTerritoryEngineLines(models.Model):
     )
 
     kpi_mult = fields.Float(
-        string='KPI Mult'
+        string='KPI Multiplier'
     )
 
     yrs = fields.Float(
-        string='Yrs'
+        string='Years', 
+        related="employee_id.tenure_years"
     )
 
     tenure_mult = fields.Float(
-        string='Tenure Mult'
+        string='Tenure Mult',
+        compute='_compute_tenure_mult',
+        store=True,
+        digits=(5, 4),
+        default=1,
+        help="employee tenure_years (5 / 3) * 0.03"
     )
+
+    @api.depends(
+        'employee_id',
+        'yrs',
+    )
+    def _compute_tenure_mult(self):
+        for line in self:
+            line.tenure_mult = 0.0
+
+            if not line.employee_id:
+                continue
+
+            years = line.employee_id.tenure_years or 0.0
+
+            # Excel:
+            # 1 + MIN(0.12, INT(Yrs / 3) * 0.03)
+
+            completed_3_year_periods = int(years / 3)
+
+            tenure_increment = min(
+                0.12,
+                completed_3_year_periods * 0.03
+            )
+
+            line.tenure_mult = 1.0 + tenure_increment
+
+            if line.territory_engine_id:
+                line.territory_engine_id.total_tenure_mult = (
+                    line.tenure_mult
+                )
 
     sales_payout = fields.Float(
-        string='SALES PAYOUT'
+        string='Sales Payout',
+        compute='_compute_sales_payout',
+        store=True,
+        help="""Normal Payout
+                    =
+                    Eligible Commission
+                    × KPI Mult
+                    × Tenure Mult
+                    × Acceleration Factor
+                    
+                For Lead Premium Payout
+                    =
+                    Sales Gate
+                    × Lead Premium
+                    × Highest ASM Sub-base in Same Territory
+                    
+                Payout Before Cap
+                    =
+                    MAX(Normal Payout, Lead Premium Payout)
+                    
+                FINALLY
+                Sales Payout
+                =
+                MIN(Payout Before Cap, Applicable Cap)
+                
+                LOGIC HERE IS 
+                IF Sales Attain > Accel Kick-In
+                    → Cap Stretch
+                ELSE
+                    → Cap Individual Max
+                """
     )
+
+    @api.depends(
+        'employee_id',
+        'sales_attain',
+        'eligible_commission',
+        'kpi_mult',
+        'tenure_mult',
+        'accel_factor',
+        'sales_gate',
+        'role_id',
+        'role_id.role',
+        'territory_id',
+        'sub_base',
+
+        # Territory configuration
+        'territory_engine_id.sale_territory_config_ids',
+        'territory_engine_id.sale_territory_config_ids.territory_id',
+        'territory_engine_id.sale_territory_config_ids.accel_kick_in',
+        'territory_engine_id.sale_territory_config_ids.cap_stretch',
+        'territory_engine_id.sale_territory_config_ids.cap_indiv_max',
+        'territory_engine_id.sale_territory_config_ids.lead_premium',
+
+        # Required for MAXIFS equivalent
+        'territory_engine_id.kprl_employee_engine_line_ids.territory_id',
+        'territory_engine_id.kprl_employee_engine_line_ids.role_id',
+        'territory_engine_id.kprl_employee_engine_line_ids.sub_base',
+    )
+    def _compute_sales_payout(self):
+        for engine in self.mapped('territory_engine_id'):
+
+            lines = engine.kprl_employee_engine_line_ids
+
+            for line in lines:
+                line.sales_payout = 0.0
+
+                if not line.employee_id:
+                    continue
+
+                # ---------------------------------------------------------
+                # Find configuration for this employee's territory
+                # ---------------------------------------------------------
+                config = engine.sale_territory_config_ids.filtered(
+                    lambda c: c.territory_id == line.territory_id
+                )[:1]
+
+                if not config:
+                    continue
+
+                # ---------------------------------------------------------
+                # Configuration values
+                # ---------------------------------------------------------
+                accel_kick_in = config.accel_kick_in or 0.0
+                cap_stretch = config.cap_stretch or 0.0
+                cap_indiv_max = config.cap_indiv_max or 0.0
+                lead_premium = config.lead_premium or 0.0
+
+                # ---------------------------------------------------------
+                # Excel:
+                #
+                # IF(K18 > Accel_KickIn,
+                #       Cap_Stretch,
+                #       Cap_IndivMax)
+                # ---------------------------------------------------------
+                if line.sales_attain > accel_kick_in:
+                    payout_cap = cap_stretch
+                else:
+                    payout_cap = cap_indiv_max
+
+                # ---------------------------------------------------------
+                # Excel:
+                #
+                # S18 * X18 * Z18 * AC18
+                #
+                # Eligible Commission
+                # × KPI Mult
+                # × Tenure Mult
+                # × Accel Factor
+                # ---------------------------------------------------------
+                normal_payout = (
+                    (line.eligible_commission or 0.0)
+                    * (line.kpi_mult or 0.0)
+                    * (line.tenure_mult or 0.0)
+                    * (line.accel_factor or 0.0)
+                )
+
+                # ---------------------------------------------------------
+                # Lead Premium
+                # ---------------------------------------------------------
+                lead_premium_payout = 0.0
+
+                role = line.role_id.role if line.role_id else False
+
+                # Your actual stored role value is used here.
+                if role in ('rm', 'rsm_asm'):
+
+                    # Excel MAXIFS:
+                    #
+                    # MAX(
+                    #   Sub-base
+                    #   WHERE Territory = current Territory
+                    #   AND Role = ASM
+                    # )
+                    # -----------------------------------------------------
+
+                    asm_lines = lines.filtered(
+                        lambda l:
+                            l.territory_id == line.territory_id
+                            and l.role_id
+                            and l.role_id.role == 'asm'
+                    )
+
+                    max_asm_sub_base = max(
+                        asm_lines.mapped('sub_base') or [0.0]
+                    )
+
+                    lead_premium_payout = (
+                        (line.sales_gate or 0.0)
+                        * lead_premium
+                        * max_asm_sub_base
+                    )
+
+                # ---------------------------------------------------------
+                # Excel:
+                #
+                # MAX(
+                #     Normal Payout,
+                #     Lead Premium Payout
+                # )
+                # ---------------------------------------------------------
+                payout_before_cap = max(
+                    normal_payout,
+                    lead_premium_payout,
+                )
+
+                # ---------------------------------------------------------
+                # Excel:
+                #
+                # MIN(
+                #     Payout Before Cap,
+                #     Payout Cap
+                # )
+                # ---------------------------------------------------------
+                line.sales_payout = min(
+                    payout_cap,
+                    payout_before_cap,
+                )
+
+                # ---------------------------------------------------------
+                # Update parent total
+                # ---------------------------------------------------------
+                if line.territory_engine_id:
+                    line.territory_engine_id.total_sales_payout = (
+                        line.sales_payout
+                    )
 
     sub_base = fields.Float(
-        string='Sub-base (helper)'
+        string='Sub-base',
+        compute='_compute_sub_base',
+        store=True,
+        digits=(16, 2),
     )
+
+    @api.depends(
+        'employee_id',
+        'role_id',
+        'role_id.role',
+        'eligible_commission',
+        'kpi_mult',
+        'tenure_mult',
+        'territory_id',
+        'territory_engine_id.sale_territory_config_ids',
+        'territory_engine_id.sale_territory_config_ids.territory_id',
+        'territory_engine_id.sale_territory_config_ids.cap_indiv_max',
+    )
+    def _compute_sub_base(self):
+        for line in self:
+            line.sub_base = 0.0
+
+            if not line.employee_id:
+                continue
+
+            role = line.role_id.role if line.role_id else False
+
+            # Excel:
+            # IF(D18="ASM", ...)
+            if role != 'asm':
+                continue
+
+            # Get configuration for this employee's territory
+            config = line.territory_engine_id.sale_territory_config_ids.filtered(
+                lambda c: c.territory_id == line.territory_id
+            )[:1]
+
+            if not config:
+                continue
+
+            cap_indiv_max = config.cap_indiv_max or 0.0
+
+            # Excel:
+            # S18 * X18 * Z18
+            base_amount = (
+                (line.eligible_commission or 0.0)
+                * (line.kpi_mult or 0.0)
+                * (line.tenure_mult or 0.0)
+            )
+
+            # Excel:
+            # MIN(Cap_IndivMax, S18*X18*Z18)
+            line.sub_base = min(
+                cap_indiv_max,
+                base_amount,
+            )
+
+            # Update parent total
+            if line.territory_engine_id:
+                line.territory_engine_id.total_sub_base = line.sub_base
 
     accel_factor = fields.Float(
-        string='Accel Factor'
+        string='Acceleration Factor',
+        compute='_compute_accel_factor',
+        store=True,
+        digits=(5, 4),
+        help="""e.g if Accel Kick-In = 1.00
+        Accel Max     = 1.50
+        Accel Boost   = 0.20
+        Sales Attain = 1.25
+        i.e (1.25 - 1.00) / (1.50 - 1.00)
+        = 0.50
+        Accel Factor = 1 + (0.20 × 0.50)
+             = 1.10"""
     )
+
+    @api.depends(
+        'employee_id',
+        'sales_attain',
+        'territory_id',
+        'territory_engine_id.sale_territory_config_ids',
+        'territory_engine_id.sale_territory_config_ids.territory_id',
+        'territory_engine_id.sale_territory_config_ids.accel_boost',
+        'territory_engine_id.sale_territory_config_ids.accel_kick_in',
+        'territory_engine_id.sale_territory_config_ids.accel_max',
+    )
+    def _compute_accel_factor(self):
+        for line in self:
+            line.accel_factor = 0.0
+
+            if not line.employee_id:
+                continue
+
+            config = line.territory_engine_id.sale_territory_config_ids.filtered(
+                lambda c: c.territory_id == line.territory_id
+            )[:1]
+
+            if not config:
+                continue
+
+            accel_boost = config.accel_boost or 0.0
+            accel_kick_in = config.accel_kick_in or 0.0
+            accel_max = config.accel_max or 0.0
+            sales_attain = line.sales_attain or 0.0
+
+            denominator = accel_max - accel_kick_in
+
+            if not denominator:
+                # Same idea as IFERROR protection for a zero denominator.
+                median_value = 0.0
+            else:
+                value = (
+                    sales_attain - accel_kick_in
+                ) / denominator
+
+                # Excel MEDIAN(0, value, 1)
+                median_value = max(0.0, min(value, 1.0))
+
+            line.accel_factor = (
+                1.0 + (accel_boost * median_value)
+            )
+
+            if line.territory_engine_id:
+                line.territory_engine_id.total_accel_factor = (
+                    line.accel_factor
+                )
 
     pk_effective = fields.Float(
-        string='PK (effective)'
+        string='Effective Product Knowledge',
+        compute='_compute_pk_effective',
+        store=True,
+        digits=(5, 4),
+        help="""
+    Controls how Product Knowledge is used in the KPI Multiplier calculation.
+
+    ON:
+    Product Knowledge scores are normalized across all employees in the
+    current Territory Engine using:
+
+        (Employee Prod Know - Minimum Prod Know)
+        /
+        (Maximum Prod Know - Minimum Prod Know)
+
+    The result is restricted between 0 and 1.
+
+    OFF:
+    The original Product Knowledge score is used directly:
+
+        PK Effective = Prod Know
+    """,
     )
 
-    rsm_territory_key = fields.Float(
-        string='RSM TerritoryKey'
+    @api.depends(
+        'employee_id',
+        'prod_know',
+        'territory_engine_id.period_id',
+        'territory_engine_id.kprl_employee_engine_line_ids.employee_id',
+        'territory_engine_id.kprl_employee_engine_line_ids.prod_know',
+    )
+    def _compute_pk_effective(self):
+        PerformanceInput = self.env['kprl.performance.input']
+
+        for engine in self.mapped('territory_engine_id'):
+            lines = engine.kprl_employee_engine_line_ids
+
+            # Get performance configuration for this period
+            performance = PerformanceInput.search([
+                ('period_id', '=', engine.period_id.id),
+            ], limit=1) if engine.period_id else False
+
+            pk_norm = performance.pk_norm if performance else 'off'
+
+            # Excel:
+            # MINIFS(T, B, "?*")
+            # MAXIFS(T, B, "?*")
+            #
+            # Only lines with an employee are considered.
+            valid_lines = lines.filtered(
+                lambda l: l.employee_id
+            )
+
+            prod_know_values = valid_lines.mapped('prod_know')
+
+            min_prod_know = min(prod_know_values) if prod_know_values else 0.0
+            max_prod_know = max(prod_know_values) if prod_know_values else 0.0
+
+            denominator = max_prod_know - min_prod_know
+
+            for line in lines:
+                line.pk_effective = 0.0
+
+                if not line.employee_id:
+                    continue
+
+                prod_know = line.prod_know or 0.0
+
+                if pk_norm == 'on':
+                    if denominator:
+                        normalized_value = (
+                            (prod_know - min_prod_know)
+                            / denominator
+                        )
+
+                        # Excel MEDIAN(0, value, 1)
+                        line.pk_effective = max(
+                            0.0,
+                            min(normalized_value, 1.0)
+                        )
+                    else:
+                        # Equivalent to IFERROR(..., T18)
+                        line.pk_effective = prod_know
+                else:
+                    # PK_Norm is not On
+                    line.pk_effective = prod_know
+
+                if line.territory_engine_id:
+                    line.territory_engine_id.total_pk_effective = (
+                        line.pk_effective
+                    )
+
+    rsm_territory_key = fields.Many2one(
+        'kprl.territory',
+        string='RSM Territory Key',
+        compute='_compute_rsm_territory_key',
+        store=True,
+        help=(
+            "RSM Territory Key is populated only when the employee's role "
+            "is RSM or RSM + ASM. It uses the line's Territory.\n\n"
+            "Calculation:\n"
+            "• RSM (rsm) → RSM Territory Key = Territory\n"
+            "• RSM + ASM (rsm_asm) → RSM Territory Key = Territory\n"
+            "• All other roles → RSM Territory Key is empty."
+        ),
     )
 
+    @api.depends(
+        'employee_id',
+        'role_id',
+        'role_id.role',
+        'territory_id',
+    )
+    def _compute_rsm_territory_key(self):
+        for line in self:
+            line.rsm_territory_key = False
+
+            if not line.employee_id:
+                continue
+
+            role = line.role_id.role if line.role_id else False
+
+            if role in ('rsm', 'rsm_asm'):
+                line.rsm_territory_key = line.territory_id
     sales_floor = fields.Float(
-        string='Sales Floor'
+        string='Sales Floor',
+        compute='_compute_sales_floor',
+        store=True,
+        digits=(5, 4),
+        help=(
+            "Sales Floor is retrieved from the Role Parameter configuration "
+            "using the employee's Sales Role.\n\n"
+            "Calculation:\n"
+            "• If Employee is empty → 0\n"
+            "• Find the employee's Role in the Role Parameter configuration.\n"
+            "• Return the Sales Floor configured for that Role.\n"
+            "• If no matching Role is found → 0.\n\n"
+            "Excel equivalent:\n"
+            "IF(Employee='', '', "
+            "IFERROR(INDEX(RP_SalesFloor, MATCH(Role, RP_Role, 0)), 0))"
+        ),
     )
+
+    @api.depends(
+        'employee_id',
+        'role_id',
+        'role_id.role',
+        'role_id.sales_floor',
+    )
+    def _compute_sales_floor(self):
+        for line in self:
+            line.sales_floor = 0.0
+
+            if not line.employee_id:
+                continue
+
+            if not line.role_id:
+                continue
+
+            line.sales_floor = line.role_id.sales_floor or 0.0
     min_sales = fields.Float(
-        string='Min Sales'
+        string='Minimum Sales',
+        compute='_compute_min_sales',
+        store=True,
+        digits=(5, 4),
+        help=(
+            "Minimum Sales Attainment is retrieved from the employee's "
+            "Sales Role configuration.\n\n"
+            "Calculation:\n"
+            "• If Employee is empty → 0\n"
+            "• Find the employee's Sales Role in kprl.role.parameter.\n"
+            "• Return the min_sales_attainment configured for that role.\n"
+            "• If no role/configuration is found → 0.\n\n"
+            "Excel equivalent:\n"
+            "IF(Employee='', '', "
+            "IFERROR(INDEX(RP_MinSales, MATCH(Role, RP_Role, 0)), 0))"
+        ),
     )
+
+    @api.depends(
+        'employee_id',
+        'role_id',
+        'role_id.role',
+        'role_id.min_sales_attainment',
+    )
+    def _compute_min_sales(self):
+        for line in self:
+            line.min_sales = 0.0
+
+            if not line.employee_id:
+                continue
+
+            if not line.role_id:
+                continue
+
+            line.min_sales = line.role_id.min_sales_attainment or 0.0
+
+            if line.territory_engine_id:
+                line.territory_engine_id.total_min_sales = line.min_sales
 
     retrival_floor = fields.Float(
-        string='Retrival Floor'
+        string='Retrival Floor',
+        compute='_compute_retrival_floor',
+        store=True,
+        digits=(5, 4),
+        help=(
+            "Retrival Floor is retrieved from the employee's Sales Role "
+            "configuration in kprl.role.parameter.\n\n"
+            "Calculation:\n"
+            "• If Employee is empty → 0\n"
+            "• The employee's Sales Role is matched against the configured roles.\n"
+            "• The retr_floor value configured for that role is returned.\n"
+            "• If no role/configuration is found → 0.\n\n"
+            "Excel equivalent:\n"
+            "IF(Employee='', '', "
+            "IFERROR(INDEX(RP_RetrFloor, MATCH(Role, RP_Role, 0)), 0))"
+        ),
     )
 
-    min_retrival = fields.Float(
-        string='Min Retrival'
+    @api.depends(
+        'employee_id',
+        'role_id',
+        'role_id.role',
+        'role_id.retr_floor',
     )
+    def _compute_retrival_floor(self):
+        for line in self:
+            line.retrival_floor = 0.0
+
+            if not line.employee_id:
+                continue
+
+            if not line.role_id:
+                continue
+
+            line.retrival_floor = line.role_id.retr_floor or 0.0
+
+            if line.territory_engine_id:
+                line.territory_engine_id.total_retrival_floor = (
+                    line.retrival_floor
+                )
+
+
+    min_retrival = fields.Float(
+        string='Minimum Retrival',
+        compute='_compute_min_retrival',
+        store=True,
+        digits=(5, 4),
+        help=(
+            "Minimum Retrival Rate is retrieved from the employee's Sales Role "
+            "configuration in kprl.role.parameter.\n\n"
+            "Calculation:\n"
+            "• If Employee is empty → 0.\n"
+            "• The employee's Sales Role is matched against the configured roles.\n"
+            "• The min_retrieval_rate configured for that role is returned.\n"
+            "• If no role/configuration is found → 0.\n\n"
+            "Excel equivalent:\n"
+            "IF(Employee='', '', "
+            "IFERROR(INDEX(RP_MinRetr, MATCH(Role, RP_Role, 0)), 0))"
+        ),
+    )
+    @api.depends(
+        'employee_id',
+        'role_id',
+        'role_id.role',
+        'role_id.min_retrieval_rate',
+    )
+    def _compute_min_retrival(self):
+        for line in self:
+            line.min_retrival = 0.0
+
+            if not line.employee_id:
+                continue
+
+            if not line.role_id:
+                continue
+
+            line.min_retrival = line.role_id.min_retrieval_rate or 0.0
+
+            if line.territory_engine_id:
+                line.territory_engine_id.total_min_retrival = (
+                    line.min_retrival
+                )
 
     own_target = fields.Float(
         string='Own Target'
     )
+
+    kpi_mult = fields.Float(
+        string='KPI Multiplier',
+        compute='_compute_kpi_mult',
+        store=True,
+        digits=(5, 4),
+    )
+
+    @api.depends(
+        'employee_id',
+        'product_knowledge_score',
+        'call_report_compliance',
+        'customer_coverage_rate',
+        'new_customer_acquisition',
+        'call_rep',
+        'coverage',
+        'new_cust',
+    )
+    def _compute_kpi_mult(self):
+        PerformanceInput = self.env['kprl.performance.input']
+
+        for line in self:
+            line.kpi_mult = 0.0
+
+            if not line.employee_id:
+                continue
+
+            # Get the KPI configuration.
+            # Adjust this domain to match your actual performance.input
+            # relationship/configuration.
+            performance_input = PerformanceInput.search([
+                ('period_id', '=', line.territory_engine_id.period_id.id),
+            ], limit=1)
+
+            if not performance_input:
+                continue
+
+            kpi_mult_floor = performance_input.kpi_mult_floor or 0.0
+            kpi_mult_range = performance_input.kpi_mult_range or 0.0
+
+            kpi_value = (
+                (line.product_knowledge_score or 0.0)
+                * (line.call_rep or 0.0)
+                +
+                (line.call_report_compliance or 0.0)
+                * (line.call_rep or 0.0)
+                +
+                (line.customer_coverage_rate or 0.0)
+                * (line.coverage or 0.0)
+                +
+                (line.new_customer_acquisition or 0.0)
+                * (line.new_cust or 0.0)
+            )
+
+            line.kpi_mult = (
+                kpi_mult_floor
+                + (kpi_value * kpi_mult_range)
+            )
+
+            if line.territory_engine_id:
+                line.territory_engine_id.total_kpi_mult = line.kpi_mult

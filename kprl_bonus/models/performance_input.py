@@ -24,6 +24,38 @@ class PerformanceInput(models.Model):
     call_pct = fields.Float(string='Call Rate (%)', digits=(5, 2))
     present_pct = fields.Float(string='Presentation (%)', digits=(5, 2))
     team_pct = fields.Float(string='Team (%)', digits=(5, 2))
+    prod_know = fields.Float(
+            string='Prod Know'
+        )
+    kpi_mult_floor = fields.Float(
+                string='Multi Floor',
+                default=5
+            )
+    kpi_mult_range = fields.Float(
+                string='Multi Range', 
+                default=5
+            )
+    
+    call_rep = fields.Float(
+        string='Call Rep'
+    )
+
+    coverage = fields.Float(
+        string='Coverage'
+    )
+
+    new_cust = fields.Float(
+        string='New Cust'
+    )
+
+    pk_norm = fields.Selection(
+        [
+            ('on', 'On'),
+            ('off', 'Off'),
+        ],
+        string='Product Knowledge Normalization',
+        default='off',
+    )
     
     # Sales KPI fields (0-1 scale)
     product_knowledge_score = fields.Float(string='Product Knowledge Score', digits=(5, 4), 
@@ -43,6 +75,33 @@ class PerformanceInput(models.Model):
     territory_target = fields.Float(string='Territory Target', digits='Product Price',
                                    help='Territory target for RSM calculations')
 
+    accel_kick_in = fields.Float(
+        string='Acceleration Kick-In',
+        default=1.0,
+        digits=(5, 4),
+        help='Sales attainment level at which the accelerated payout cap applies.',
+    )
+
+    cap_stretch = fields.Float(
+        string='Stretch Cap',
+        default=0.0,
+        digits=(16, 2),
+        help='Maximum sales payout allowed when sales attainment exceeds the acceleration kick-in.',
+    )
+
+    cap_indiv_max = fields.Float(
+        string='Individual Maximum Cap',
+        default=0.0,
+        digits=(16, 2),
+        help='Maximum individual sales payout before reaching the acceleration kick-in.',
+    )
+
+    lead_premium = fields.Float(
+        string='Lead Premium',
+        default=0.0,
+        digits=(16, 2),
+        help='Premium applied to the highest ASM sub-base for RM and RSM+ASM roles.',
+    )
     note = fields.Text(string='Notes')
 
     _sql_constraints = [

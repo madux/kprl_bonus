@@ -116,7 +116,7 @@
                                 <i class="fa fa-user-circle"/>
                                 <field name="user_role" nolabel="1"/>
                             </span>
-                            <a href="/web/session/logout" class="btn btn-sm btn-outline-secondary">Logout!</a>
+                            <a href="https://docs.google.com/document/d/1rPugHagQJ7IufwC1l0p6n32CputAE5KOOFBp61btxhQ/edit?tab=t.h58si2xk5g29">See documentation!</a>
                         </div> -->
 
                         <div class="o_emp_dashboard">
@@ -166,11 +166,11 @@
                                     </div>
                                     <div class="o_emp_info_row">
                                         <span class="o_emp_info_label">Date Hired</span>
-                                        <span class="o_emp_info_value"><field name="date_hired"/></span>
+                                        <span class="o_emp_info_value"><field name="date_hired" readonly="0" force_save="True"/></span>
                                     </div>
                                     <div class="o_emp_info_row">
                                         <span class="o_emp_info_label">Tenure (yrs)</span>
-                                        <span class="o_emp_info_value"><field name="tenure_years"/></span>
+                                        <span class="o_emp_info_value"><field name="tenure_years" readonly="0" force_save="True"/></span>
                                     </div>
                                     <div class="o_emp_info_row o_emp_info_row_last">
                                         <span class="o_emp_info_label">Reporting Manager</span>

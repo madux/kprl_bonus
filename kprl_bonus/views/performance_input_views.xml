@@ -53,6 +53,32 @@
                             <field name="team_pct"/>
                         </group>
                     </group>
+                    <group string="Settings">
+                        <group>
+                            <field name="prod_know"/>
+                            <field name="kpi_mult_floor"/>
+                            <field name="kpi_mult_range"/>
+                            <field name="call_rep"/>
+                        </group>
+                        <group>
+                            <field name="coverage"/>
+                            <field name="new_cust"/>
+                            <field name="pk_norm"/>
+                        </group>
+                    </group>
+                    <group string="Sales KPI">
+                        <group>
+                            <field name="product_knowledge_score"/>
+                            <field name="call_report_compliance"/>
+                            <field name="customer_coverage_rate"/>
+                            <field name="new_customer_acquisition"/>
+                        </group>
+                        <group>
+                            <field name="territory_sales"/>
+                            <field name="territory_retrievals"/>
+                            <field name="territory_target"/>
+                        </group>
+                    </group>
                     <group>
                         <field name="note"/>
                     </group>
