@@ -72,13 +72,13 @@
                          
 
                         <group>
-                            <field name="funded_pool_after_both_gate"/>
-                            <field name="profitability_gate_factor"/>
+                            <field name="funded_pool_after_both_gate" readonly='1'/>
+                            <field name="profitability_gate_factor" readonly='1'/>
                         </group>
                         <group>
                             <field name="state"/>
-                            <field name="base_bonus_pool"/>
-                            <field name="gmp_gate_factor"/>
+                            <field name="base_bonus_pool" readonly='1'/>
+                            <field name="gmp_gate_factor" readonly='1'/>
                         </group>
                     </group>
  
@@ -125,10 +125,10 @@
                                     <field name="ebitda_scaling_start_max" string="EBITDA threshold Scaling Start — Upper Bound"/>
                                     <field name="ebitda_max_rate_threshold_min" string="EBITDA Max Threshold — Lower Bound"/>
                                     <field name="ebitda_max_rate_threshold_max" string="EBITDA Max Threshold — Upper Bound"/>
-                                    <field name="partial_gate_floor_min" string="Profitability Gate (Partial unlock) — Lower Bound"/>
-                                    <field name="partial_gate_floor_max" string="Profitability Gate (Partial unlock) — Upper Bound"/>
-                                    <field name="full_gate_floor_min" string="Profitability Gate (full unlock) — Lower Bound"/>
-                                    <field name="full_gate_floor_max" string="Profitability Gate (full unlock) — Upper Bound"/>
+                                    <field name="partial_gate_floor_min" string="Ramp Start Margin (zero-payout) — Lower Bound"/>
+                                    <field name="partial_gate_floor_max" string="Ramp Start Margin (zero-payout) — Upper Bound"/>
+                                    <field name="full_gate_floor_min" string="Full Unlock Threshold — Lower Bound"/>
+                                    <field name="full_gate_floor_max" string="Full Unlock Threshold — Upper Bound"/>
                                     <field name="max_pool_rate_min" string="Pool Rate Max (ceiling) — Lower Bound"/>
                                     <field name="max_pool_rate_max" string="Pool Rate Max (ceiling) — Upper Bound"/>
                                     <field name="max_pool_rate_approver"/>
@@ -223,7 +223,7 @@
                             </group>
                             <group>
                                 <group>
-                                    <field name="kpi_weight_total" widget="percentage"/>
+                                    <field name="kpi_weight_total"/>
                                     <field name="kpi_weight_valid"/>
                                 </group>
                                 <div class="alert alert-info"
@@ -305,6 +305,7 @@
                         <page name="scorecard" string="Section L — Scorecard">
                             <group string="Section L — Company Scorecard &amp; Engine Switches (v23)">
                                 <field name="l1_pool_funding_method"/>
+                                <field name="l2_manual_pool_rate_enabled"/>
                                 <field name="l2_manual_pool_rate_override"/>
                                 <field name="l3_gmp_compliance_status"/>
                             </group>
@@ -393,4 +394,3 @@
     </field>
 </record>
 </odoo>
-

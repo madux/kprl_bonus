@@ -19,7 +19,6 @@ class ProductPool(models.Model):
     pool_contribution = fields.Float(string='Pool Contribution',
                                      digits='Product Price',
                                      compute='_compute_pool_contrib', store=True)
-    margin_pct = fields.Float(string='Margin (%)', digits=(5, 2))
 
     quarterly_revenue = fields.Float(string='Quarterly Revenue', digits=(5, 2), compute='_compute_quarterly_revenue')
 

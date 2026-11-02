@@ -1,6 +1,14 @@
 from odoo import models, fields, api
 from datetime import date
 
+from .kprl_math import score_to_multiplier, normalize_score, profitability_gate, DEFAULT_RAMP_START, DEFAULT_FULL_UNLOCK, company_gmp_band
+from odoo.exceptions import ValidationError
+from .compensation.grade_policy import clamp_skill_premium
+from .compensation.operations import (
+    value_per_point, weighted_department_multiplier, workbook_effective_pool,
+)
+from .compensation.multipliers import auto_pool_rate
+
 
 class BonusEngine(models.Model):
     _name = 'kprl.bonus.engine'
@@ -23,12 +31,12 @@ class BonusEngine(models.Model):
                                      digits='Product Price')
 
     gate_status = fields.Selection([
-        ('closed', 'Closed (< 18%)'),
-        ('partial', 'Partial (18%-22%)'),
-        ('full', 'Full (>= 22%)'),
+        ('closed', 'LOCKED - no pool'),
+        ('partial', 'PARTIAL'),
+        ('full', 'FULLY OPEN'),
     ], string='Profitability Gate', compute='_compute_gate_status', store=True)
     ebitda_margin = fields.Float(string='EBITDA Margin (%)', digits=(5, 2))
-    gate_factor = fields.Float(string='Gate Factor', digits=(5, 4),
+    gate_factor = fields.Float(string='Gate Factor', digits=(5, 2),
                                compute='_compute_gate_factor', store=True)
     
     # New fields for proper pool rate calculation
@@ -42,16 +50,27 @@ class BonusEngine(models.Model):
                                                   compute='_compute_points_weighted_dept_multiplier', store=True,
                                                   help='Weighted average of department KPI multipliers by staff points')
 
+    company_kpi_avg = fields.Float(string='Company KPI Factor (avg dept appraisal)', digits=(5, 4),
+                                   compute='_compute_company_kpi_avg', store=True,
+                                   help='Client formula: simple mean of dept-mean appraisal scores (0-1), all depts incl. sales. Depts with no appraised staff excluded.')
+    company_gmp_avg = fields.Float(string='Company GMP Average (dept mean)', digits=(5, 4),
+                                   compute='_compute_company_gmp_avg', store=True,
+                                   help='Company-wide GMP status: simple mean of all dept GMP factors (def_factor) for the period.')
+    company_gmp_band_factor = fields.Float(string='Company GMP Factor (banded)', digits=(5, 4),
+                                           compute='_compute_company_gmp_avg', store=True,
+                                           help='Company-wide Quarterly Incentive Pool band. Clean avg 1.0-0.9 -> 1.0; Minor avg 0.89-0.70 -> 0.8; Major avg 0.69-0.5 -> 0.4; Critical avg below 0.5 -> 0.0.')
     gmp_status = fields.Selection([
         ('clean', 'Clean'),
         ('non_compliant', 'Non-Compliant'),
     ], string='GMP Status', default='clean')
-    gmp_factor = fields.Float(string='GMP Factor', digits=(5, 4), default=1.0)
+    gmp_factor = fields.Float(string='GMP Factor', digits=(5, 2), default=1.0,
+                               compute='_compute_engine_gmp_factor', store=True, readonly=False)
 
-    company_kpi_score = fields.Float(string='Company KPI Score', digits=(5, 4))
+    company_kpi_score = fields.Float(string='Company KPI Score (%)', digits=(5, 2),
+                                     compute='_compute_company_kpi_score', store=True)
     effective_pool = fields.Float(string='EFFECTIVE POOL (₦)',
-                                  digits='Product Price', help="GMP Factor * Gate Factor * Quaterly revenue - [Funded × (0.6·CompanyMult + 0.4·DeptMult), capped]")
-    proration_factor = fields.Float(string='Proration Factor', digits=(5, 4),
+                                  digits='Product Price', help="Workbook formula: MIN(base pool × profitability gate × company GMP factor × (60% × company scorecard multiplier + 40% × points-weighted department multiplier), EBITDA cap).")
+    proration_factor = fields.Float(string='Proration Factor', digits=(5, 2),
                                     default=1.0)
     total_payout = fields.Float(string='Total Quarterly Payout',
                                 digits='Product Price')
@@ -64,11 +83,11 @@ class BonusEngine(models.Model):
                                            digits=(5, 4))
     headcount = fields.Integer(string='Headcount Eligible',
                                compute='_compute_headcount', store=True)
-    aip_pool = fields.Float(string='AIP Pool (Annual)', digits='Product Price') 
+    qipm_pool = fields.Float(string='QIPM', digits='Product Price', readonly=True, help='Workbook annual AIP funded pool: annual revenue target × AIP rate, released only when full-year EBITDA meets the gate.')
     # company_kpi_score = fields.Float(string='Company KPI Score', digits=(5, 4)) duplicate field, already defined above
         # ── Grand Pool split ──
     opm_pool_split = fields.Float(
-        string='Opm Share Pct (%)', digits=(5, 2), default=60,
+        string='Opm Share Pct (%)', digits=(5, 2), default=50,
         help="User input: OPM's share of the Grand Pool")
     sup_pool_split = fields.Float(
         string='SUP Share (%)', digits=(5, 2),
@@ -114,17 +133,14 @@ class BonusEngine(models.Model):
                                   digits='Product Price', readonly=True, help="rec.ops_sub_pool / rec.ops_sup_total_point",
                                   compute="_compute_value_point")
     
-    @api.depends('ops_sup_total_point', 'senior_mgt_total_point', 'opm_total_point')
+    @api.depends('opm_pool', 'senior_management_pool', 'ops_sub_pool', 'ops_sup_total_point', 'senior_mgt_total_point', 'opm_total_point')
     def _compute_value_point(self):
         for rec in self:
-            # if rec.ops_sup_total_point or rec.senior_mgt_total_point or rec.opm_total_point:
-            rec.opm_value_point = rec.opm_pool / rec.opm_total_point if rec.opm_total_point > 0 else 1
-            rec.senior_mgt_value_point = rec.senior_management_pool / rec.senior_mgt_total_point if rec.senior_mgt_total_point > 0 else 1 
-            rec.ops_sup_value_point = rec.ops_sub_pool / rec.ops_sup_total_point if rec.ops_sup_total_point > 0 else 1 
-            # else:
-            #     rec.ops_sup_value_point = 0
-            #     rec.opm_value_point = 0
-            #     rec.senior_mgt_value_point = 0
+            rec.opm_value_point = value_per_point(rec.opm_pool, rec.opm_total_point)
+            rec.senior_mgt_value_point = value_per_point(
+                rec.senior_management_pool, rec.senior_mgt_total_point)
+            rec.ops_sup_value_point = value_per_point(
+                rec.ops_sub_pool, rec.ops_sup_total_point)
 
     @api.depends('opm_pool_split')
     def _compute_sup_pool_split(self):
@@ -188,56 +204,44 @@ class BonusEngine(models.Model):
     computed_by = fields.Many2one('res.users', string='Computed By')
     notes = fields.Text(string='Notes')
 
-    @api.depends('ebitda_margin')
+    @api.depends('ebitda_margin', 'period_id.parameter_ids.partial_gate_floor',
+                 'period_id.parameter_ids.full_gate_floor')
     def _compute_gate_status(self):
         for rec in self:
-            if rec.ebitda_margin >= 22.0:
+            params = rec.period_id.parameter_ids[:1] if rec.period_id else False
+            full = params.full_gate_floor if params else 30.0
+            partial = params.partial_gate_floor if params else 20.0
+            if rec.ebitda_margin >= full:
                 rec.gate_status = 'full'
-            elif rec.ebitda_margin >= 18.0:
+            elif rec.ebitda_margin > partial:
                 rec.gate_status = 'partial'
-            elif rec.ebitda_margin > 0:
-                rec.gate_status = 'closed'
             else:
                 rec.gate_status = 'closed'
 
-    @api.depends('ebitda_margin', 'period_id')
+    @api.depends('ebitda_margin', 'period_id.parameter_ids.min_pool_rate',
+                 'period_id.parameter_ids.max_pool_rate',
+                 'period_id.parameter_ids.ebitda_scaling_start',
+                 'period_id.parameter_ids.ebitda_max_rate_threshold')
     def _compute_auto_pool_rate(self):
-        """Calculate auto pool rate using linear interpolation as per specification"""
+        """Mirror BONUS ENGINE B9, including its IFERROR fallback."""
         for rec in self:
-            params = rec.period_id.parameter_ids if rec.period_id else None
-            if not params:
-                rec.auto_pool_rate = 0.0
-                continue
+            params = rec.period_id.parameter_ids[:1] if rec.period_id else False
+            min_rate = (params.min_pool_rate / 100.0) if params else 0.008
+            max_rate = (params.max_pool_rate / 100.0) if params else 0.018
+            ebitda_floor = (params.ebitda_scaling_start / 100.0) if params else 0.15
+            ebitda_target = (params.ebitda_max_rate_threshold / 100.0) if params else 0.40
+            actual_ebitda = (rec.ebitda_margin or 0.0) / 100.0
+            rec.auto_pool_rate = auto_pool_rate(
+                actual_ebitda, min_rate, max_rate, ebitda_floor, ebitda_target)
 
-            # Get parameters from specification
-            min_rate = params.min_pool_rate / 100.0 if params.min_pool_rate else 0.00606
-            max_rate = params.max_pool_rate / 100.0 if params.max_pool_rate else 0.017
-            ebitda_floor = params.ebitda_scaling_start / 100.0 if params.ebitda_scaling_start else 0.12
-            ebitda_target = params.ebitda_max_rate_threshold / 100.0 if params.ebitda_max_rate_threshold else 0.30
-
-            actual_ebitda = rec.ebitda_margin / 100.0 if rec.ebitda_margin else 0.0
-
-            # Linear interpolation formula from specification:
-            # Auto Pool Rate = Pool Rate Min + [(Actual EBITDA - EBITDA Floor) / (EBITDA Target - EBITDA Floor)] × (Pool Rate Max - Pool Rate Min)
-            if actual_ebitda <= ebitda_floor:
-                rec.auto_pool_rate = min_rate
-            elif actual_ebitda >= ebitda_target:
-                rec.auto_pool_rate = max_rate
-            else:
-                interpolation_factor = (actual_ebitda - ebitda_floor) / (ebitda_target - ebitda_floor)
-                rec.auto_pool_rate = min_rate + (interpolation_factor * (max_rate - min_rate))
-
-    @api.depends('ebitda_margin', 'period_id')
+    @api.depends('ebitda_margin', 'period_id.parameter_ids.partial_gate_floor',
+                 'period_id.parameter_ids.full_gate_floor')
     def _compute_gate_factor(self):
         """Calculate gate factor with continuous ramp for partial gate"""
         for rec in self:
-            params = rec.period_id.parameter_ids if rec.period_id else None
-            if not params:
-                rec.gate_factor = 0.0
-                continue
-
-            partial_unlock = params.partial_gate_floor / 100.0 if params.partial_gate_floor else 0.18
-            full_unlock = params.full_gate_floor / 100.0 if params.full_gate_floor else 0.22
+            params = rec.period_id.parameter_ids[:1] if rec.period_id else False
+            partial_unlock = params.partial_gate_floor / 100.0 if params else DEFAULT_RAMP_START
+            full_unlock = params.full_gate_floor / 100.0 if params else DEFAULT_FULL_UNLOCK
             actual_ebitda = rec.ebitda_margin / 100.0 if rec.ebitda_margin else 0.0
 
             # Profitability Gate Factor with continuous ramp
@@ -246,102 +250,132 @@ class BonusEngine(models.Model):
             elif actual_ebitda <= partial_unlock:
                 rec.gate_factor = 0.0  # Closed
             else:
-                # Linear ramp from 0 at partial to 1.0 at full
-                rec.gate_factor = (actual_ebitda - partial_unlock) / (full_unlock - partial_unlock)
+                # Shared helper: ramp START pays 0, no cliff (rounded to 1 decimal for display)
+                rec.gate_factor = profitability_gate(actual_ebitda, ramp_start=partial_unlock, full_unlock=full_unlock)
             
             # Update gate status based on continuous calculation
             if actual_ebitda >= full_unlock:
                 rec.gate_status = 'full'
-            elif actual_ebitda >= partial_unlock:
+            elif actual_ebitda > partial_unlock:
                 rec.gate_status = 'partial'
             else:
                 rec.gate_status = 'closed'
 
-    @api.depends('period_id.company_kpi', 'period_id.parameter_ids.company_mult_baseline', 'period_id.parameter_ids.company_mult_k_factor')
+    @api.depends('period_id.parameter_ids.l3_gmp_compliance_status', 'period_id.parameter_ids.g_company_gmp_self_reported', 'period_id.parameter_ids.g_gmp_self_report_relief')
+    def _compute_engine_gmp_factor(self):
+        """Engine GMP Factor from L3 company GMP status. Clean -> 1.0.
+        Editable (readonly=False): manual edits persist until an L3 dependency changes."""
+        from .kprl_math import company_gmp_factor
+        for rec in self:
+            params = rec.period_id.parameter_ids[:1] if rec.period_id else False
+            if not params:
+                # No params yet: keep existing manual value, default 1.0 on new records
+                if rec.gmp_factor is False or rec.gmp_factor is None:
+                    rec.gmp_factor = 1.0
+                continue
+            status = params.l3_gmp_compliance_status or 'clean'
+            c_self = params.g_company_gmp_self_reported if hasattr(params, 'g_company_gmp_self_reported') else False
+            relief = params.g_gmp_self_report_relief or 0.5
+            try:
+                rec.gmp_factor = company_gmp_factor(status, c_self, relief)
+            except ValueError as exc:
+                from odoo.exceptions import ValidationError as _VE
+                raise _VE('Invalid company GMP status %r: use Clean / Minor / Major / Critical.' % (status,)) from exc
+
+    @api.depends('period_id.parameter_ids.company_scorecard_total')
+    def _compute_company_kpi_score(self):
+        """BONUS ENGINE B37: weighted company scorecard, displayed as percent."""
+        for rec in self:
+            params = rec.period_id.parameter_ids[:1] if rec.period_id else False
+            rec.company_kpi_score = round(
+                (params.company_scorecard_total or 0.0) * 100.0, 2) if params else 0.0
+
+    @api.depends('period_id.parameter_ids.company_scorecard_total')
     def _compute_company_performance_multiplier(self):
+        """BONUS ENGINE B38 multiplier, driven by the company scorecard."""
         for rec in self:
-            company_kpi = rec.period_id.company_kpi if rec.period_id else 0.0
-            params = rec.period_id.parameter_ids[:1] if rec.period_id else None
-            baseline = params.company_mult_baseline if params and params.company_mult_baseline else 0.90
-            k_factor = params.company_mult_k_factor if params and params.company_mult_k_factor else 0.20
-            if company_kpi >= baseline:
-                rec.company_performance_multiplier = 1.0 + ((company_kpi - baseline) * k_factor)
-            else:
-                rec.company_performance_multiplier = 1.0  # No boost below baseline
+            params = rec.period_id.parameter_ids[:1] if rec.period_id else False
+            rec.company_performance_multiplier = score_to_multiplier(
+                params.company_scorecard_total or 0.0) if params else score_to_multiplier(0.0)
 
-    @api.depends('period_id')
+    @api.depends('period_id', 'period_id.dept_kpi_ids.multiplier',
+                 'period_id.payout_ids.employee_id.total_points',
+                 'period_id.payout_ids.employee_id.department_id',
+                 'period_id.payout_ids.employee_id.status')
     def _compute_points_weighted_dept_multiplier(self):
-        """Calculate points-weighted average of department KPI multipliers"""
+        """Mirror BONUS ENGINE B39 and STAFF PAYOUT AF/H, including IFERROR."""
         for rec in self:
             if not rec.period_id:
                 rec.points_weighted_dept_multiplier = 1.0
                 continue
-
-            # Get all departments with their KPI multipliers for this period
             dept_kpis = self.env['kprl.dept.kpi.multiplier'].search([
                 ('period_id', '=', rec.period_id.id)
             ])
-            
-            if not dept_kpis:
-                rec.points_weighted_dept_multiplier = 1.0
-                continue
+            multipliers = {
+                row.department_id.id: row.multiplier for row in dept_kpis
+            }
+            staff_points = [
+                (line.employee_id.department_id.id,
+                 line.employee_id.total_points)
+                for line in rec.period_id.payout_ids
+                if line.employee_id and line.employee_id.status == 'active'
+            ]
+            rec.points_weighted_dept_multiplier = weighted_department_multiplier(
+                staff_points, multipliers)
 
-            # Calculate weighted average by staff points
-            total_weighted_mult = 0.0
-            total_points = 0.0
-            
-            for dept_kpi in dept_kpis:
-                # Get total points for employees in this department
-                dept_employees = self.env['kprl.employee'].search([
-                    ('department_id', '=', dept_kpi.department_id.id),
-                    ('status', '=', 'active')
-                ])
-                dept_points = sum(emp.total_points for emp in dept_employees)
-                
-                if dept_points > 0:
-                    total_weighted_mult += dept_kpi.multiplier * dept_points
-                    total_points += dept_points
-            
-            rec.points_weighted_dept_multiplier = (total_weighted_mult / total_points) if total_points > 0 else 1.0
-
-    @api.depends('ebitda_margin', 'period_id')
-
-
-    @api.depends('period_id', 'period_id.department_ids')
-    def _compute_points_weighted_dept_multiplier(self):
-        """Calculate points-weighted average of department KPI multipliers"""
+    @api.depends('period_id',
+                 'period_id.performance_ids.appraisal_score',
+                 'period_id.performance_ids.employee_id.department_id',
+                 'period_id.performance_ids.employee_id.status')
+    def _compute_company_kpi_avg(self):
+        '''Client formula: mean of dept-mean appraisal scores (0-1).
+        All depts incl. sales. A dept mean covers active staff holding a
+        performance row for the period; staff without rows are skipped and
+        depts with no appraised staff are excluded. Retained as a reporting
+        statistic; the workbook pool multiplier uses the company scorecard.'''
+        from .kprl_math import normalize_score
         for rec in self:
             if not rec.period_id:
-                rec.points_weighted_dept_multiplier = 1.0
+                rec.company_kpi_avg = 0.0
                 continue
+            dept_means = []
+            for dept in self.env['kprl.department'].search([]):
+                staff = self.env['kprl.employee'].search(
+                    [('department_id', '=', dept.id), ('status', '=', 'active')])
+                if not staff:
+                    continue
+                perfs = self.env['kprl.performance.input'].search(
+                    [('period_id', '=', rec.period_id.id),
+                     ('employee_id', 'in', staff.ids)])
+                scores = [normalize_score(pf.appraisal_score)
+                          for pf in perfs
+                          if pf.appraisal_score not in (None, False)]
+                if scores:
+                    dept_means.append(sum(scores) / len(scores))
+            rec.company_kpi_avg = (sum(dept_means) / len(dept_means)) if dept_means else 0.0
 
-            # Get all departments with their KPI multipliers for this period
-            dept_kpis = self.env['kprl.dept.kpi.multiplier'].search([
-                ('period_id', '=', rec.period_id.id)
-            ])
-            
-            if not dept_kpis:
-                rec.points_weighted_dept_multiplier = 1.0
+    @api.depends('period_id', 'period_id.dept_kpi_ids.def_factor')
+    def _compute_company_gmp_avg(self):
+        '''Reporting statistic: simple mean of department GMP factors, then
+        banded. The workbook pool gate uses the company GMP status factor.'''
+        for rec in self:
+            if not rec.period_id:
+                rec.company_gmp_avg = 0.0
+                rec.company_gmp_band_factor = 0.0
                 continue
+            rows = self.env['kprl.dept.kpi.multiplier'].search(
+                [('period_id', '=', rec.period_id.id)])
+            if not rows:
+                rec.company_gmp_avg = 0.0
+                rec.company_gmp_band_factor = 0.0
+                continue
+            avg = sum(rows.mapped('def_factor')) / len(rows)
+            rec.company_gmp_avg = avg
+            try:
+                rec.company_gmp_band_factor = company_gmp_band(avg)
+            except ValueError:
+                rec.company_gmp_band_factor = 0.0
 
-            # Calculate weighted average by staff points
-            total_weighted_mult = 0.0
-            total_points = 0.0
-            
-            for dept_kpi in dept_kpis:
-                # Get total points for employees in this department
-                dept_employees = self.env['kprl.employee'].search([
-                    ('department_id', '=', dept_kpi.department_id.id),
-                    ('status', '=', 'active')
-                ])
-                dept_points = sum(emp.total_points for emp in dept_employees)
-                
-                if dept_points > 0:
-                    total_weighted_mult += dept_kpi.multiplier * dept_points
-                    total_points += dept_points
-            
-            rec.points_weighted_dept_multiplier = (total_weighted_mult / total_points) if total_points > 0 else 1.0
-    
     @api.depends('grade_level_ids')
     def _compute_total_employee_on_grade(self):
         for rec in self:
@@ -366,24 +400,110 @@ class BonusEngine(models.Model):
             else:
                 rec.headcount = 0
 
+    def action_generate_payouts(self):
+        self.ensure_one()
+        if not self.period_id:
+            return 0
+        Payout = self.env['kprl.bonus.payout']
+        employees = self.env['kprl.employee'].search([('status', '=', 'active')])
+        created = 0
+        errors = []
+        for emp in employees:
+            exists = Payout.search([('employee_id', '=', emp.id), ('period_id', '=', self.period_id.id)], limit=1)
+            if exists:
+                continue
+            try:
+                Payout.create({'employee_id': emp.id, 'period_id': self.period_id.id})
+                created += 1
+            except Exception as exc:
+                errors.append('%s: %s' % (emp.name or '', exc))
+        if errors:
+            raise ValidationError('Could not generate payouts: ' + '\n'.join(errors))
+        return created
+
     def action_compute(self):
         self.ensure_one()
         params = self.period_id.parameter_ids[:1] if self.period_id else None
+        if params:
+            # Workbook BONUS ENGINE B42/B46 link to CONTROL PANEL split inputs.
+            self.opm_pool_split = params.l4_opm_share_pct
+            self.senior_management_sub_pool = params.senior_mgmt_share_pct
         # SKU source Sec4→5A: BasePool = Σ contributions, not revenue_target
         pool_lines = self.env['kprl.product.pool'].search([('period_id','=',self.period_id.id)])
         base_pool = sum(pool_lines.mapped('pool_contribution')) if pool_lines else 0.0
         quarterly_rev = sum(pool_lines.mapped('quantity_revenue')) if pool_lines else (self.period_id.revenue_target or 0.0)
         self.quarterly_revenue = quarterly_rev
         self.pool_contribution = base_pool
+        if params and params.l1_pool_funding_method == 'ebitda':
+            min_r = params.min_pool_rate / 100.0
+            max_r = params.max_pool_rate / 100.0
+            e_fl = params.ebitda_scaling_start / 100.0
+            e_tg = params.ebitda_max_rate_threshold / 100.0
+            e_now = (self.period_id.ebitda_margin or 0.0) / 100.0
+            if (params.l2_manual_pool_rate_enabled
+                    or params.l2_manual_pool_rate_override):
+                rate = params.l2_manual_pool_rate_override / 100.0
+            else:
+                rate = auto_pool_rate(e_now, min_r, max_r, e_fl, e_tg)
+            base_pool = (quarterly_rev or 0.0) * rate
+            self.pool_contribution = base_pool
+        if not self.period_id.revenue_amount and not self.period_id.ebitda_margin:
+            raise ValidationError('EBITDA/revenue missing for active period: enter amounts on the period before computing.')
         self.ebitda_margin = self.period_id.ebitda_margin
-        funded_pool = base_pool * self.gate_factor * self.gmp_factor
-        performance_blend = (0.6 * self.company_performance_multiplier) + (0.4 * self.points_weighted_dept_multiplier)
-        effective = funded_pool * performance_blend
-        # Cap Sec5I: Effective ≤ 12%*EBITDA
+        # Force fresh gate/GMP/KPI values (computed fields may hold stale stored values)
+        self._compute_gate_factor()
+        self._compute_engine_gmp_factor()
+        if params:
+            params._compute_company_scorecard()
+        self._compute_company_kpi_avg()
+        self._compute_company_gmp_avg()
+        self._compute_company_kpi_score()
+        self._compute_company_performance_multiplier()
+        # Only create payout rows after the run is known to be computable.
+        self.action_generate_payouts()
+        self._compute_points_weighted_dept_multiplier()
         ebitda_amt = quarterly_rev * (self.ebitda_margin/100.0) if quarterly_rev else 0.0
-        cap_pct = (params.g_bonus_pool_cap_pct / 100.0) if params and getattr(params, 'g_bonus_pool_cap_pct', None) else 0.12
-        cap = ebitda_amt * cap_pct
-        self.effective_pool = min(effective, cap) if cap else effective
+        cap_pct = (params.g_bonus_pool_cap_pct / 100.0) if params else 0.10
+        pool_result = workbook_effective_pool(
+            base_pool, self.gate_factor, self.gmp_factor,
+            self.company_performance_multiplier,
+            self.points_weighted_dept_multiplier, ebitda_amt, cap_pct)
+        self.effective_pool = pool_result['effective_pool']
+        to_push = self.env['kprl.bonus.payout'].search([('period_id', '=', self.period_id.id)])
+        if to_push:
+            pools = {'OPM': self.opm_pool, 'SENMGT': self.senior_management_pool, 'OPSSUP': self.ops_sub_pool}
+            totals = {}
+            for pp in to_push:
+                code = (pp.subpool_id.code or 'OPM')
+                # Workbook BONUS ENGINE B54: SALES-pool staff sit in OPS-SUP.
+                if code == 'SALES':
+                    code = 'OPSSUP'
+                # Workbook STAFF PAYOUT col H: total points = base pts + skill
+                # premium (clamped by grade skill max). Never fall back to the
+                # grade table alone: a blocked line still owns its base points.
+                pts = float(pp.total_points or 0.0)
+                if pts <= 0:
+                    grade = pp.grade_id
+                    base_pts = float(grade.yp_points or 0.0)
+                    skill = float(pp.employee_id.skill_premium_pts or 0.0)
+                    pts = base_pts + clamp_skill_premium(skill, grade.skill_max)
+                totals[code] = totals.get(code, 0.0) + pts
+            vmap = {}
+            for code, pool_amt in pools.items():
+                tot = totals.get(code, 0.0)
+                vmap[code] = (pool_amt / tot) if tot else 1.0
+            self.opm_total_point = totals.get('OPM', 0.0)
+            self.senior_mgt_total_point = totals.get('SENMGT', 0.0)
+            self.ops_sup_total_point = totals.get('OPSSUP', 0.0)
+            for pp in to_push:
+                pp._recalculate_from_engine()
+            gross_sum = sum(to_push.mapped('gross_payable'))
+            factor = min(1.0, (self.effective_pool / gross_sum)) if gross_sum else 1.0
+            self.proration_factor = factor
+            for pp in to_push:
+                pp.write({'proration_factor': factor})
+                pp._recalculate_from_engine()
+                pp.ensure_deferred_entry()
 
         payouts = self.env['kprl.bonus.payout'].search([
             ('period_id', '=', self.period_id.id),
@@ -391,14 +511,20 @@ class BonusEngine(models.Model):
         self.ops_payout = sum(p.gross_payable for p in payouts)
         
         # Calculate sales commission from sales engine
-        sales_engines = self.env['kprl.sales.engine'].search([
-            ('period_id', '=', self.period_id.id),
-        ])
-        self.sales_commission = sum(se.final_sales_payout for se in sales_engines)
-        
+        eng = self.env['kprl.territory.engine'].search([('period_id', '=', self.period_id.id)], limit=1)
+        if eng:
+            self.sales_commission = eng.total_sales_payout or sum(eng.kprl_employee_engine_line_ids.mapped('sales_payout'))
+        else:
+            self.sales_commission = sum(self.env['kprl.territory.engine.lines'].search([('territory_engine_id.period_id', '=', self.period_id.id)]).mapped('sales_payout'))
         self.total_payout = self.ops_payout + self.sales_commission
-        self.aip_pool = self.quarterly_revenue * (params.aip_annual_rate or 0.002)
+        # Workbook BONUS ENGINE B99 is the annual pool funded by the
+        # full-year EBITDA gate. The annual AIP record owns those inputs.
+        aip_pool = self.env['kprl.aip.pool'].search([
+            ('year', '=', str(self.period_id.date_start.year)),
+        ], limit=1) if self.period_id.date_start else self.env['kprl.aip.pool']
+        self.qipm_pool = aip_pool.funded_pool if aip_pool else 0.0
 
+        self.payout_as_pct_revenue = 0.0
         if self.quarterly_revenue:
             self.payout_as_pct_revenue = (self.total_payout / self.quarterly_revenue)
         self.pool_util_vs_ebitda_cap = self.payout_as_pct_revenue
@@ -412,4 +538,3 @@ class BonusEngine(models.Model):
     def action_reset(self):
         self.action_compute()
         self.state = 'draft'
-

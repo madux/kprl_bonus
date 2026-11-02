@@ -142,7 +142,7 @@
       );
       setVal('kprl-behavioural-score', (me.team_pct || 0).toFixed(1) + ' / 25');
       setBar('kprl-behavioural-bar', ((me.team_pct || 0) / 25) * 100 + '%');
-      setVal('kprl-dept-kpi', (me.prod_pct || 0).toFixed(1) + '%');
+      setVal('kprl-dept-kpi', (me.prod_pct || 0).toFixed(1));
       setBar('kprl-dept-kpi-bar', Math.min(me.prod_pct || 0, 100) + '%');
     } catch (e) {
       console.error('Performance load error:', e);

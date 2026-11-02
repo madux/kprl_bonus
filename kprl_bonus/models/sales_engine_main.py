@@ -55,19 +55,15 @@ class KprlTerritoryEngine(models.Model):
     )
 
     total_commission_sales = fields.Float(
-        string='Total Commission Sales'
+        string='Total Commission Sales',
+        compute='_compute_engine_totals',
+        store=True
     )
 
     total_commission_retrival = fields.Float(
-        string='Total Commission Retrival'
-    )
-
-    total_gross_commission = fields.Float(
-        string='Total Gross Commission'
-    )
-
-    total_eligible_commission = fields.Float(
-        string='Total Eligible Commission'
+        string='Total Commission Retrival',
+        compute='_compute_engine_totals',
+        store=True
     )
 
     total_prod_know = fields.Float(
@@ -77,9 +73,6 @@ class KprlTerritoryEngine(models.Model):
     total_call_rep = fields.Float(
         string='Total Call Rep'
     )
-    total_kpi_mult = fields.Float(
-            string='Total KPI MULTI'
-        )
 
     total_coverage = fields.Float(
         string='Total Coverage'
@@ -101,9 +94,6 @@ class KprlTerritoryEngine(models.Model):
         string='Total Tenure Mult'
     )
 
-    total_sales_payout = fields.Float(
-        string='Total Sales Payout'
-    )
 
     total_sub_base = fields.Float(
         string='Total Sub-base (Helper)'
@@ -141,7 +131,7 @@ class KprlTerritoryEngine(models.Model):
         string='Total Own Target'
     )
     total_territory_retrival = fields.Float(
-            string='Total Own Target'
+            string='Total Territory Retrival'
         )
 
     retrival_commission_rate = fields.Float(
@@ -185,6 +175,8 @@ class KprlTerritoryEngine(models.Model):
         'kprl_employee_engine_line_ids.gross_commission',
         'kprl_employee_engine_line_ids.eligible_commission',
         'kprl_employee_engine_line_ids.sales_payout',
+        'kprl_employee_engine_line_ids.commission_sales',
+        'kprl_employee_engine_line_ids.commission_retrival',
     )
     def _compute_engine_totals(self):
         for record in self:
@@ -201,6 +193,12 @@ class KprlTerritoryEngine(models.Model):
             )
             record.total_sales_payout = sum(
                 lines.mapped('sales_payout')
+            )
+            record.total_commission_sales = sum(
+                lines.mapped('commission_sales')
+            )
+            record.total_commission_retrival = sum(
+                lines.mapped('commission_retrival')
             )
     kprl_role_share_line_ids = fields.One2many(
             'kprl.role.share.lines',

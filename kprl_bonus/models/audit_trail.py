@@ -18,3 +18,8 @@ class AuditTrail(models.Model):
         ('approval', 'Approval'),
         ('investigation', 'Investigation'),
     ], string='Category', default='user')
+
+    employee_id = fields.Many2one('kprl.employee', string='Employee', index=True)
+    grade_old_id = fields.Many2one('kprl.grade', string='Old Grade')
+    grade_new_id = fields.Many2one('kprl.grade', string='New Grade')
+    detail = fields.Text(string='Details')

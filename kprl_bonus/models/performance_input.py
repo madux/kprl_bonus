@@ -19,21 +19,26 @@ class PerformanceInput(models.Model):
     own_target = fields.Float(string='Own Target', digits='Product Price')
     own_sales = fields.Float(string='Own Sales', digits='Product Price')
     own_revenue = fields.Float(string='Own Revenue', digits='Product Price')
-    own_retrievals = fields.Float(string='Own Retrievals', digits='Product Price', default=35762597)
+    own_retrievals = fields.Float(string='Own Retrievals', digits='Product Price')
     prod_pct = fields.Float(string='Productivity (%)', digits=(5, 2))
     call_pct = fields.Float(string='Call Rate (%)', digits=(5, 2))
     present_pct = fields.Float(string='Presentation (%)', digits=(5, 2))
-    team_pct = fields.Float(string='Team (%)', digits=(5, 2))
+    team_pct = fields.Float(string='Behaviour (/25)', digits=(5, 2),
+        help='Behavioural score out of 25 (workbook column Behav /25). Drives the behaviour multiplier.')
+    potential_assessment_score = fields.Float(string='Potential Assessment', digits=(5, 2),
+        help='PMS potential assessment score per employee (raw value as returned by the PMS API).')
+    current_assessment_score = fields.Float(string='Current Assessment', digits=(5, 2),
+        help='PMS current assessment score per employee (raw value as returned by the PMS API).')
     prod_know = fields.Float(
             string='Prod Know'
         )
     kpi_mult_floor = fields.Float(
                 string='Multi Floor',
-                default=5
+                default=0.80
             )
     kpi_mult_range = fields.Float(
                 string='Multi Range', 
-                default=5
+                default=0.40
             )
     
     call_rep = fields.Float(
@@ -58,13 +63,13 @@ class PerformanceInput(models.Model):
     )
     
     # Sales KPI fields (0-1 scale)
-    product_knowledge_score = fields.Float(string='Product Knowledge Score', digits=(5, 4), 
+    product_knowledge_score = fields.Float(string='Product Knowledge Score', digits=(5, 2),
                                           help='Sales KPI: Product knowledge (0-1 scale)')
-    call_report_compliance = fields.Float(string='Call Report Compliance', digits=(5, 4),
+    call_report_compliance = fields.Float(string='Call Report Compliance', digits=(5, 2),
                                          help='Sales KPI: Call report compliance (0-1 scale)')
-    customer_coverage_rate = fields.Float(string='Customer Coverage Rate', digits=(5, 4),
+    customer_coverage_rate = fields.Float(string='Customer Coverage Rate', digits=(5, 2),
                                          help='Sales KPI: Customer coverage rate (0-1 scale)')
-    new_customer_acquisition = fields.Float(string='New Customer Acquisition', digits=(5, 4),
+    new_customer_acquisition = fields.Float(string='New Customer Acquisition', digits=(5, 2),
                                           help='Sales KPI: New customer acquisition (0-1 scale)')
     
     # Territory data for RSM calculations

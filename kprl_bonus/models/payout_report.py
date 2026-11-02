@@ -69,52 +69,39 @@ class BonusPayoutReport(models.Model):
     def _compute_comp_track(self):
         for rec in self:
             emp = rec.employee_id
-            if emp.is_sales and emp.sales_role and emp.sales_role != 'none':
-                # Check if they also have ops payout
-                ops_payout = self.env['kprl.bonus.payout'].search_count([
-                    ('employee_id', '=', emp.id),
-                    ('period_id', '=', rec.period_id.id),
-                ])
-                rec.comp_track = 'both' if ops_payout else 'sales'
+            # Workbook PAYOUT REPORT F = EM_Track (Ops / Sales / Ops+Sales).
+            track = (emp.track or '').strip().lower()
+            if track in ('ops', 'sales', 'both'):
+                rec.comp_track = track
+            elif emp.is_sales and emp.sales_role and emp.sales_role != 'none':
+                rec.comp_track = 'sales'
             else:
                 rec.comp_track = 'ops'
 
     @api.depends('employee_id', 'period_id', 'comp_track')
     def _compute_financials(self):
         Payout = self.env['kprl.bonus.payout']
-        TerritoryPayout = self.env['kprl.territory.payout']
-        SalesEngine = self.env['kprl.sales.engine']
         for rec in self:
             rec.ops_bonus = 0.0
             rec.sales_commission = 0.0
             if not rec.employee_id or not rec.period_id:
                 continue
-            # Ops bonus from main payout
-            payout = Payout.search([
-                ('employee_id', '=', rec.employee_id.id),
-                ('period_id', '=', rec.period_id.id),
-            ], limit=1)
+            payout = Payout.search([('employee_id', '=', rec.employee_id.id), ('period_id', '=', rec.period_id.id)], limit=1)
             if payout:
-                rec.ops_bonus = payout.net_immediate or 0.0
-            # Sales commission from sales engine (new implementation)
+                # Workbook PAYOUT REPORT G = SP_AE = STAFF PAYOUT AJ (net
+                # payable after dept GMP, malus, cap) - not pre-governance AC.
+                rec.ops_bonus = payout.net_payable or 0.0
             emp = rec.employee_id
-            if emp.is_sales and emp.sales_role and emp.sales_role != 'none':
-                sales_engine = SalesEngine.search([
-                    ('employee_id', '=', emp.id),
-                    ('period_id', '=', rec.period_id.id),
-                ], limit=1)
-                if sales_engine:
-                    rec.sales_commission = sales_engine.final_sales_payout or 0.0
-            # Fallback to territory payout for backward compatibility
-            if emp.is_sales:
-                se = self.env['kprl.sales.engine'].search([('employee_id','=',emp.id),('period_id','=',rec.period_id.id)], limit=1)
-                if se:
-                    rec.sales_commission = se.final_sales_payout or 0.0
-                elif emp.territory_id:
-                    t_payout = self.env['kprl.territory.payout'].search([('territory_id','=',emp.territory_id.id),('period_id','=',rec.period_id.id)], limit=1)
-                    rec.sales_commission = t_payout.commission_payable or 0.0 if t_payout else 0.0
-                if t_payout:
-                    rec.sales_commission = t_payout.commission_payable or 0.0
+            # Workbook PAYOUT REPORT H = INDEX(SE_Pay, MATCH(ID, SE_ID)):
+            # looked up by employee for everyone (GM/NSM are SUP pool,
+            # is_sales False, but still sit in the Sales Engine).
+            lines = self.env['kprl.territory.engine.lines'].search([('employee_id', '=', emp.id), ('territory_engine_id.period_id', '=', rec.period_id.id)])
+            if lines:
+                rec.sales_commission = sum(lines.mapped('sales_payout'))
+            elif emp.is_sales and emp.sales_role and emp.sales_role != 'none':
+                if emp.territory_id:
+                    tp = self.env['kprl.territory.payout'].search([('territory_id', '=', emp.territory_id.id), ('period_id', '=', rec.period_id.id)], limit=1)
+                    rec.sales_commission = tp.commission_payable or 0.0
 
     @api.depends('ops_bonus', 'sales_commission')
     def _compute_total(self):

@@ -30,7 +30,9 @@ class Home(main.Home):
     
     def _login_redirect(self, uid, redirect=None):
         '''we did this so that every user will be directed to portal page'''
-        emp_id = request.env['kprl.employee'].search([('employee_id.user_id.id', '=', uid)], limit=1)
+        emp_id = request.env['kprl.employee'].search([('employee_id.user_id', '=', uid)], limit=1)
+        if not emp_id:
+            return '/kprl/dashboard'
         routes = f'/kprl/employee/{emp_id.id}'
         return routes # _get_login_redirect_url(uid, redirect)
 
@@ -82,7 +84,7 @@ class KprlApi(http.Controller):
                 'gate_factor', 'gmp_status', 'gmp_factor', 'company_kpi_score',
                 'effective_pool', 'proration_factor', 'total_payout',
                 'ops_payout', 'sales_commission', 'payout_as_pct_revenue',
-                'pool_util_vs_ebitda_cap', 'headcount', 'aip_pool',
+                'pool_util_vs_ebitda_cap', 'headcount', 'qipm_pool',
                 'state'])[0] if engine else {},
             'departments': dept_scores,
             'payouts': dept_payouts,
@@ -96,7 +98,7 @@ class KprlApi(http.Controller):
     def api_departments(self, period_id):
         depts = request.env['kprl.dept.kpi.multiplier'].search_read([
             ('period_id', '=', period_id),
-        ], ['department_id', 'kpi_score', 'multiplier', 'weight', 'gmp_status'])
+        ], ['department_id', 'kpi_score', 'multiplier', 'def_factor', 'self_flag', 'gmp_status'])
         return self._json_response(depts)
 
     # ─── Employees ──────────────────────────────────────────────────────────
@@ -107,7 +109,7 @@ class KprlApi(http.Controller):
         employees = request.env['kprl.employee'].search_read(
             [], ['id', 'name', 'employee_id', 'department_id', 'grade_id',
                  'job_title', 'status', 'is_sales', 'sales_role',
-                 'tenure_years', 'date_hired'],
+                 'tenure_years', 'employment_date'],
             order='employee_id'
         )
         return self._json_response(employees)
@@ -119,7 +121,7 @@ class KprlApi(http.Controller):
         if not emp.exists():
             return self._json_error('Employee not found', 404)
         data = emp.read(['id', 'name', 'employee_id', 'department_id',
-                         'grade_id', 'job_title', 'subpool_id', 'date_hired',
+                         'grade_id', 'job_title', 'subpool_id', 'employment_date',
                          'tenure_years', 'manager_id', 'status', 'is_sales',
                          'sales_role', 'territory_id', 'email', 'phone'])[0]
         if data.get('department_id'):
@@ -332,7 +334,7 @@ class KprlApi(http.Controller):
         pool = request.env['kprl.product.pool'].search_read([
             ('period_id', '=', period_id),
         ], ['product_id', 'quantity_units', 'unit_price', 'sku_rate',
-            'quantity_revenue', 'pool_contribution', 'margin_pct'])
+            'quantity_revenue', 'pool_contribution'])
         return self._json_response(pool)
 
     # ─── Trends (Dashboard Chart) ──────────────────────────────────────────
@@ -515,6 +517,114 @@ class KprlApi(http.Controller):
 
         return self._json_response(data)
     
+    @http.route('/kprl/api/simulate/<int:emp_id>/<int:period_id>', type='http',
+                auth='user', methods=['POST'], csrf=False)
+    def api_simulate(self, emp_id, period_id):
+        """Single-source simulation: the pure compensation engine recomputes
+        the whole cascade server-side. This endpoint contains NO formulas;
+        the SPA calls it (optionally with what-if overrides) instead of
+        duplicating the workbook math in JavaScript."""
+        emp = request.env['kprl.employee'].browse(emp_id)
+        period = request.env['kprl.bonus.period'].browse(period_id)
+        if not emp.exists() or not period.exists():
+            return self._json_error('Employee or period not found', 404)
+        current = self._current_kprl_employee()
+        if current and emp.id != current.id and not self._user_can_simulate_any():
+            return self._json_error('Not allowed to simulate another employee', 403)
+
+        from odoo.addons.kprl_bonus.models.compensation import preview as preview_engine
+        from odoo.addons.kprl_bonus.models.bonus_payout import payout_vals_from_payload
+
+        sim = request.env['kprl.payout.simulator'].new({
+            'period_id': period_id, 'employee_id': emp_id})
+        emp_dict = sim._employee_dict()
+        perf_dict = sim._performance_dict()
+        policy = sim._policy_snapshot()
+        pool_ctx = sim._pool_ctx()
+
+        overrides = {}
+        if request.httprequest.data:
+            try:
+                body = json.loads(request.httprequest.data) or {}
+                overrides = body.get('overrides') or {}
+            except (ValueError, TypeError):
+                overrides = {}
+
+        def num(v):
+            try:
+                f = float(v)
+                return None if (f != f) else f
+            except (TypeError, ValueError):
+                return None
+
+        if perf_dict:
+            perf_dict = dict(perf_dict)
+            o = num(overrides.get('appraisal'))
+            if o is not None:
+                perf_dict['appraisal'] = (o / 100.0) if o > 2.0 else o
+            o = num(overrides.get('behaviour'))
+            if o is not None:
+                perf_dict['behaviour'] = o
+            o = num(overrides.get('dept_kpi_mult'))
+            if o is not None:
+                perf_dict['dept_kpi_mult_override'] = o
+            for key in ('own_target', 'own_sales', 'own_retrieval'):
+                o = num(overrides.get(key))
+                if o is not None:
+                    perf_dict[key] = o
+            for src_key, key in (('pk', 'product_knowledge'), ('call', 'call_report'),
+                                 ('cov', 'customer_coverage'), ('newc', 'new_customer')):
+                o = num(overrides.get(src_key))
+                if o is not None:
+                    perf_dict[key] = (o / 100.0) if o > 2.0 else o
+
+        payload = preview_engine.preview_payout(emp_dict, perf_dict, policy, pool_ctx)
+        cls = payload.get('classification') or {}
+
+        # What-if base eligible: rescale the engine value/point so the
+        # total-points x VPP multiplication itself stays engine-side.
+        o_base = num(overrides.get('base_eligible'))
+        total_pts = float(cls.get('total_points') or 0.0)
+        if o_base is not None and o_base >= 0 and total_pts > 0:
+            pool_ctx = dict(pool_ctx, value_per_point=o_base / total_pts)
+            payload = preview_engine.preview_payout(emp_dict, perf_dict, policy, pool_ctx)
+            cls = payload.get('classification') or {}
+
+        # Governance overlay (dept GMP x pre-pay malus x QA/QC company-gate
+        # relief) -- reuses the canonical kprl.bonus.payout overlay.
+        dept_gmp, malus_pct, fixed, qa_relief = 1.0, 0.0, 0.0, 1.0
+        line = request.env['kprl.bonus.payout'].search([
+            ('employee_id', '=', emp_id), ('period_id', '=', period_id)], limit=1)
+        if line and period_id == (line.period_id.id or 0):
+            dept_gmp, malus_pct, fixed, qa_relief = line._governance_overlay()
+        o_malus = num(overrides.get('malus_pct'))
+        if o_malus is not None:
+            malus_pct = min(max(o_malus, 0.0), 100.0)
+        vals = payout_vals_from_payload(payload, dept_gmp, malus_pct, 0.0,
+                                        qa_relief=qa_relief)
+        ops_bd = payload.get('operations_breakdown') or {}
+
+        return self._json_response({
+            'status': payload.get('status'),
+            'blocking_errors': payload.get('blocking_errors', []),
+            'warnings': payload.get('warnings', []),
+            'classification': cls,
+            'ops': ops_bd,
+            'sales': payload.get('sales_breakdown') or {},
+            'governed': {
+                'dept_gmp': dept_gmp,
+                'malus_pct': malus_pct,
+                'qa_relief': qa_relief,
+                'gross_payable': vals.get('gross_payable'),
+                'proration_factor': vals.get('proration_factor'),
+                'final_floor': vals.get('final_floor'),
+                'deferred_amount': vals.get('deferred_amount'),
+                'net_immediate': vals.get('net_immediate'),
+                'net_payable': vals.get('net_payable'),
+                'cap': ops_bd.get('cap'),
+                'cap_check': vals.get('cap_check'),
+            },
+        })
     # ─── Helpers ────────────────────────────────────────────────────────────
 
     def _json_response(self, data, status=200):
@@ -624,11 +734,43 @@ class KprlPages(http.Controller):
     @http.route('/kprl/simulate', type='http', auth='user',
                 website=True)
     def page_simulate_redirect(self):
+        emp = self._current_kprl_employee()
+        if emp:
+            return request.redirect('/kprl/simulate/%d' % emp.id)
+        if self._user_can_simulate_any():
+            fallback = request.env['kprl.employee'].search(
+                [('status', '=', 'active')], order='name', limit=1)
+            if not fallback:
+                fallback = request.env['kprl.employee'].search(
+                    [], order='name', limit=1)
+            if fallback:
+                return request.redirect('/kprl/simulate/%d' % fallback.id)
+        return request.not_found()
+
+    def _current_kprl_employee(self):
+        uid = request.env.uid
         emp = request.env['kprl.employee'].search(
-            [('employee_id.user_id.id', '=', request.env.uid)], limit=1)
-        if not emp:
-            return request.not_found()
-        return request.redirect('/kprl/simulate/%d' % emp.id)
+            [('employee_id.user_id', '=', uid)], limit=1)
+        if emp:
+            return emp
+        hr_emp = request.env['hr.employee'].search(
+            [('user_id', '=', uid)], limit=1)
+        if hr_emp:
+            emp = request.env['kprl.employee'].search(
+                [('employee_id', '=', hr_emp.id)], limit=1)
+            if emp:
+                return emp
+            user = request.env['res.users'].browse(uid)
+            if user.exists() and user.email:
+                emp = request.env['kprl.employee'].search(
+                    ['|', ('work_email', '=', user.email), ('employee_id.work_email', '=', user.email)], limit=1)
+                if emp:
+                    return emp
+        return None
+
+    def _user_can_simulate_any(self):
+        user = request.env.user
+        return user.has_group('kprl_bonus.group_kprl_hr') or user.has_group('kprl_bonus.group_kprl_admin') or user.has_group('kprl_bonus.group_kprl_finance') or user.has_group('kprl_bonus.group_kprl_exec_director') or user.has_group('kprl_bonus.group_kprl_ceo')
 
     @http.route('/kprl/simulate/<int:emp_id>', type='http', auth='user',
                 website=True)
@@ -636,6 +778,10 @@ class KprlPages(http.Controller):
         emp = request.env['kprl.employee'].browse(emp_id)
         if not emp.exists():
             return request.not_found()
+        current = self._current_kprl_employee()
+        can_switch = self._user_can_simulate_any()
+        if current and emp.id != current.id and not can_switch:
+            return request.redirect('/kprl/simulate/%d' % current.id)
 
         periods = request.env['kprl.bonus.period'].search(
             [], order='date_start desc')
@@ -683,7 +829,8 @@ class KprlPages(http.Controller):
                     "tenure_mult": tenure_mult,
                     "gmp_factor": 1.0 if (not dept_kpi or dept_kpi.gmp_status=='clean') else 0.9,
                     "proration_factor": engine.proration_factor if engine else 1.0,
-                    "min_floor": (param.minimum_floor if 'HYGIENE' in (emp.grade_id.name or '').upper() else param.maximum_cap) if param else 0,
+                    "min_floor": param.minimum_floor if param else 0,
+                    "max_cap": param.maximum_cap if param else 0,
                     "g_individual_cap": param.g_individual_quarterly_cap if param and hasattr(param, 'g_individual_quarterly_cap') and param.g_individual_quarterly_cap else 2000000,
                     "i4_stretch_cap": param.i4_stretch_individual_cap if param and hasattr(param, 'i4_stretch_individual_cap') and param.i4_stretch_individual_cap else 5000000,
                     "deferral_rate": emp.grade_id.deferral_rate if emp.grade_id else 0,
@@ -699,9 +846,207 @@ class KprlPages(http.Controller):
                 }
 
         import json as _json
+        switch_employees = []
+        if can_switch:
+            switch_employees = request.env['kprl.employee'].search_read(
+                [], ['name', 'staff_id'], order='name', limit=200)
         sim_params_json = _json.dumps(sim_params) if sim_params else '{}'
         return request.render('kprl_bonus.simulation_page', {
             'employee': emp,
             'sim_params': sim_params,
             'sim_params_json': sim_params_json,
+            'is_own': bool(current and emp.id == current.id),
+            'can_switch': can_switch,
+            'switch_employees': switch_employees,
+            'current_emp_id': current.id if current else emp.id,
         })
+LEDGER_COLUMNS = [
+    ("No", 6), ("Staff ID", 14), ("Name", 28), ("Department", 20),
+    ("Grade", 22), ("Track", 10), ("Ops Bonus (Bonus after Deferral)", 18),
+    ("Sales Comm", 15), ("Gross Payable", 16), ("Deferred", 14),
+    ("Gov Tax", 14), ("Net Pay (Take-Home)", 18), ("AIP", 8), ("Notes", 24),
+]
+LEDGER_AMOUNT_COLS = (6, 7, 8, 9, 10, 11)  # 0-based indexes of money columns
+
+
+def build_ledger_workbook(period_name, generated_label, rows):
+    """Thin wrapper over the stdlib-only tools.xlsx_write builder (Odoo's
+    interpreter has no working openpyxl, so the workbook is assembled
+    from raw XML parts instead)."""
+    from odoo.addons.kprl_bonus.tools.xlsx_write import (
+        build_ledger_workbook as _build)
+    headers = [name for name, _width in LEDGER_COLUMNS]
+    widths = [width for _name, width in LEDGER_COLUMNS]
+    return _build(
+        "KPRL Bonus Ledger",
+        ["Period: %s" % (period_name or "N/A"), generated_label or ""],
+        headers, widths, [list(r) for r in rows], LEDGER_AMOUNT_COLS)
+
+
+class KprlLedger(http.Controller):
+    """Bonus ledger Excel export (Accounts). Finance group and above only."""
+
+    @http.route('/kprl/ledger/<int:period_id>/xlsx', type='http', auth='user',
+                methods=['GET'], csrf=False)
+    def ledger_xlsx(self, period_id):
+        if not request.env.user.has_group('kprl_bonus.group_kprl_finance'):
+            raise AccessError('Bonus ledger export is restricted to Finance.')
+        period = request.env['kprl.bonus.period'].browse(period_id)
+        if not period.exists():
+            raise AccessError('Bonus period not found.')
+        lines = request.env['kprl.bonus.payout.report'].search(
+            [('period_id', '=', period.id)], order='kprl_department_id, employee_id')
+        Payout = request.env['kprl.bonus.payout']
+        rows = []
+        for seq, line in enumerate(lines, start=1):
+            emp = line.employee_id
+            payout = Payout.search(
+                [('employee_id', '=', emp.id), ('period_id', '=', period.id)], limit=1)
+            track = {'ops': 'Ops', 'sales': 'Sales', 'both': 'Ops+Sales'}.get(
+                line.comp_track or 'ops', 'Ops')
+            rows.append((
+                seq, emp.staff_id or '', emp.name or '',
+                line.kprl_department_id.name or '',
+                line.grade_id.name or '', track,
+                float(line.ops_bonus or 0.0), float(line.sales_commission or 0.0),
+                float(payout.gross_payable or 0.0) if payout else 0.0,
+                float(payout.deferred_amount or 0.0) if payout else 0.0,
+                float(payout.gov_tax_amount or 0.0) if payout else 0.0,
+                float(payout.take_home_pay or 0.0) if payout else 0.0,
+                'Yes' if line.aip_eligible else 'No', line.notes or '',
+            ))
+        user = request.env.user
+        stamp = datetime.now().strftime('%d %B %Y %H:%M')
+        content = build_ledger_workbook(
+            period.name, 'Generated %s by %s' % (stamp, user.name), rows)
+        if lines:
+            lines.write({'state': 'exported'})
+        safe = ''.join(ch if ch.isalnum() or ch in ('-', '_') else '_' for ch in (period.name or 'period'))
+        return Response(
+            content,
+            headers=[('Content-Type',
+                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+                     ('Content-Disposition',
+                      'attachment; filename=Bonus-Ledger-%s.xlsx' % safe)])
+
+
+def _check_payslip_access(payout):
+    """Owner (linked user), Finance group, or CEO/Superadmin (via chain)."""
+    user = request.env.user
+    if user.has_group('kprl_bonus.group_kprl_finance'):
+        return
+    emp = payout.employee_id
+    hr = emp.employee_id if emp else False
+    owner = hr.user_id if hr and hr.user_id else False
+    if owner and owner.id == user.id:
+        return
+    raise AccessError('You can only export your own payslip.')
+
+
+def _payslip_excel_rows(payout):
+    rows = []
+    money = lambda v: float(v or 0.0)
+    rows.append(("Base Eligible (points x value/point)", money(payout.base_eligible)))
+    rows.append(("Dept KPI Multiplier (x%.4f)" % (payout.dept_kpi_mult or 0.0), None))
+    rows.append(("Appraisal Multiplier (x%.4f, score %.2f)" % (
+        payout.appraisal_mult or 0.0, payout.appraisal_score or 0.0), None))
+    rows.append(("Behavioural Multiplier (x%.4f, %.1f / %.1f)" % (
+        payout.behavioural_mult or 0.0, payout.behaviour_05 or 0.0,
+        payout.behaviour_max or 25.0), None))
+    rows.append(("Adjusted Bonus", money(payout.adjusted_amount)))
+    rows.append(("Exception Premium", money(payout.exception_premium)))
+    rows.append(("Gross Commission (Sales + Retrieval)", money(payout.gross_commission)))
+    rows.append(("Gross Bonus", money(payout.gross_payable)))
+    rows.append(("Proration (x%.2f) - Payable" % (payout.proration_factor or 1.0),
+                 money(payout.payable)))
+    rows.append(("Tenure Multiplier (x%.4f, %.2f yrs) - Tenure Enhanced" % (
+        payout.tenure_mult or 1.0, payout.tenure_years or 0.0),
+        money(payout.tenure_enhance)))
+    rows.append(("Final incl. Floor", money(payout.final_floor)))
+    rows.append(("Deferred (%.2f%%)" % (payout.deferral_rate or 0.0),
+                 money(payout.deferred_amount)))
+    rows.append(("Bonus after Deferral (Quarterly Payout)", money(payout.net_immediate)))
+    rows.append(("GMP Dept (x%.4f) / Company (x%.4f)" % (
+        payout.gmp_factor or 1.0, payout.company_gmp_factor or 1.0), None))
+    rows.append(("Malus (%.2f%%)" % (payout.malus_pct_total or 0.0), None))
+    rows.append(("Net Bonus", money(payout.net_payable)))
+    rows.append(("Gross Taxable Amount (Tax Base)", money(payout.taxable_gross_amount)))
+    rows.append(("Government Tax (%.2f%%)" % (payout.gov_tax_rate or 0.0),
+                 money(payout.gov_tax_amount)))
+    rows.append(("Take-Home Pay", money(payout.take_home_pay)))
+    if payout.has_sales_leg:
+        rows.append(("SALES LEG", None))
+        rows.append(("Attainment %.4f (gate %.4f, retrieval gate %.4f)" % (
+            payout.sales_attainment or 0.0, payout.sales_gate or 0.0,
+            payout.retrieval_gate or 0.0), None))
+        rows.append(("Sales Commission", money(payout.sales_commission)))
+        rows.append(("Retrieval Commission (rate %.4f)" % (payout.retrieval_rate or 0.0),
+                     money(payout.retrieval_commission)))
+        rows.append(("Sales KPI (x%.4f), Accelerator (x%.4f)" % (
+            payout.sales_kpi_mult or 0.0, payout.accelerator_factor or 0.0), None))
+        rows.append(("Leadership Floor / Cap", None))
+        rows.append(("%s / %s" % (payout.leadership_floor or 0.0, payout.sales_cap or 0.0), None))
+        rows.append(("Sales Payout", money(payout.sales_payout)))
+    for ev in payout.governance_event_ids:
+        rows.append(("Gov: %s %s (%s)" % (
+            ev.ref or '', ev.trigger_type or '', ev.status or ''),
+            money(ev.malus_amount)))
+    if payout.clawback_event_ids:
+        rows.append(("Clawback opened / forfeited: %s / %s" % (
+            payout.total_clawback_amount or 0.0,
+            payout.total_forfeited_via_clawback or 0.0), None))
+    return rows
+
+
+def _payslip_filename(payout, ext):
+    staff = (payout.employee_id.staff_id or 'staff').replace('/', '-')
+    period = payout.period_id.name or 'period'
+    safe = ''.join(ch if ch.isalnum() or ch in ('-', '_') else '_' for ch in '%s-%s' % (staff, period))
+    return 'Payslip-%s.%s' % (safe, ext)
+
+
+class KprlPayslip(http.Controller):
+    """Single-payslip PDF + Excel. Owner, Finance, or CEO only."""
+
+    @http.route('/kprl/payslip/<int:payout_id>/xlsx', type='http', auth='user',
+                methods=['GET'], csrf=False)
+    def payslip_xlsx(self, payout_id):
+        payout = request.env['kprl.bonus.payout'].browse(payout_id)
+        if not payout.exists():
+            raise AccessError('Payslip not found.')
+        _check_payslip_access(payout)
+        from odoo.addons.kprl_bonus.tools.xlsx_write import (
+            build_ledger_workbook as _build)
+        emp = payout.employee_id
+        user = request.env.user
+        stamp = datetime.now().strftime('%d %B %Y %H:%M')
+        content = _build(
+            'KPRL Bonus Payslip',
+            ['%s (%s) - %s' % (emp.name or '', emp.staff_id or '',
+                               payout.period_id.name or ''),
+             'State: %s - Generated %s by %s' % (
+                 payout.state or '', stamp, user.name)],
+            ['Particulars', 'Amount'], [52, 22],
+            [[label, value] for label, value in _payslip_excel_rows(payout)],
+            {1}, with_total=False)
+        return Response(
+            content,
+            headers=[('Content-Type',
+                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+                     ('Content-Disposition',
+                      'attachment; filename=%s' % _payslip_filename(payout, 'xlsx'))])
+
+    @http.route('/kprl/payslip/<int:payout_id>/pdf', type='http', auth='user',
+                methods=['GET'], csrf=False)
+    def payslip_pdf(self, payout_id):
+        payout = request.env['kprl.bonus.payout'].browse(payout_id)
+        if not payout.exists():
+            raise AccessError('Payslip not found.')
+        _check_payslip_access(payout)
+        report = request.env.ref('kprl_bonus.action_report_payout_slip')
+        pdf, _ext = report.sudo()._render_qweb_pdf([payout.id])
+        return Response(
+            pdf,
+            headers=[('Content-Type', 'application/pdf'),
+                     ('Content-Disposition',
+                      'attachment; filename=%s' % _payslip_filename(payout, 'pdf'))])

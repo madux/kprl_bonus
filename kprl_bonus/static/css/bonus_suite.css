@@ -116,6 +116,10 @@
     margin-bottom: 6px;
 }
 
+.o_payout_form .o_payout_statement .o_form_label {
+    color: #ffffff;
+}
+
 .o_payout_form .o_payout_statement .o_payout_amount,
 .o_payout_form .o_payout_statement .o_payout_amount .o_field_widget,
 .o_payout_form .o_payout_statement .o_payout_amount input {

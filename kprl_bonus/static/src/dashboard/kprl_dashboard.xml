@@ -111,8 +111,8 @@
                         <div class="kprl-owl-card-sub">pool fully funded</div>
                     </div>
                     <div class="kprl-owl-kpi-card kprl-border-orange">
-                        <div class="kprl-owl-card-title">AIP Pool (Annual)</div>
-                        <div class="kprl-owl-card-value" t-esc="fmtCurrency(state.engine.aip_pool)"/>
+                        <div class="kprl-owl-card-title" title='Quarterly Incentive Plan for Management'>QIPM</div>
+                        <div class="kprl-owl-card-value" t-esc="fmtCurrency(state.engine.qipm_pool)"/>
                         <div class="kprl-owl-card-sub">Rev x 0.2%</div>
                     </div>
                 </div>
@@ -301,7 +301,7 @@
                                         <div class="kprl-owl-ss-figure-label">Ops Bonus</div>
                                         <div class="kprl-owl-ss-figure-value"
                                              t-esc="fmtCurrency(state.employeePayout.ops_bonus)"/>
-                                        <div class="kprl-owl-ss-figure-sub">Net Immediate</div>
+                                        <div class="kprl-owl-ss-figure-sub">Bonus after Deferral</div>
                                     </div>
                                     <div class="kprl-owl-ss-figure-card">
                                         <div class="kprl-owl-ss-figure-label">Sales Commission</div>

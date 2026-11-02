@@ -9,6 +9,7 @@
                 <field name="employee_id"/>
                 <field name="period_id"/>
                 <field name="trigger_type" widget="badge"/>
+                <field name="deduction_stage" widget="badge"/>
                 <field name="severity"/>
                 <field name="stage"/>
                 <field name="status" widget="badge"/>
@@ -30,6 +31,7 @@
                             <field name="employee_id"/>
                             <field name="period_id"/>
                             <field name="trigger_type"/>
+                            <field name="deduction_stage"/>
                             <field name="severity"/>
                         </group>
                         <group>

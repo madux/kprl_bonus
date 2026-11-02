@@ -10,12 +10,13 @@
                 <field name="code"/>
                 <field name="yp_points"/>
                 <field name="diff_points" invisible="1"/>
-                <field name="skill_premium"/>
+                <field name="skill_max"/>
+                <field name="suggested_skill"/>
                 <field name="total_points"/>
-                <field name="token_rate" widget="monetary"/>
                 <field name="deferral_rate"/>
                 <field name="subpool_id"/>
                 <field name="aip_eligible"/>
+                <field name="is_senior_mgmt_tier"/>
             </tree>
         </field>
     </record>
@@ -25,6 +26,12 @@
         <field name="model">kprl.grade</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="action_reset_to_workbook" type="object"
+                            string="Reset to Workbook Defaults"
+                            class="btn-secondary"
+                            icon="fa-refresh"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
@@ -34,16 +41,17 @@
                             <field name="subpool_id"/>
                         </group>
                         <group>
-                            <field name="token_rate" widget="monetary"/>
                             <field name="deferral_rate"/>
                             <field name="aip_eligible"/>
+                            <field name="is_senior_mgmt_tier"/>
                         </group>
                     </group>
                     <group string="Points Breakdown">
                         <group>
                             <field name="yp_points"/>
                             <field name="diff_points" invisible="1"/>
-                            <field name="skill_premium"/>
+                            <field name="skill_max"/>
+                            <field name="suggested_skill"/>
                             <field name="total_points"/>
                         </group>
                     </group>

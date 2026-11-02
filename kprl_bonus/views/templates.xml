@@ -117,7 +117,7 @@
                             <div class="kprl-card-title">EBITDA Margin</div>
                             <div class="kprl-card-value" id="kprl-kpi-ebitda">--</div>
                             <div class="kprl-card-trend" id="kprl-trend-ebitda"/>
-                            <div class="kprl-card-subtext">Gate: Full (&gt;22%)</div>
+                            <div class="kprl-card-subtext">Gate: full-unlock threshold</div>
                         </div>
                         <div class="kprl-kpi-card kprl-border-dark-blue">
                             <div class="kprl-card-title">Proration Factor</div>
@@ -126,7 +126,7 @@
                             <div class="kprl-card-subtext"/>
                         </div>
                         <div class="kprl-kpi-card kprl-border-orange">
-                            <div class="kprl-card-title">AIP Pool (Annual)</div>
+                            <div class="kprl-card-title" title='Quarterly Incentive Plan for Management'>QIPM</div>
                             <div class="kprl-card-value" id="kprl-kpi-aip">--</div>
                             <div class="kprl-card-trend kprl-trend-neutral"/>
                             <div class="kprl-card-subtext"/>
@@ -364,7 +364,7 @@
                             </span>
                             <div class="kprl-info-text">
                                 <label class="kprl-info-label">Date Hired</label>
-                                <div class="kprl-info-value" t-esc="employee.date_hired or ''"/>
+                                <div class="kprl-info-value" t-esc="employee.employment_date or ''"/>
                             </div>
                         </div>
 
@@ -594,15 +594,11 @@
                     </div>
                     <div class="kprl-table-row">
                         <span class="kprl-table-label">Skill Premium (pts)</span>
-                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.skill_premium or 0"/>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.skill_premium_pts or 0"/>
                     </div>
                     <div class="kprl-table-row kprl-highlight-row">
                         <span class="kprl-table-label">Total Points</span>
-                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.total_points or 0"/>
-                    </div>
-                    <div class="kprl-table-row">
-                        <span class="kprl-table-label">Token Rate (₦/pt)</span>
-                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.token_rate or 0"/>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.total_points or 0"/>
                     </div>
                     <div class="kprl-table-row">
                         <span class="kprl-table-label">Deferral Rate</span>
@@ -884,6 +880,31 @@
                         </div>
                     </header>
 
+                    <t t-if='can_switch'>
+                        <section class='kprl-action-bar'>
+                            <div class='kprl-left-actions'>
+                               <label class='kprl-input-label' for='kprl-sim-employee-switch'>Simulate as (HR)</label>
+                                <select id='kprl-sim-employee-switch' class='kprl-info-value-input' onchange='if(this.value) window.location.href="/kprl/simulate/"+this.value;'>
+                                   <t t-foreach='switch_employees' t-as='se'>
+                                       <t t-if="se['id'] == employee.id">
+                                          <option t-att-value="se['id']" selected='selected'><t t-esc="se['name']"/> (<t t-esc="se['staff_id']"/>)</option>
+                                       </t>
+                                       <t t-if="se['id'] != employee.id">
+                                          <option t-att-value="se['id']"><t t-esc="se['name']"/> (<t t-esc="se['staff_id']"/>)</option>
+                                       </t>
+                                   </t>
+                                   </select>
+                            </div>
+                            <div class='kprl-right-actions'>
+                               <span class='kprl-table-label'>Viewing <t t-esc='employee.name'/> <t t-if='not is_own'>(HR preview)</t></span>
+                       </div>
+                   </section>
+                   </t>
+                   <t t-if='not can_switch'>
+                       <section class='kprl-action-bar'>
+                           <span class='kprl-table-label'>Your personal simulation. Figures are estimates only</span>
+                       </section>
+                   </t>
                     <nav class="kprl-sub-nav">
                         <div class="kprl-tabs" id="kprl-sim-tabs">
                             <button class="kprl-tab-item kprl-active-tab" data-tab="simulator">Ops Simulator</button>
@@ -1056,7 +1077,7 @@
                                     <span class="kprl-breakdown-value" id="kprl-out-deferred">₦26,308</span>
                                 </div>
                                 <div class="kprl-breakdown-item kprl-breakdown-net">
-                                    <span class="kprl-breakdown-label">NET IMMEDIATE</span>
+                                    <span class="kprl-breakdown-label">BONUS AFTER DEFERRAL</span>
                                     <span class="kprl-breakdown-value" id="kprl-out-net">₦105,232</span>
                                 </div>
                             </div>

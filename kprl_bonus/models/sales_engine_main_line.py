@@ -1,5 +1,5 @@
 from odoo import models, fields, api
-from odoo.exceptions import ValidationError, AccessError
+from odoo.exceptions import ValidationError, AccessError, UserError
 
 class KprlTerritoryEngineLines(models.Model):
     _name = 'kprl.territory.engine.lines'
@@ -38,6 +38,12 @@ class KprlTerritoryEngineLines(models.Model):
         string='Role'
     )
 
+    sales_role = fields.Selection(
+        related='role_id.role',
+        string='Sales Role',
+        readonly=True,
+    )
+
     territory_id = fields.Many2one(
         'kprl.territory',
         string='Territory'
@@ -55,45 +61,160 @@ class KprlTerritoryEngineLines(models.Model):
         string='Territory Sales',
         compute='_compute_territory_sales',
         store=True,
-        help="Gets all the sum of all lines with same territory. ie if employee with the same own sales in NW territory, sum of the both"
+        help='Selected-period sales for sales employees assigned to this territory.',
     )
 
     # Sales KPI fields (0-1 scale)
-    product_knowledge_score = fields.Float(string='Product Knowledge Score', digits=(5, 4), 
+    product_knowledge_score = fields.Float(string='Product Knowledge Score', digits=(5, 2),
                                             help='Sales KPI: Product knowledge (0-1 scale)')
-    call_report_compliance = fields.Float(string='Call Report Compliance', digits=(5, 4),
+    call_report_compliance = fields.Float(string='Call Report Compliance', digits=(5, 2),
                                             help='Sales KPI: Call report compliance (0-1 scale)')
-    customer_coverage_rate = fields.Float(string='Customer Coverage Rate', digits=(5, 4),
+    customer_coverage_rate = fields.Float(string='Customer Coverage Rate', digits=(5, 2),
                                             help='Sales KPI: Customer coverage rate (0-1 scale)')
-    new_customer_acquisition = fields.Float(string='New Customer Acquisition', digits=(5, 4),
+    new_customer_acquisition = fields.Float(string='New Customer Acquisition', digits=(5, 2),
                                             help='Sales KPI: New customer acquisition (0-1 scale)')
     
     @api.depends(
         'employee_id',
         'territory_id',
         'own_sales',
+        'own_retrival',
         'territory_engine_id.kprl_employee_engine_line_ids',
+        'territory_engine_id.period_id.performance_ids.employee_id',
+        'territory_engine_id.period_id.performance_ids.own_sales',
+        'territory_engine_id.period_id.performance_ids.own_retrievals',
+        'territory_engine_id.period_id.performance_ids.employee_id.territory_id',
+        'territory_engine_id.period_id.performance_ids.employee_id.pool_type',
+        'territory_engine_id.period_id.performance_ids.employee_id.track',
     )
     def _compute_territory_sales(self):
-        '''Gets all the sum of all lines with same territory'''
-        for line in self:
-            if not line.employee_id:
-                line.territory_sales = 0.0
-                continue
+        for engine in self.mapped('territory_engine_id'):
+            totals = {}
+            for territory in engine.kprl_employee_engine_line_ids.mapped(
+                'territory_id'
+            ):
+                if territory:
+                    totals[territory.id] = self._territory_actuals(
+                        engine, territory
+                    )[0]
+            for line in engine.kprl_employee_engine_line_ids:
+                line.territory_sales = (
+                    totals.get(line.territory_id.id, 0.0)
+                    if line.employee_id and line.territory_id
+                    else 0.0
+                )
 
-            if not line.territory_id:
-                line.territory_sales = 0.0
-                continue
+    def _territory_actuals(self, engine, territory):
+        territory_lines = engine.kprl_employee_engine_line_ids.filtered(
+            lambda line: line.territory_id == territory
+        )
+        line_totals = {}
+        for line in territory_lines.filtered('employee_id'):
+            values = line_totals.setdefault(line.employee_id.id, [0.0, 0.0])
+            values[0] += line.own_sales or 0.0
+            values[1] += line.own_retrival or 0.0
 
-            # Get all lines belonging to the same Territory Engine
-            engine_lines = line.territory_engine_id.kprl_employee_engine_line_ids
+        sales_employees = self.env['kprl.employee'].with_context(
+            active_test=False
+        ).search([
+            ('territory_id', '=', territory.id),
+            '|',
+            ('pool_type', '=', 'SALES'),
+            ('track', 'in', ('sales', 'both')),
+        ])
+        employee_ids = set(line_totals) | set(sales_employees.ids)
+        if not employee_ids:
+            return 0.0, 0.0
 
-            # Sum Own Sales for all employees in the same territory
-            line.territory_sales = sum(
-                engine_lines.filtered(
-                    lambda l: l.territory_id == line.territory_id
-                ).mapped('own_sales')
-            )
+        performance_inputs = self.env['kprl.performance.input'].search([
+            ('period_id', '=', engine.period_id.id),
+            ('employee_id', 'in', list(employee_ids)),
+        ]) if engine.period_id else self.env['kprl.performance.input']
+        performance_by_employee = {
+            performance.employee_id.id: performance
+            for performance in performance_inputs
+        }
+
+        sales = retrievals = 0.0
+        for employee_id in employee_ids:
+            performance = performance_by_employee.get(employee_id)
+            if performance:
+                sales += performance.own_sales or 0.0
+                retrievals += performance.own_retrievals or 0.0
+            else:
+                line_values = line_totals.get(employee_id, (0.0, 0.0))
+                sales += line_values[0]
+                retrievals += line_values[1]
+
+        return sales, retrievals
+
+    territory_sales_target = fields.Float(
+        string='Territory Sales Target',
+        compute='_compute_territory_sales_target',
+        store=True,
+        help='Workbook DASHBOARD K "Team Targets": sum of the Own Target of '
+             'every sales employee in this territory for the selected period '
+             '(SUMIF(SE_Terr, territory, SE_OwnTarget)).',
+    )
+
+    @api.depends(
+        'employee_id',
+        'territory_id',
+        'own_target',
+        'territory_engine_id.kprl_employee_engine_line_ids',
+        'territory_engine_id.kprl_employee_engine_line_ids.own_target',
+        'territory_engine_id.period_id.performance_ids.employee_id',
+        'territory_engine_id.period_id.performance_ids.own_target',
+        'territory_engine_id.period_id.performance_ids.employee_id.territory_id',
+        'territory_engine_id.period_id.performance_ids.employee_id.pool_type',
+        'territory_engine_id.period_id.performance_ids.employee_id.track',
+    )
+    def _compute_territory_sales_target(self):
+        for line in self.filtered(lambda l: not l.territory_engine_id):
+            line.territory_sales_target = 0.0
+        for engine in self.mapped('territory_engine_id'):
+            totals = {}
+            for territory in engine.kprl_employee_engine_line_ids.mapped('territory_id'):
+                if territory:
+                    totals[territory.id] = self._territory_target_total(engine, territory)
+            for line in engine.kprl_employee_engine_line_ids:
+                line.territory_sales_target = (
+                    totals.get(line.territory_id.id, 0.0)
+                    if line.employee_id and line.territory_id
+                    else 0.0
+                )
+
+    def _territory_target_total(self, engine, territory):
+        """Same staff set as _territory_actuals; Performance Inputs win,
+        the engine line's own_target is the fallback."""
+        territory_lines = engine.kprl_employee_engine_line_ids.filtered(
+            lambda line: line.territory_id == territory and line.employee_id
+        )
+        line_targets = {}
+        for line in territory_lines:
+            line_targets[line.employee_id.id] = (
+                line_targets.get(line.employee_id.id, 0.0) + (line.own_target or 0.0))
+        sales_employees = self.env['kprl.employee'].with_context(
+            active_test=False
+        ).search([
+            ('territory_id', '=', territory.id),
+            '|',
+            ('pool_type', '=', 'SALES'),
+            ('track', 'in', ('sales', 'both')),
+        ])
+        employee_ids = set(line_targets) | set(sales_employees.ids)
+        if not employee_ids:
+            return 0.0
+        perfs = self.env['kprl.performance.input'].search([
+            ('period_id', '=', engine.period_id.id),
+            ('employee_id', 'in', list(employee_ids)),
+        ]) if engine.period_id else self.env['kprl.performance.input']
+        perf_by_emp = {p.employee_id.id: p for p in perfs}
+        total = 0.0
+        for employee_id in employee_ids:
+            perf = perf_by_emp.get(employee_id)
+            total += (perf.own_target or 0.0) if perf else line_targets.get(employee_id, 0.0)
+        return total
 
     @api.onchange("employee_id")
     def onchange_employee(self):
@@ -101,7 +222,11 @@ class KprlTerritoryEngineLines(models.Model):
 
     def updateEmployee(self):
         '''get staff sales performance'''
-        emp = self.env['kprl.performance.input'].search([('employee_id', '=', self.employee_id.id)], limit=1)
+        PerformanceInput = self.env['kprl.performance.input']
+        emp = PerformanceInput.search([
+            ('employee_id', '=', self.employee_id.id),
+            ('period_id', '=', self.period_id.id),
+        ], limit=1) if self.employee_id and self.period_id else PerformanceInput
         if emp:
             self.own_sales= emp.own_sales
             self.own_retrival= emp.own_retrievals
@@ -127,6 +252,129 @@ class KprlTerritoryEngineLines(models.Model):
             self.product_knowledge_score= 0 
             self.new_customer_acquisition= 0
 
+    def action_view_team_performance(self):
+        self.ensure_one()
+        if not self.employee_id:
+            raise UserError('Select an employee before opening team performance.')
+        if self.sales_role not in ('rsm', 'rsm_asm'):
+            raise UserError(
+                'Regional ASM performance is available from an RSM line.'
+            )
+
+        period = self.territory_engine_id.period_id
+        if not period:
+            raise UserError('Select a bonus period before opening team performance.')
+
+        if not self.territory_id:
+            raise UserError(
+                '%s has no sales region assigned.'
+                % self.employee_id.display_name
+            )
+
+        asm_lines = self.territory_engine_id.kprl_employee_engine_line_ids.filtered(
+            lambda line: line.territory_id == self.territory_id
+            and line.sales_role == 'asm'
+            and line.employee_id != self.employee_id
+        )
+        if not asm_lines:
+            raise UserError(
+                'No ASM engine lines are assigned to %s for %s. '
+                'Add the region ASMs to this quarter’s Territory Engine.'
+                % (self.territory_id.display_name, period.display_name)
+            )
+
+        Employee = self.env['kprl.employee'].with_context(active_test=False)
+        asm_team_ids = {}
+        all_employee_ids = set()
+        for asm_line in asm_lines:
+            asm = asm_line.employee_id
+            seen_ids = {asm.id}
+            team_ids = {asm.id}
+            frontier = Employee.search([
+                ('manager_id', '=', asm.id),
+                '|',
+                ('territory_id', '=', False),
+                ('territory_id', '=', self.territory_id.id),
+            ])
+            while frontier:
+                new_ids = set(frontier.ids) - seen_ids
+                if not new_ids:
+                    break
+                seen_ids.update(new_ids)
+                team_ids.update(new_ids)
+                frontier = Employee.search([
+                    ('manager_id', 'in', list(new_ids)),
+                    '|',
+                    ('territory_id', '=', False),
+                    ('territory_id', '=', self.territory_id.id),
+                ])
+            asm_team_ids[asm.id] = team_ids
+            all_employee_ids.update(team_ids)
+
+        performance_inputs = self.env['kprl.performance.input'].search([
+            ('period_id', '=', period.id),
+            ('employee_id', 'in', list(all_employee_ids)),
+        ])
+        performance_by_employee = {
+            performance.employee_id.id: performance
+            for performance in performance_inputs
+        }
+
+        report_values = []
+        for asm_line in asm_lines.sorted('employee_id'):
+            asm = asm_line.employee_id
+            for employee_id in sorted(asm_team_ids[asm.id]):
+                employee = Employee.browse(employee_id)
+                performance = performance_by_employee.get(employee_id)
+                if employee_id == asm.id and not performance:
+                    target = asm_line.own_target
+                    sales = asm_line.own_sales
+                    retrievals = asm_line.own_retrival
+                    input_found = False
+                else:
+                    target = performance.own_target if performance else 0.0
+                    sales = performance.own_sales if performance else 0.0
+                    retrievals = (
+                        performance.own_retrievals if performance else 0.0
+                    )
+                    input_found = bool(performance)
+                report_values.append({
+                    'period_id': period.id,
+                    'manager_id': self.employee_id.id,
+                    'asm_id': asm.id,
+                    'employee_id': employee_id,
+                    'department_id': employee.department_id.id,
+                    'asm_grouping': self.territory_id.display_name,
+                    'performance_input_found': input_found,
+                    'own_target': target,
+                    'own_sales': sales,
+                    'own_retrievals': retrievals,
+                })
+        report_rows = self.env['kprl.asm.team.performance'].create(report_values)
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Regional ASM Sales & Retrieval - %s - %s' % (
+                self.employee_id.display_name,
+                period.display_name,
+            ),
+            'res_model': 'kprl.asm.team.performance',
+            'view_mode': 'tree',
+            'views': [(
+                self.env.ref(
+                    'kprl_bonus.view_kprl_asm_team_performance_tree'
+                ).id,
+                'tree',
+            )],
+            'domain': [('id', 'in', report_rows.ids)],
+            'context': {
+                'group_by': 'asm_id',
+                'create': False,
+                'edit': False,
+                'delete': False,
+            },
+        }
+
     territory_retrival = fields.Float(
         string='Territory Retrival',
         compute='_compute_territory_retrival',
@@ -138,15 +386,24 @@ class KprlTerritoryEngineLines(models.Model):
         'territory_id',
         'own_retrival',
         'territory_engine_id.kprl_employee_engine_line_ids',
+        'territory_engine_id.period_id.performance_ids.employee_id',
+        'territory_engine_id.period_id.performance_ids.own_sales',
+        'territory_engine_id.period_id.performance_ids.own_retrievals',
+        'territory_engine_id.period_id.performance_ids.employee_id.territory_id',
+        'territory_engine_id.period_id.performance_ids.employee_id.pool_type',
+        'territory_engine_id.period_id.performance_ids.employee_id.track',
     )
     def _compute_territory_retrival(self):
         for engine in self.mapped('territory_engine_id'):
             territory_totals = {}
 
-            for line in engine.kprl_employee_engine_line_ids:
-                if line.territory_id:
-                    territory_totals.setdefault(line.territory_id.id, 0.0)
-                    territory_totals[line.territory_id.id] += line.own_retrival
+            for territory in engine.kprl_employee_engine_line_ids.mapped(
+                'territory_id'
+            ):
+                if territory:
+                    territory_totals[territory.id] = self._territory_actuals(
+                        engine, territory
+                    )[1]
 
             for line in engine.kprl_employee_engine_line_ids:
                 if not line.employee_id or not line.territory_id:
@@ -206,7 +463,7 @@ class KprlTerritoryEngineLines(models.Model):
             # RSM / RSM + ASM
             elif role in ('rsm', 'rsm_asm'):
                 territory_target = (
-                    line.territory_id.eff_target
+                    line.territory_id.effective_target
                     if line.territory_id
                     else 0.0
                 )
@@ -535,7 +792,6 @@ class KprlTerritoryEngineLines(models.Model):
 
         for engine in self.mapped('territory_engine_id'):
             lines = engine.kprl_employee_engine_line_ids
-            engine.total_commission_sales = 0.0
 
             if not engine.period_id:
                 for line in lines:
@@ -561,7 +817,8 @@ class KprlTerritoryEngineLines(models.Model):
             )
 
             national_sales = engine.national_actual_sales or 0.0
-            sales_commission_rate = engine.sales_commission_rate or 0.0
+            raw_sales_rate = engine.sales_commission_rate or 0.0
+            sales_commission_rate = raw_sales_rate / 100.0 if raw_sales_rate > 0.01 else raw_sales_rate
 
             for line in lines:
                 line.commission_sales = 0.0
@@ -613,11 +870,6 @@ class KprlTerritoryEngineLines(models.Model):
                     commission_base * sales_commission_rate
                 )
 
-                # Update parent total field
-                if line.territory_engine_id:
-                    line.territory_engine_id.total_commission_sales = (
-                        line.commission_sales
-                    )
 
      
     commission_retrival = fields.Float(
@@ -661,7 +913,8 @@ class KprlTerritoryEngineLines(models.Model):
             dual_factor = share_lines[:1].dual_factor if share_lines else 1.0
 
             national_retrival = engine.national_actual_retrivals or 0.0
-            retr_comm_rate = engine.retrival_commission_rate or 0.0
+            raw_retr_rate = engine.retrival_commission_rate or 0.0
+            retr_comm_rate = raw_retr_rate / 100.0 if raw_retr_rate > 0.01 else raw_retr_rate
 
             for line in lines:
                 line.commission_retrival = 0.0
@@ -705,10 +958,6 @@ class KprlTerritoryEngineLines(models.Model):
                 # Final commission
                 line.commission_retrival = commission_base * retr_comm_rate
 
-                # Update parent helper field
-                line.territory_engine_id.total_commission_retrival = (
-                    line.commission_retrival
-                )
 
     gross_commission = fields.Float(
         string='Gross Commission',
@@ -733,10 +982,6 @@ class KprlTerritoryEngineLines(models.Model):
                 + (line.commission_retrival or 0.0)
             )
 
-            if line.territory_engine_id:
-                line.territory_engine_id.total_gross_commission = (
-                    line.gross_commission
-                )
 
     eligible_commission = fields.Float(
         string='Eligible Commission',
@@ -770,10 +1015,6 @@ class KprlTerritoryEngineLines(models.Model):
                 )
             )
 
-            if line.territory_engine_id:
-                line.territory_engine_id.total_eligible_commission = (
-                    line.eligible_commission
-                )
 
     prod_know = fields.Float(
         string='Prod Know'
@@ -820,7 +1061,7 @@ class KprlTerritoryEngineLines(models.Model):
             if not line.employee_id:
                 continue
 
-            years = line.employee_id.tenure_years or 0.0
+            years = line.employee_id._tenure_bracket_years()
 
             # Excel:
             # 1 + MIN(0.12, INT(Yrs / 3) * 0.03)
@@ -965,7 +1206,7 @@ class KprlTerritoryEngineLines(models.Model):
                 role = line.role_id.role if line.role_id else False
 
                 # Your actual stored role value is used here.
-                if role in ('rm', 'rsm_asm'):
+                if role in ('rsm', 'rsm_asm'):
 
                     # Excel MAXIFS:
                     #
@@ -1019,13 +1260,6 @@ class KprlTerritoryEngineLines(models.Model):
                     payout_before_cap,
                 )
 
-                # ---------------------------------------------------------
-                # Update parent total
-                # ---------------------------------------------------------
-                if line.territory_engine_id:
-                    line.territory_engine_id.total_sales_payout = (
-                        line.sales_payout
-                    )
 
     sub_base = fields.Float(
         string='Sub-base',
@@ -1159,7 +1393,7 @@ class KprlTerritoryEngineLines(models.Model):
         string='Effective Product Knowledge',
         compute='_compute_pk_effective',
         store=True,
-        digits=(5, 4),
+        digits=(5, 2),
         help="""
     Controls how Product Knowledge is used in the KPI Multiplier calculation.
 
@@ -1470,37 +1704,23 @@ class KprlTerritoryEngineLines(models.Model):
             if not line.employee_id:
                 continue
 
-            # Get the KPI configuration.
-            # Adjust this domain to match your actual performance.input
-            # relationship/configuration.
-            performance_input = PerformanceInput.search([
-                ('period_id', '=', line.territory_engine_id.period_id.id),
-            ], limit=1)
-
-            if not performance_input:
-                continue
-
-            kpi_mult_floor = performance_input.kpi_mult_floor or 0.0
-            kpi_mult_range = performance_input.kpi_mult_range or 0.0
-
-            kpi_value = (
-                (line.product_knowledge_score or 0.0)
-                * (line.call_rep or 0.0)
-                +
-                (line.call_report_compliance or 0.0)
-                * (line.call_rep or 0.0)
-                +
-                (line.customer_coverage_rate or 0.0)
-                * (line.coverage or 0.0)
-                +
-                (line.new_customer_acquisition or 0.0)
-                * (line.new_cust or 0.0)
-            )
-
-            line.kpi_mult = (
-                kpi_mult_floor
-                + (kpi_value * kpi_mult_range)
-            )
-
+            params = line.territory_engine_id.period_id.parameter_ids[:1] if line.territory_engine_id and line.territory_engine_id.period_id else False
+            w_pk = (params.sales_pk_weight / 100.0) if params and params.sales_pk_weight else 0.40
+            w_call = (params.sales_call_weight / 100.0) if params and params.sales_call_weight else 0.10
+            w_cov = (params.sales_coverage_weight / 100.0) if params and params.sales_coverage_weight else 0.30
+            w_new = (params.sales_new_cust_weight / 100.0) if params and params.sales_new_cust_weight else 0.20
+            floor = params.kpi_multiplier_floor if params and params.kpi_multiplier_floor else 0.80
+            rng = params.kpi_multiplier_range if params and params.kpi_multiplier_range else 0.40
+            perf = PerformanceInput.search([('employee_id', '=', line.employee_id.id), ('period_id', '=', line.territory_engine_id.period_id.id)], limit=1) if line.territory_engine_id and line.territory_engine_id.period_id else False
+            pk_norm_on = (params.pk_normalization_enabled if params else False) or ((perf.pk_norm == 'on') if perf else False)
+            pk = line.product_knowledge_score or 0.0
+            if pk_norm_on and line.territory_engine_id and line.territory_engine_id.period_id:
+                peers = PerformanceInput.search([('period_id', '=', line.territory_engine_id.period_id.id)])
+                vals = [pp.product_knowledge_score or 0.0 for pp in peers] + [pk]
+                lo, hi = min(vals), max(vals)
+                pk = ((pk - lo) / (hi - lo)) if hi > lo else pk
+            weighted = (pk * w_pk) + ((line.call_report_compliance or 0.0) * w_call) + ((line.customer_coverage_rate or 0.0) * w_cov) + ((line.new_customer_acquisition or 0.0) * w_new)
+            cap = floor + rng
+            line.kpi_mult = max(floor, min(cap, floor + (weighted * rng)))
             if line.territory_engine_id:
                 line.territory_engine_id.total_kpi_mult = line.kpi_mult

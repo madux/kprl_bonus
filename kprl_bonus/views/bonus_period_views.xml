@@ -33,6 +33,10 @@
                     <button name="action_draft" type="object"
                             string="Reset to Draft"
                             invisible="state != 'closed'"/>
+                    <button name="action_export_ledger_excel" type="object"
+                            string="Export Ledger (Excel)"
+                            class="btn-secondary"
+                            groups="kprl_bonus.group_kprl_finance"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -54,9 +58,15 @@
                             <group>
                                 <field name="revenue_target" widget="monetary"/>
                                 <field name="net_rev_target" widget="monetary" invisible="1"/>
+                                <field name='revenue_amount' widget='monetary'/>
+                                <field name='ebitda_amount' widget='monetary'/>
+                                <field name='ebitda_data_complete' invisible='1'/>
+                                
                                 <field name="ebitda_margin"/>
                                 <field name="company_kpi"/>
+                                <div class='alert alert-warning' colspan='2' style='grid-column: 1 / -1; width: 100%; margin: 8px 0 0 0;' invisible='ebitda_data_complete'><i class='fa fa-warning'/> Enter Revenue and Quarterly EBITDA/Profit amounts: margin auto-computes. Compute is blocked until data is complete.</div>
                             </group>
+                       
                         </group>
                     </div>
                     

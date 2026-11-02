@@ -23,6 +23,10 @@ class DeferredLedger(models.Model):
     ], string='Status', default='deferred', required=True)
     is_senior_mgmt = fields.Boolean(string='Senior Management', default=False)
     note = fields.Text(string='Notes')
+    aip_pool_id = fields.Many2one('kprl.aip.pool', string='AIP Pool')
+    clawback_event_id = fields.Many2one('kprl.governance.event', string='Clawback Event', readonly=True,
+        help='Governance event whose forfeit action consumed this entry. Blank on older rows.')
+    source = fields.Selection([('quarterly', 'Quarterly'), ('aip', 'AIP')], string='Source', default='quarterly')
 
     def action_vest(self):
         self.status = 'vested'

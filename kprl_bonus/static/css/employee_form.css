@@ -638,3 +638,8 @@
     font-size: 13px;
     color: #6b7280;
 }
+
+/* Score progressbars: hide the auto-appended % sign (value/bar unchanged) */
+.o_kprl_employee_form .o_emp_score_item .o_progressbar_value > span:last-child {
+    display: none;
+}
