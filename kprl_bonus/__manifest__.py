@@ -18,11 +18,11 @@
     'data': [
         'security/kprl_bonus_groups.xml',
         'security/ir.model.access.csv',
+        'data/subpool_data.xml',
         'data/grade_data.xml',
         'data/tenure_data.xml',
         'data/department_data.xml',
         'views/dashboard_action.xml',
-        'data/subpool_data.xml',
         'data/role_data.xml',
         'views/templates.xml',
         'views/bonus_period_views.xml',
