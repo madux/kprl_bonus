@@ -73,17 +73,19 @@
               action="action_kprl_territory"
               sequence="55"/>
 
-    <menuitem id="menu_kprl_kpi_store"
-              name="Fetch Latest Employee"
-              parent="menu_kprl_ops"
-              action="action_kprl_kpi_store"
-              sequence="42"/>
+    
               
     <!-- Bonus Operations -->
     <menuitem id="menu_kprl_ops"
               name="Operations"
               parent="menu_kprl_bonus_root"
               sequence="20"/>
+
+    <menuitem id="menu_kprl_kpi_store"
+              name="Fetch Latest Employee"
+              parent="menu_kprl_ops"
+              action="action_kprl_kpi_store"
+              sequence="42"/>
 
     <menuitem id="menu_kprl_employees"
               name="Employees"
