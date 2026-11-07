@@ -1,0 +1,995 @@
+/* employee.css — Employee Master */
+.kprl-body {
+    background: #F7F9FC;
+    padding: 20px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.kprl-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e2e7ee;
+        margin-bottom: 8px;
+}
+
+.kprl-brand-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.kprl-grid-icon {
+    font-size: 20px;
+    color: #71496f;
+}
+
+.kprl-nav-breadcrumbs {
+    font-size: 14px;
+}
+
+.kprl-muted {
+    color: #7A8296;
+}
+
+.kprl-role-badge {
+    background: #71496f;
+    color: #fff;
+    font-size: 12px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 20px;
+}
+
+.kprl-sub-nav {
+    margin: 12px 0;
+}
+
+.kprl-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.kprl-tab-item {
+    background: none;
+    border: none;
+    padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #7A8296;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+}
+
+.kprl-tab-item:hover {
+    color: #6a3d6a;
+}
+
+.kprl-active-tab {
+    color: #6a3d6a;
+    border-bottom-color: #6a3d6a;
+    font-weight: 600;
+}
+
+.kprl-action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+        margin: 12px 0;
+        padding: 10px 0;
+}
+
+.kprl-btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+}
+
+.kprl-btn-primary {
+    background: #6a3d6a;
+    color: #fff;
+    border: none;
+}
+
+.kprl-btn-primary:hover {
+    background: #553c55;
+}
+
+.kprl-btn-secondary {
+    background: #fff;
+    color: #6a3d6a;
+    border: 1px solid #d0d5dd;
+}
+
+.kprl-btn-outline {
+    background: none;
+    color: #6a3d6a;
+    border: 1px solid #6a3d6a;
+}
+
+.kprl-btn-outline:hover {
+    background: #6a3d6a;
+    color: #fff;
+}
+
+.kprl-status-filters {
+    display: flex;
+    gap: 4px;
+}
+
+.kprl-filter-item {
+    background: #f0f2f5;
+    border: none;
+    padding: 5px 14px;
+        border-radius: 16px;
+        font-size: 12px;
+        color: #5a5a5a;
+        cursor: pointer;
+        transition: all 0.2s;
+}
+
+.kprl-filter-item:hover {
+    background: #e2e5ea;
+}
+
+.kprl-active-filter {
+    background: #6a3d6a;
+    color: #fff;
+}
+
+.kprl-dashboard-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr 1fr;
+    gap: 20px;
+        font-family: 'Work Sans', sans-serif;
+}
+
+.kprl-card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(20, 24, 41, .04), 0 8px 24px rgba(20, 24, 41, .06);
+        transition: transform 0.3s cubic-bezier(.4, 0, .2, 1), box-shadow 0.3s;
+        opacity: 0;
+        transform: translateY(16px);
+        overflow: hidden;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.kprl-card.kprl-animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.kprl-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(106, 61, 106, .1);
+}
+
+.kprl-profile-card {
+    padding: 0;
+    text-align: center;
+}
+
+.kprl-profile-header {
+    background: linear-gradient(135deg, #5c2c59 0%, #7d4b78 100%) !important;
+    padding: 32px 24px 22px;
+}
+
+.kprl-avatar-wrapper {
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #5c2c59 0%, #7d4b78 100%);
+}
+
+.kprl-avatar {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+        background: rgba(255, 255, 255, .16);
+        border: 2px solid rgba(255, 255, 255, .55);
+        color: #ffffff;
+        font-size: 26px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .kprl-employee-name {
+        font-size: 19px;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0 0 4px;
+    background: linear-gradient(135deg, #5c2c59 0%, #7d4b78 100%);
+}
+
+.kprl-employee-code {
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, .72);
+    letter-spacing: 0.04em;
+    margin-bottom: 16px;
+}
+
+.kprl-badge-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.kprl-status-pill {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.kprl-pill-active {
+    background: #ffffff;
+    color: #1b7a43;
+}
+
+.kprl-pill-inactive {
+    background: rgba(255, 255, 255, .85);
+    color: #9a3b3b;
+}
+
+.kprl-pill-track {
+    background: rgba(255, 255, 255, .16);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, .4);
+}
+
+.kprl-profile-body {
+    padding: 20px 22px 8px;
+    text-align: left;
+}
+
+.kprl-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.kprl-info-row-last {
+    border-bottom: none;
+}
+
+.kprl-info-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 8px;
+    background: #f4eef4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kprl-info-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.kprl-info-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.kprl-divider {
+    border: none;
+    border-top: 1px solid #e2e7ee;
+    margin: 12px 0;
+}
+
+.kprl-info-group {
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.kprl-info-label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #8a90a3;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 3px;
+}
+
+.kprl-info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #262c3d;
+    word-break: break-word;
+}
+
+.kprl-info-value-input {
+    width: 100%;
+    border: none;
+    border-bottom: 1.5px solid transparent;
+        padding: 4px 0;
+        font-size: 14px;
+        color: #2D3142;
+        background: transparent;
+        font-weight: 500;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    
+    .kprl-info-value-input:focus {
+        border-bottom-color: #62325E;
+    }
+    
+    .kprl-card-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #2D3142;
+        margin-bottom: 16px;
+    padding-left: 6px;
+}
+
+.kprl-table-row {
+    display: flex;
+    justify-content: space-between;
+    word-break: break-word;
+    align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f2f5;
+    }
+    
+    .kprl-table-summary {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        word-break: break-word;
+    align-items: center;
+    padding: 8px 0;
+        border-bottom: 1px solid #f0f2f5;
+    }
+    
+    .kprl-table-label {
+        font-size: 13px;
+        color: #7A8296;
+    padding-left: 6px;
+}
+
+.kprl-table-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2D3142;
+    padding-right: 6px;
+}
+
+.kprl-table-value-group {
+    text-align: right;
+}
+
+.kprl-text-bold {
+    font-weight: 700;
+    color: #2D3142;
+    padding-right: 6px;
+}
+
+.kprl-sub-note {
+    display: block;
+    font-size: 11px;
+    color: #a0a8b8;
+}
+
+/* .kprl-highlight-row {
+    background: #f8f4fc;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+*/
+.kprl-summary-row-break {
+    border-top: 2px solid #6a3d6a;
+    margin-top: 8px;
+    padding-top: 8px;
+}
+
+.kprl-net-immediate-row {
+    background: #6a3d6a;
+    padding: 10px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+
+.kprl-net-immediate-row .kprl-table-label {
+    color: #fff;
+    font-weight: 700;
+}
+
+.kprl-net-immediate-row .kprl-table-value {
+    color: #fff;
+    font-weight: 800;
+    font-size: 16px;
+}
+
+.kprl-metrics-card {
+    grid-column: 1 / -1;
+}
+
+.kprl-metrics-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2D3142;
+    margin-bottom: 16px;
+}
+
+.kprl-progress-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.kprl-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.kprl-progress-title {
+    font-size: 12px;
+    color: #7A8296;
+}
+
+.kprl-progress-score {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2D3142;
+}
+
+.kprl-progress-bar-bg {
+    height: 8px;
+    background: #EBF0F6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.kprl-progress-bar-fill {
+    height: 100%;
+    background: #00796B;
+    border-radius: 4px;
+        width: 0%;
+        transition: width 1s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ==========================================================================
+   Contact Card (profile tab, column 2)
+   ========================================================================== */
+.kprl-contact-card {
+    padding: 22px 24px;
+}
+
+.kprl-contact-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.kprl-contact-row:last-child {
+    border-bottom: none;
+}
+
+.kprl-contact-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 8px;
+    background: #f0edf7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kprl-contact-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.kprl-contact-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.kprl-contact-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: #62325E;
+    text-decoration: none;
+    word-break: break-word;
+    transition: color 0.2s;
+}
+
+.kprl-contact-link:hover {
+    color: #8a4b85;
+    text-decoration: underline;
+}
+
+.kprl-contact-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #262c3d;
+    word-break: break-word;
+}
+
+/* ==========================================================================
+   Quick Stats Card (profile tab, column 3)
+   ========================================================================== */
+.kprl-stats-card {
+    padding: 22px 24px;
+}
+
+.kprl-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.kprl-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 14px 8px;
+    background: #f8f6fa;
+    border-radius: 10px;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.kprl-stat-item:hover {
+    background: #f0ecf4;
+    transform: translateY(-1px);
+}
+
+.kprl-stat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.kprl-stat-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.kprl-stat-tenure {
+    background: linear-gradient(135deg, #2c5f7a, #3d8abf);
+}
+
+.kprl-stat-grade {
+    background: linear-gradient(135deg, #6a3d6a, #9b5f9b);
+}
+
+.kprl-stat-pool {
+    background: linear-gradient(135deg, #1b7a43, #2ecc71);
+}
+
+.kprl-stat-role {
+    background: linear-gradient(135deg, #b85a1a, #e8843a);
+}
+
+.kprl-stat-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #262c3d;
+    margin-bottom: 2px;
+}
+
+.kprl-stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #8a90a3;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kprl-icon-btn {
+    background: #8a90a3;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s;
+    border-radius: 4px;
+}
+
+.kprl-icon-btn:hover {
+    color: #212529;
+}
+
+.o_kprl_employee_form {
+    font-family: 'Work Sans', sans-serif;
+}
+
+.o_emp_topbar_right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e7ee;
+    margin-bottom: 16px;
+}
+
+.o_emp_topbar_user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f4eef4;
+    color: #62325E;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 999px;
+}
+
+.o_emp_dashboard {
+    display: grid;
+    grid-template-columns: 300px 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.o_emp_profile {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(20, 24, 41, .04), 0 8px 24px rgba(20, 24, 41, .06);
+    overflow: hidden;
+}
+
+.o_emp_profile_header {
+    background: linear-gradient(135deg, #5c2c59 0%, #7d4b78 100%);
+    padding: 28px 20px 20px;
+    text-align: center;
+}
+
+.o_emp_avatar {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .16);
+    border: 2px solid rgba(255, 255, 255, .55);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+}
+
+.o_emp_name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 4px;
+}
+
+.o_emp_id {
+    font-size: 12px;
+    color: rgba(255, 255, 255, .72);
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+}
+
+.o_emp_badges {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.o_emp_badge_active,
+.o_emp_badge_inactive,
+.o_emp_badge_track {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.o_emp_badge_active {
+    background: #ffffff;
+    color: #1b7a43;
+}
+
+.o_emp_badge_inactive {
+    background: rgba(255, 255, 255, .85);
+    color: #9a3b3b;
+}
+
+.o_emp_badge_track {
+    background: rgba(255, 255, 255, .16);
+    border: 1px solid rgba(255, 255, 255, .4);
+    color: #ffffff;
+}
+
+.o_emp_info_rows {
+    padding: 18px 18px 6px;
+    text-align: left;
+}
+
+.o_emp_info_row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eef0f5;
+}
+
+.o_emp_info_row_last {
+    border-bottom: none;
+}
+
+.o_emp_info_label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8a90a3;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.o_emp_info_value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #262c3d;
+    text-align: right;
+}
+
+.o_emp_card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(20, 24, 41, .04), 0 8px 24px rgba(20, 24, 41, .06);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.o_emp_card_head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.o_emp_card_icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #f4eef4;
+    color: #62325E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.o_emp_card_head h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2D3142;
+    margin: 0;
+}
+
+.o_emp_param_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.o_emp_param_row_last {
+    border-bottom: none;
+}
+
+.o_emp_param_label {
+    font-size: 13px;
+    color: #7A8296;
+}
+
+.o_emp_param_value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2D3142;
+    text-align: right;
+}
+
+.o_emp_param_bold {
+    font-weight: 700;
+    color: #5c2c59;
+}
+
+.o_emp_param_hint {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: #a0a8b8;
+}
+
+.o_emp_payout_hero {
+    background: #5c2c59;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.o_emp_payout_hero_label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, .75);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.o_emp_payout_hero_amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.o_emp_scores {
+    grid-column: 1 / -1;
+}
+
+.o_kprl_employee_form .o_emp_dashboard .o_emp_scores {
+    grid-column: 1 / -1;
+}
+.o_emp_score_grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.o_emp_score_label {
+    font-size: 12px;
+    color: #7A8296;
+    margin-bottom: 4px;
+}
+
+.o_emp_score_value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2D3142;
+    margin-bottom: 8px;
+}
+
+.o_emp_summary_row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.o_emp_summary_stat {
+    background: #f4eef4;
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.o_emp_summary_stat_value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #5c2c59;
+}
+
+.o_emp_summary_stat_label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #7A8296;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+
+/* ==========================================================================
+   Dark cards — Grade & Compensation Parameters / Payout Summary
+   (Grade & Pool tab, frontend portal)
+   ========================================================================== */
+.kprl-grade-comp-card,
+.kprl-payout-card {
+    background: #74426f;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+}
+
+.kprl-grade-comp-card .kprl-card-title,
+.kprl-payout-card .kprl-card-title {
+    color: #ffffff;
+}
+
+.kprl-grade-comp-card .kprl-table-row,
+.kprl-payout-card .kprl-table-row {
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.kprl-grade-comp-card .kprl-table-label,
+.kprl-payout-card .kprl-table-label {
+    color: #9B98A6;
+}
+
+.kprl-grade-comp-card .kprl-table-value,
+.kprl-payout-card .kprl-table-value,
+.kprl-grade-comp-card .kprl-table-value-group,
+.kprl-payout-card .kprl-table-value-group {
+    color: #F5F3F7;
+}
+
+.kprl-grade-comp-card .kprl-text-bold,
+.kprl-payout-card .kprl-text-bold {
+    color: #F5F3F7;
+}
+
+/* .kprl-grade-comp-card .kprl-highlight-row {
+    background: #2c2c2a;
+    border-radius: 8px;
+    padding: 8px;
+} */
+
+.kprl-payout-card .kprl-summary-row-break {
+    border-top: 1px solid rgba(255, 255, 255, .18);
+}
+
+.kprl-grade-comp-card .kprl-sub-note,
+.kprl-payout-card .kprl-sub-note {
+    color: #726E80;
+}
+
+.kprl-payout-card .kprl-table-summary .kprl-table-label {
+    color: #9B98A6;
+}
+
+.kprl-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.kprl-card-title-row .kprl-card-title {
+    margin-bottom: 0;
+    padding-left: 0;
+}
+
+.kprl-card-title-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 8px;
+    background: #5e2e5b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kprl-card-title-icon svg {
+    width: 15px;
+    height: 15px;
+}

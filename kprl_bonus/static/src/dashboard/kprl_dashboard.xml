@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="kprl_bonus.KprlDashboard">
+        <div class="kprl-owl-dash">
+
+            <!-- Loading spinner -->
+            <t t-if="state.loading">
+                <div class="kprl-loading-overlay">
+                    <div class="kprl-spinner"/>
+                    <span>Loading dashboard...</span>
+                </div>
+            </t>
+
+            <t t-if="!state.loading">
+
+                <!-- ─── Header ─── -->
+                <header class="kprl-owl-header">
+                    <div class="kprl-owl-breadcrumb">
+                        <span class="kprl-owl-brand">KPRL Bonus System</span>
+                        <i class="fa fa-angle-right kprl-owl-sep"/>
+                        <span class="kprl-owl-current" t-esc="state.currentPeriodName + ' Dashboard'"/>
+                    </div>
+                </header>
+
+                <!-- ─── Controls ─── -->
+                <div class="kprl-owl-controls">
+                    <div class="kprl-owl-ctrl-left">
+                        <button class="kprl-owl-btn-primary" t-on-click="runComputation"
+                                t-att-disabled="state.computing">
+                            <i class="fa fa-calculator"/> Run Computation
+                        </button>
+                        <span class="kprl-owl-pill">Period Close</span>
+                    </div>
+                    <div class="kprl-owl-ctrl-right">
+                        <button class="kprl-owl-btn-sec"><i class="fa fa-download"/> Export</button>
+                        <button class="kprl-owl-btn-sec"><i class="fa fa-print"/> Print</button>
+                    </div>
+                </div>
+
+                <!-- ─── Period Tabs ─── -->
+                <div class="kprl-owl-period-tabs">
+                    <span class="kprl-owl-tab-label">Period:</span>
+                    <t t-foreach="state.periods" t-as="p" t-key="p.id">
+                        <button class="kprl-owl-tab-btn"
+                                t-att-class="state.currentPeriodId === p.id ? 'kprl-owl-tab-active' : ''"
+                                t-on-click="() => this.selectPeriod(p.id, p.name)"
+                                t-esc="p.name"/>
+                    </t>
+                </div>
+
+                <!-- ─── Gate Status ─── -->
+                <div class="kprl-owl-gate-row">
+                    <span class="kprl-owl-gate-title">Gate Status</span>
+                    <span class="kprl-owl-gate-badge kprl-gate-pass">
+                        <i class="fa fa-check-circle"/> Profitability Gate:
+                        <strong t-esc="gateLabel(state.engine.gate_status)"/>
+                        (EBITDA <t t-esc="(state.engine.ebitda_margin || 0) + '%'"/>)
+                    </span>
+                    <span class="kprl-owl-gate-badge kprl-gate-clean">
+                        <i class="fa fa-shield"/> GMP Gate:
+                        <strong t-esc="gmpLabel(state.engine.gmp_status)"/>
+                    </span>
+                    <span class="kprl-owl-info-pill kprl-pill-blue">
+                        Company KPI Score: <strong t-esc="fmtScore(state.engine.company_kpi_score)"/>
+                    </span>
+                    <span class="kprl-owl-info-pill kprl-pill-bold-blue">
+                        Pool Funded: <strong t-esc="fmtCurrency(state.engine.effective_pool)"/>
+                    </span>
+                </div>
+
+                <!-- ─── KPI Cards (Row 1) ─── -->
+                <div class="kprl-owl-kpi-grid">
+                    <div class="kprl-owl-kpi-card kprl-border-cyan">
+                        <div class="kprl-owl-card-title">Effective Pool</div>
+                        <div class="kprl-owl-card-value" t-esc="fmtCurrency(state.engine.effective_pool)"/>
+                        <div class="kprl-owl-card-sub">funded bonus pool</div>
+                    </div>
+                    <div class="kprl-owl-kpi-card kprl-border-indigo">
+                        <div class="kprl-owl-card-title">Total Payout</div>
+                        <div class="kprl-owl-card-value" t-esc="fmtCurrency(state.engine.total_payout)"/>
+                        <div class="kprl-owl-card-sub">incl. deferred release</div>
+                    </div>
+                    <div class="kprl-owl-kpi-card kprl-border-green">
+                        <div class="kprl-owl-card-title">Payout / Revenue</div>
+                        <div class="kprl-owl-card-value" t-esc="fmtPct(state.engine.payout_as_pct_revenue)"/>
+                        <div class="kprl-owl-card-sub">below 2.5% EBITDA cap</div>
+                    </div>
+                    <div class="kprl-owl-kpi-card kprl-border-gray">
+                        <div class="kprl-owl-card-title">Headcount Eligible</div>
+                        <div class="kprl-owl-card-value" t-esc="(state.engine.headcount || 0) + ' / ' + (state.engine.headcount || 0)"/>
+                        <div class="kprl-owl-card-sub">100% appraised</div>
+                    </div>
+                </div>
+
+                <!-- ─── KPI Cards (Row 2) ─── -->
+                <div class="kprl-owl-kpi-grid">
+                    <div class="kprl-owl-kpi-card kprl-border-cyan">
+                        <div class="kprl-owl-card-title">Revenue Achievement</div>
+                        <div class="kprl-owl-card-value" t-esc="fmtCurrency(state.engine.quarterly_revenue)"/>
+                        <div class="kprl-owl-card-sub">vs quarterly target</div>
+                    </div>
+                    <div class="kprl-owl-kpi-card kprl-border-green">
+                        <div class="kprl-owl-card-title">EBITDA Margin</div>
+                        <div class="kprl-owl-card-value" t-esc="(state.engine.ebitda_margin || 0) + '%'"/>
+                        <div class="kprl-owl-card-sub">Gate: Full (&gt;22%)</div>
+                    </div>
+                    <div class="kprl-owl-kpi-card kprl-border-indigo">
+                        <div class="kprl-owl-card-title">Proration Factor</div>
+                        <div class="kprl-owl-card-value" t-esc="(state.engine.proration_factor || 1) + 'x'"/>
+                        <div class="kprl-owl-card-sub">pool fully funded</div>
+                    </div>
+                    <div class="kprl-owl-kpi-card kprl-border-orange">
+                        <div class="kprl-owl-card-title" title='Quarterly Incentive Plan for Management'>QIPM</div>
+                        <div class="kprl-owl-card-value" t-esc="fmtCurrency(state.engine.qipm_pool)"/>
+                        <div class="kprl-owl-card-sub">Rev x 0.2%</div>
+                    </div>
+                </div>
+
+                <!-- ─── Trend Analysis ─── -->
+                <div class="kprl-owl-trend-section">
+                    <div class="kprl-owl-trend-header">
+                        <span class="kprl-owl-trend-title">Trend Analysis</span>
+                        <div class="kprl-owl-trend-filters">
+                            <span class="kprl-owl-filter-label">Metric:</span>
+                            <select class="kprl-owl-select" t-on-change="onTrendMetricChange">
+                                <option value="effective_pool">Effective Pool</option>
+                                <option value="total_payout">Total Payout</option>
+                                <option value="company_kpi_score">Company KPI Score</option>
+                                <option value="ebitda_margin">EBITDA Margin</option>
+                                <option value="quarterly_revenue">Quarterly Revenue</option>
+                                <option value="headcount">Headcount</option>
+                            </select>
+                            <span class="kprl-owl-filter-label">Chart:</span>
+                            <select class="kprl-owl-select" t-on-change="onTrendTypeChange">
+                                <option value="bar">Bar</option>
+                                <option value="line">Line</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="kprl-owl-chart-wrap">
+                        <canvas t-ref="trendChart"/>
+                    </div>
+                </div>
+
+                <!-- ─── Department Table ─── -->
+                                <!-- ��� Split Grid: Dept + Territory Performance ��� -->
+                <div class="kprl-owl-split-grid">
+                    <!-- Left: Department Performance -->
+                    <div class="kprl-owl-table-section">
+                        <h3 class="kprl-owl-section-heading">Department Performance</h3>
+                        <div class="kprl-owl-table-wrap">
+                            <table class="kprl-owl-table">
+                                <thead>
+                                    <tr>
+                                        <th>Department</th>
+                                        <th>KPI Score</th>
+                                        <th>Multiplier</th>
+                                        <th>Headcount</th>
+                                        <th>Net Payout</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.departments || []" t-as="d" t-key="d.department_id ? d.department_id[0] : d_index">
+                                        <tr>
+                                            <td t-esc="d.department_id ? d.department_id[1] : 'N/A'"/>
+                                            <td t-esc="fmtScore(d.kpi_score)"/>
+                                            <td t-esc="fmtMult(d.multiplier)"/>
+                                            <td t-esc="d.headcount || 0"/>
+                                            <td t-esc="fmtCurrency(d.net_payout)"/>
+                                            <td>
+                                                <span class="kprl-owl-status-tag"
+                                                      t-att-class="deptStatusCls(d)"
+                                                      t-esc="deptStatus(d)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="(state.departments || []).length === 0">
+                                        <tr>
+                                            <td colspan="6" style="text-align:center;padding:24px;color:#999;">
+                                                No department data available
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Territory Performance -->
+                    <div class="kprl-owl-table-section">
+                        <h3 class="kprl-owl-section-heading">Territory Performance</h3>
+                        <div class="kprl-owl-table-wrap">
+                            <table class="kprl-owl-table">
+                                <thead>
+                                    <tr>
+                                        <th>Territory</th>
+                                        <th>RSM Name</th>
+                                        <th>RSM Target</th>
+                                        <th>Team Targets</th>
+                                        <th>Source</th>
+                                        <th>Eff. Target</th>
+                                        <th>Achievement</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.territories || []" t-as="t" t-key="t.id">
+                                        <tr>
+                                            <td><strong t-esc="t.code || t.name"/></td>
+                                            <td t-esc="t.rsm_id ? t.rsm_id[1] : '\u2014'"/>
+                                            <td t-esc="fmtCurrency(t.rsm_target)"/>
+                                            <td t-esc="fmtCurrency(t.team_target)"/>
+                                            <td>
+                                                <span class="kprl-source-badge"
+                                                      t-att-class="sourceBadgeClass(t.source)"
+                                                      t-esc="t.source === 'RSM' ? 'RSM' : 'Team'"/>
+                                            </td>
+                                            <td t-esc="fmtCurrency(t.effective_target)"/>
+                                            <td>
+                                                <div class="kprl-territory-progress">
+                                                    <div class="kprl-territory-progress-track">
+                                                        <div class="kprl-territory-progress-fill"
+                                                             t-att-class="achievementBarClass(t.achievement_pct)"
+                                                             t-att-style="achievementBarStyle(t.achievement_pct)"/>
+                                                    </div>
+                                                    <span class="kprl-territory-pct"
+                                                          t-esc="fmtPct(t.achievement_pct / 100)"/>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="(state.territories || []).length === 0">
+                                        <tr>
+                                            <td colspan="7" style="text-align:center;padding:24px;color:#999;">
+                                                No territory data available
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                                <!-- ��� Employee Self-Service Panel ��� -->
+                <div class="kprl-owl-self-service">
+                    <div class="kprl-owl-ss-header">
+                        <h3 class="kprl-owl-section-heading" style="margin:0;">
+                            Employee Self-Service
+                        </h3>
+                        <div class="kprl-owl-employee-select-wrap">
+                            <label class="kprl-owl-ss-label">Select Employee:</label>
+                            <select class="kprl-owl-employee-select"
+                                    t-on-change="selectEmployee">
+                                <option value="">— Choose an employee —</option>
+                                <t t-foreach="state.employees || []" t-as="emp" t-key="emp.id">
+                                    <option t-att-value="emp.id"
+                                            t-esc="emp.name + ' (' + (emp.staff_id || emp.employee_id || '') + ')'"/>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+
+                    <t t-if="state.selfServiceLoading">
+                        <div class="kprl-owl-ss-loading">
+                            <i class="fa fa-spinner fa-spin"/> Loading employee data...
+                        </div>
+                    </t>
+
+                   <t t-if="!state.selfServiceLoading &amp;&amp; state.employeePayout">
+                        <div class="kprl-owl-ss-card">
+                            <!-- Employee Info Row -->
+                            <div class="kprl-owl-ss-info-row">
+                                <div class="kprl-owl-ss-avatar"
+                                     t-esc="(state.employeePayout.name || '??').split(' ')[0][0] + (state.employeePayout.name || '??').split(' ').slice(-1)[0][0]"/>
+                                <div class="kprl-owl-ss-details">
+                                    <div class="kprl-owl-ss-name"
+                                         t-esc="state.employeePayout.name"/>
+                                    <div class="kprl-owl-ss-meta">
+                                        <span t-esc="state.employeePayout.job_title"/>
+                                        <span class="kprl-owl-ss-sep">|</span>
+                                        <span t-esc="state.employeePayout.grade_code"/>
+                                        <span class="kprl-owl-ss-sep">|</span>
+                                        <span t-esc="state.employeePayout.department"/>
+                                    </div>
+                                    <div class="kprl-owl-ss-meta">
+                                        <span>Staff ID: <strong t-esc="state.employeePayout.staff_id"/></span>
+                                        <span class="kprl-owl-ss-sep">|</span>
+                                        <span>Territory: <strong t-esc="state.employeePayout.territory"/></span>
+                                        <span class="kprl-owl-ss-sep">|</span>
+                                        <span>Period: <strong t-esc="state.employeePayout.period_name"/></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <t t-if="state.employeePayout.has_payout">
+                                <!-- Payout Figures -->
+                                <div class="kprl-owl-ss-figures">
+                                    <div class="kprl-owl-ss-figure-card">
+                                        <div class="kprl-owl-ss-figure-label">Ops Bonus</div>
+                                        <div class="kprl-owl-ss-figure-value"
+                                             t-esc="fmtCurrency(state.employeePayout.ops_bonus)"/>
+                                        <div class="kprl-owl-ss-figure-sub">Bonus after Deferral</div>
+                                    </div>
+                                    <div class="kprl-owl-ss-figure-card">
+                                        <div class="kprl-owl-ss-figure-label">Sales Commission</div>
+                                        <div class="kprl-owl-ss-figure-value"
+                                             t-esc="fmtCurrency(state.employeePayout.sales_commission)"/>
+                                        <div class="kprl-owl-ss-figure-sub">Exception Premium</div>
+                                    </div>
+                                    <div class="kprl-owl-ss-figure-card kprl-owl-ss-figure-total">
+                                        <div class="kprl-owl-ss-figure-label">Total Estimated Payout</div>
+                                        <div class="kprl-owl-ss-figure-value"
+                                             t-esc="fmtCurrency(state.employeePayout.total_estimated_payout)"/>
+                                        <div class="kprl-owl-ss-figure-sub">Gross Payable</div>
+                                    </div>
+                                </div>
+
+                                <!-- Multiplier Breakdown -->
+                                <div class="kprl-owl-ss-breakdown">
+                                    <div class="kprl-owl-ss-bd-row">
+                                        <span>Dept KPI Mult</span>
+                                        <span class="kprl-owl-ss-bd-val"
+                                              t-esc="fmtMult(state.employeePayout.dept_kpi_mult)"/>
+                                    </div>
+                                    <div class="kprl-owl-ss-bd-row">
+                                        <span>Appraisal Mult</span>
+                                        <span class="kprl-owl-ss-bd-val"
+                                              t-esc="fmtMult(state.employeePayout.appraisal_mult)"/>
+                                    </div>
+                                    <div class="kprl-owl-ss-bd-row">
+                                        <span>Behavioural Mult</span>
+                                        <span class="kprl-owl-ss-bd-val"
+                                              t-esc="fmtMult(state.employeePayout.behavioural_mult)"/>
+                                    </div>
+                                    <div class="kprl-owl-ss-bd-row">
+                                        <span>Tenure Mult</span>
+                                        <span class="kprl-owl-ss-bd-val"
+                                              t-esc="fmtMult(state.employeePayout.tenure_mult)"/>
+                                    </div>
+                                    <div class="kprl-owl-ss-bd-row">
+                                        <span>Proration</span>
+                                        <span class="kprl-owl-ss-bd-val"
+                                              t-esc="fmtMult(state.employeePayout.proration_factor)"/>
+                                    </div>
+                                    <div class="kprl-owl-ss-bd-row">
+                                        <span>Deferred Amount</span>
+                                        <span class="kprl-owl-ss-bd-val"
+                                              t-esc="fmtCurrency(state.employeePayout.deferred_amount)"/>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <t t-if="!state.employeePayout.has_payout">
+                                <div class="kprl-owl-ss-no-data">
+                                    <i class="fa fa-info-circle"/>
+                                    No payout record found for this period.
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+
+                 <t t-if="!state.selfServiceLoading &amp;&amp; !state.employeePayout &amp;&amp; state.selectedEmployeeId">
+                        <div class="kprl-owl-ss-no-data">
+                            <i class="fa fa-spinner fa-spin"/> Loading...
+                        </div>
+                    </t>
+                </div>
+
+                <!-- ─── SLA Footer ─── -->
+                <div class="kprl-owl-sla-footer">
+                    <i class="fa fa-clock-o kprl-owl-sla-icon"/>
+                    <span><strong>Period Close SLA:</strong> Results published by <t t-esc="fmtSLADate(state.slaResultsDate)"/></span>
+                    <span class="kprl-owl-sla-div">|</span>
+                    <span><strong>Target payout:</strong> <t t-esc="fmtSLADate(state.slaPayoutDate)"/></span>
+                    <span class="kprl-owl-sla-div">|</span>
+                    <span><strong>Status:</strong> <span t-att-class="state.slaStatus === 'ON TRACK' ? 'kprl-owl-text-success' : state.slaStatus === 'OVERDUE' ? 'kprl-owl-text-danger' : ''" t-esc="state.slaStatus"/></span>
+                </div>
+            </t>
+
+            <!-- ─── Computation Overlay ─── -->
+            <t t-if="state.computing">
+                <div class="kprl-owl-overlay">
+                    <div class="kprl-owl-overlay-card">
+                        <div class="kprl-owl-overlay-spinner"><i class="fa fa-spinner fa-spin"/></div>
+                        <div class="kprl-owl-overlay-title">Running Computation</div>
+                        <div class="kprl-owl-overlay-step" t-esc="state.compStep"/>
+                        <div class="kprl-owl-progress-track">
+                            <div class="kprl-owl-progress-fill" t-att-style="'width:' + state.compPct + '%'"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

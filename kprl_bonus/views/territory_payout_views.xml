@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_territory_payout_tree" model="ir.ui.view">
+        <field name="name">kprl.territory.payout.tree</field>
+        <field name="model">kprl.territory.payout</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="territory_id"/>
+                <field name="period_id"/>
+                <field name="effective_target" widget="monetary"/>
+                <field name="achievement_pct"/>
+                <field name="commission_payable" widget="monetary"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_territory_payout_form" model="ir.ui.view">
+        <field name="name">kprl.territory.payout.form</field>
+        <field name="model">kprl.territory.payout</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="territory_id"/>
+                        <field name="period_id"/>
+                        <field name="effective_target" widget="monetary"/>
+                        <field name="achievement_pct"/>
+                        <field name="commission_payable" widget="monetary"/>
+                        <field name="state"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_territory_payout" model="ir.actions.act_window">
+        <field name="name">Territory Payouts</field>
+        <field name="res_model">kprl.territory.payout</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

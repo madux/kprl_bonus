@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_bonus_parameter_tree" model="ir.ui.view">
+        <field name="name">kprl.bonus.parameter.tree</field>
+        <field name="model">kprl.bonus.parameter</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="period_id"/>
+                <field name="version"/>
+                <field name="state" widget="badge"/>
+                <field name="is_locked"/>
+                <field name="min_pool_rate"/>
+                <field name="ebitda_scaling_start"/>
+                <field name="ebitda_max_rate_threshold"/>
+                <field name="full_gate_floor"/>
+                <field name="max_pool_rate"/>
+                <field name="approver_id"/>
+                <field name="approval_date"/>
+            </tree>
+        </field>
+    </record> 
+
+    <record id="view_kprl_bonus_parameter_form" model="ir.ui.view">
+        <field name="name">kprl.bonus.parameter.form</field>
+        <field name="model">kprl.bonus.parameter</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" type="object"
+                            string="Submit for Approval"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve" type="object"
+                            string="Approve"
+                            class="btn-success"
+                            invisible="state != 'pending_approval'"
+                            groups="kprl_bonus.group_kprl_ceo"/>
+                    <button name="action_reject" type="object"
+                            string="Reject"
+                            class="btn-danger"
+                            invisible="state != 'pending_approval'"
+                            groups="kprl_bonus.group_kprl_ceo"/>
+                    <button name="action_reset" type="object"
+                            string="Reset to Draft"
+                            invisible="state not in ['approved', 'rejected']"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(kprl_bonus.action_kprl_bonus_engine)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-calculator"
+                                context="{'default_period_id': period_id}">
+                            <div>Compute Bonus</div>
+                        </button>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="period_id"/>
+                            <field name="version"/>
+                            <field name="state"/>
+                        </group>
+                        <group>
+                            <field name="is_locked"/>
+                            <field name="submitted_by"/>
+                            <field name="approver_id"/>
+                            <field name="approval_date"/>
+                        </group>
+
+                         
+
+                        <group>
+                            <field name="funded_pool_after_both_gate" readonly='1'/>
+                            <field name="profitability_gate_factor" readonly='1'/>
+                        </group>
+                        <group>
+                            <field name="state"/>
+                            <field name="base_bonus_pool" readonly='1'/>
+                            <field name="gmp_gate_factor" readonly='1'/>
+                        </group>
+                    </group>
+ 
+                    <notebook>
+                        <!-- Section A: Main Bonus Pool -->
+                        <page name="pool_params" string="Pool Parameters">
+                            <group string="Section A: Main Bonus Pool (Board Approval)">
+                                <group string="Pool Rate params (%)">
+                                    <field name="min_pool_rate"/>
+                                    <field name="ebitda_scaling_start"/>
+                                    <field name="ebitda_max_rate_threshold"/>
+                                    <field name="partial_gate_floor"/>
+                                    <field name="full_gate_floor"/>
+                                    <field name="max_pool_rate"/>
+                                </group>
+                                   <group string="Pool Distribution – Two Independent Levels (%)">
+                                    <group string="OPM (input) / SUP (auto) (%)">
+                                        <field name="l4_opm_share_pct" string="Opm Share Pct (%)"/>
+                                        <field name="l4_sup_share_pct" string="SUP Share (%) – auto" readonly="1"/>
+                                    </group>
+                                    <group string="Senior-Mgmt (input) / Ops-Support (auto) (%)">
+                                        <field name="senior_mgmt_share_pct" string="Senior-Mgmt Share (%)"/>
+                                        <field name="l5_ops_support_share_pct" string="Ops-Support Share (%) – auto" readonly="1"/>
+                                    </group>
+                                </group>
+                                <group string="AIP Parameters (%)">
+                                    <field name="aip_annual_rate"/>
+                                    <field name="aip_deferral_rate"/>
+                                </group>
+                            </group>
+                            <!-- CEO-only: Governance Bounds -->
+                            <div>
+                            <div class="alert alert-info" style="margin-bottom:12px;">
+                                        <i class="fa fa-lock"/> These limits define the allowed range for each parameter.
+                                        Only the CEO / Superadmin can modify them.
+                                    </div>
+                            </div>
+                            <group string="Governance Bounds (CEO / Board Only)">
+                                <group string="Pool Rate Bounds (%)"> 
+                                    <field name="min_pool_rate_min" string="Pool Rate Min (floor) — Lower Bound"/>
+                                    <field name="min_pool_rate_max" string="Pool Rate Min (floor) — Upper Bound"/>
+                                    <field name="min_pool_rate_approver"/>
+                                    <field name="ebitda_scaling_start_min" string="EBITDA threshold Scaling Start — Lower Bound"/>
+                                    <field name="ebitda_scaling_start_max" string="EBITDA threshold Scaling Start — Upper Bound"/>
+                                    <field name="ebitda_max_rate_threshold_min" string="EBITDA Max Threshold — Lower Bound"/>
+                                    <field name="ebitda_max_rate_threshold_max" string="EBITDA Max Threshold — Upper Bound"/>
+                                    <field name="partial_gate_floor_min" string="Ramp Start Margin (zero-payout) — Lower Bound"/>
+                                    <field name="partial_gate_floor_max" string="Ramp Start Margin (zero-payout) — Upper Bound"/>
+                                    <field name="full_gate_floor_min" string="Full Unlock Threshold — Lower Bound"/>
+                                    <field name="full_gate_floor_max" string="Full Unlock Threshold — Upper Bound"/>
+                                    <field name="max_pool_rate_min" string="Pool Rate Max (ceiling) — Lower Bound"/>
+                                    <field name="max_pool_rate_max" string="Pool Rate Max (ceiling) — Upper Bound"/>
+                                    <field name="max_pool_rate_approver"/>
+                                </group>
+                                <group string="OPM Share Bounds (%)">
+                                    <field name="l4_opm_share_pct_min" string="Opm Share Pct — Lower Bound"/>
+                                    <field name="l4_opm_share_pct_max" string="Opm Share Pct — Upper Bound"/>
+                                    <field name="l4_opm_share_pct_approver" string="Opm Share Pct Approver"/>
+                                </group>
+                                <group string="Senior-Mgmt Share Bounds (%)">
+                                    <field name="senior_mgmt_share_pct_min" string="Senior-Mgmt - Lower Bound"/>
+                                    <field name="senior_mgmt_share_pct_max" string="Senior-Mgmt - Upper Bound"/>
+                                    <field name="senior_mgmt_share_pct_approver"/>
+                                </group>
+                                <group string="AIP &amp; KPI Bounds (%)">
+                                    <field name="aip_annual_rate_min" string="AIP Annual — Lower Bound"/>
+                                    <field name="aip_annual_rate_max" string="AIP Annual — Upper Bound"/>
+                                    <field name="aip_annual_rate_approver"/>
+                                    <field name="aip_deferral_rate_min" string="AIP Deferral — Lower Bound"/>
+                                    <field name="aip_deferral_rate_max" string="AIP Deferral — Upper Bound"/>
+                                    <field name="aip_deferral_rate_approver"/>
+                                    <field name="revenue_weight_min" string="Revenue Weight — Lower Bound"/>
+                                    <field name="revenue_weight_max" string="Revenue Weight — Upper Bound"/>
+                                    <field name="ebitda_weight_min" string="EBITDA Weight — Lower Bound"/>
+                                    <field name="ebitda_weight_max" string="EBITDA Weight — Upper Bound"/>
+                                    <field name="gmp_weight_min" string="GMP Weight — Lower Bound"/>
+                                    <field name="gmp_weight_max" string="GMP Weight — Upper Bound"/>
+                                    <field name="extended_kpi_weight_min" string="Extended KPI — Lower Bound"/>
+                                    <field name="extended_kpi_weight_max" string="Extended KPI — Upper Bound"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Section B: Sales Commission -->
+                        <page name="sales" string="Sales Commission">
+                            <group string="Section B: Sales Commission Rates (Finance Director)">
+                                <field name="sales_commission_rate"/>
+                                <field name="sales_commission_rate_approver"/>
+                                <field name="retrieval_commission_rate"/>
+                                <field name="retrieval_commission_rate_approver"/>
+                                <field name="rsm_asm_commission_rate"/>
+                                <field name="rsm_asm_commission_rate_approver"/>
+                                <field name="product_pool_share_pct"/>
+                                <field name="product_pool_share_pct_approver"/>
+                                <field name="commission_share_pct"/>
+                                <field name="commission_share_pct_approver"/>
+                                <field name="rsm_asm_dual_factor"/>
+                                <field name="rsm_asm_dual_factor_approver"/>
+                            </group>
+                        </page>
+
+                        <!-- Section C: Sales Eligibility -->
+                        <page name="eligibility" string="Eligibility Thresholds">
+                            <group string="Section C: Sales Eligibility Thresholds (Finance + HR Director approval)">
+                                <field name="b34_top_mgmt_min_sales_attainment"/>
+                                <field name="b35_top_mgmt_min_retrieval_rate"/>
+                                <field name="b36_rsm_min_territory_sales_attainment"/>
+                                <field name="b37_rsm_min_territory_retrieval_rate"/>
+                                <field name="b38_asm_min_personal_sales_attainment"/>
+                                <field name="b39_asm_min_personal_retrieval_rate"/>
+                            </group>
+                        </page>
+
+                        <!-- Section D: AIP & Deferred -->
+                        <page name="deferred" string="AIP &amp; Deferred">
+                            <group string="Section D: AIP &amp; Deferred Parameters (Board)">
+                                <field name="aip_eligibility_threshold"/>
+                                <field name="senior_mgmt_deferred_rate"/>
+                                <field name="tier1_deferred_rate"/>
+                                <field name="tier2_deferred_rate"/>
+                                <field name="aip_deferred_rate_param"/>
+                                <field name="minimum_floor" widget="monetary"/>
+                                <field name="maximum_cap" widget="monetary"/>
+                            </group>
+                        </page>
+
+                        <!-- Section E: KPI Weights -->
+                        <page name="kpi_weights" string="KPI Weights">
+                            <group string="Section E: KPI Weight Configuration (Max 25% each)">
+                                <field name="revenue_weight"/>
+                                <field name="revenue_weight_min" invisible="1"/>
+                                <field name="revenue_weight_max" invisible="1"/>
+                                <field name="ebitda_weight"/>
+                                <field name="ebitda_weight_min" invisible="1"/>
+                                <field name="ebitda_weight_max" invisible="1"/>
+                                <field name="gmp_weight"/>
+                                <field name="gmp_weight_min" invisible="1"/>
+                                <field name="gmp_weight_max" invisible="1"/>
+                                <field name="extended_kpi_weight"/>
+                                <field name="extended_kpi_weight_min" invisible="1"/>
+                                <field name="extended_kpi_weight_max" invisible="1"/>
+                            </group>
+                            <group>
+                                <group>
+                                    <field name="kpi_weight_total"/>
+                                    <field name="kpi_weight_valid"/>
+                                </group>
+                                <div class="alert alert-info"
+                                     style="margin-bottom:0px;"
+                                     invisible="kpi_weight_valid == True">
+                                    <i class="fa fa-warning"/> KPI weights must sum to exactly 100%%. Current total: <field name="kpi_weight_total"/>%
+                                </div>
+                            </group>
+                        </page>
+
+                        <!-- Section F: National Targets -->
+                        <page name="targets" string="National Targets">
+                            <group string="Section F: National Targets (Finance Director)">
+                                <field name="quarterly_revenue_target" widget="monetary"/>
+                                <field name="annual_revenue_target" widget="monetary"/>
+                            </group>
+                            <group string="Tenure Defaults">
+                                <field name="tenure_default_mult"/>
+                            </group>
+                        </page>
+
+                        <!-- Section G: Governance, Caps & Policy (Board-approved) -->
+                        <page name="gov_caps" string="Section G — Governance, Caps &amp; Policy">
+                            <group string="Section G — Governance, Caps &amp; Policy (Board-approved)">
+                                <field name="g_bonus_pool_cap_pct"/>
+                                <field name="g_individual_quarterly_cap" widget="monetary"/>
+                                <field name="g_leadership_premium"/>
+                                <field name="g_gmp_self_report_relief"/>
+                                <field name="g_company_gmp_self_reported"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Hard ceiling: effective pool cannot exceed Bonus Pool Cap % of EBITDA. Individual cap per quarter. Leadership premium floors RSM at 1.10x top subordinate. GMP relief 0.5 halves penalty if self-reported.</div>
+                        </page>
+
+                        <!-- Section H: Sales Entry-Gate Ramp Floors (v9) -->
+                        <page name="entry_floors" string="Section H — Entry Floors">
+                            <group string="Section H — Sales Entry-Gate Ramp Floors (v9)">
+                                <field name="h1_top_mgmt_sales_floor"/>
+                                <field name="h2_rsm_sales_floor"/>
+                                <field name="h3_asm_sales_floor"/>
+                                <field name="h4_top_mgmt_retrieval_floor"/>
+                                <field name="h5_rsm_retrieval_floor"/>
+                                <field name="h6_asm_retrieval_floor"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Below floor = 0; floor-&gt;Min ramps 0-&gt;100%; at/above Min fully eligible. If Floor=Min the gate becomes a HARD CLIFF at Min.</div>
+                        </page>
+
+                        <!-- Section I: Sales Accelerators & Stretch Cap (v10) -->
+                        <page name="accelerators" string="Section I — Accelerators">
+                            <group string="Section I — Sales Accelerators &amp; Stretch Cap (v10)">
+                                <field name="i1_accelerator_kick_in"/>
+                                <field name="i2_accelerator_ceiling"/>
+                                <field name="i3_accelerator_boost"/>
+                                <field name="i4_stretch_individual_cap" widget="monetary"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> At/above kick-in attainment your commission earns a rising boost up to the ceiling; over-target performers also get a higher individual cap.</div>
+                        </page>
+
+                        <!-- Section J: KPI Multiplier Band (v12) -->
+                        <page name="kpi_band" string="Section J — KPI Band">
+                            <group string="Section J — KPI Multiplier Band &amp; PK Normalization (v12)">
+                                <field name="kpi_multiplier_floor"/>
+                                <field name="kpi_multiplier_range"/>
+                                <field name="pk_normalization_enabled"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Multiplier = Floor + (weighted KPI score) x Range. Floor 0.80 + Range 0.40 -&gt; band 0.80-1.20. Normalization spreads clustered product-knowledge scores.</div>
+                        </page>
+
+                        <!-- Section K: RSM+ASM Separate Thresholds (v15) -->
+                        <page name="dual_thresholds" string="Section K — Dual Role">
+                            <group string="Section K — RSM+ASM (Dual Role) Separate Thresholds (v15)">
+                                <field name="k1_dual_min_sales"/>
+                                <field name="k2_dual_min_retrieval"/>
+                                <field name="k3_dual_sales_floor"/>
+                                <field name="k4_dual_retrieval_floor"/>
+                            </group>
+                        </page>
+
+                        <!-- Section L: Company Scorecard & Engine Switches (v23) -->
+                        <page name="scorecard" string="Section L — Scorecard">
+                            <group string="Section L — Company Scorecard &amp; Engine Switches (v23)">
+                                <field name="l1_pool_funding_method"/>
+                                <field name="l2_manual_pool_rate_enabled"/>
+                                <field name="l2_manual_pool_rate_override"/>
+                                <field name="l3_gmp_compliance_status"/>
+                            </group>
+                            <group string="Company KPI Scorecard (weights must sum to 100%)">
+                                <field name="l_score_rev_weight"/>
+                                <field name="l_score_ebitda_weight"/>
+                                <field name="l_score_gmp_weight"/>
+                                <field name="l_score_people_weight"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Pool Distribution: L4 Grand -&gt; OPM 60% / SUP 40%; L5 SUP -&gt; Senior 70% / Ops-Support 30% (in Pool Parameters). Scorecard feeds Bonus Engine Section D.</div>
+                        </page>
+
+                        <page name="notes" string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_bonus_parameter" model="ir.actions.act_window">
+    <field name="name">Control Panel (Parameters)</field>
+    <field name="res_model">kprl.bonus.parameter</field>
+    <field name="view_mode">kanban,tree,form</field>
+    <field name="help" type="html">
+        <p><strong>CEO / Superadmin Control Panel</strong></p>
+        <p>Configure all bonus parameters for each period. Each field has governance limits (min/max) set by the approver authority. After approval, parameters are locked to prevent further edits.</p>
+    </field>
+</record>
+
+   <record id="view_kprl_bonus_parameter_kanban" model="ir.ui.view">
+    <field name="name">kprl.bonus.parameter.kanban</field>
+    <field name="model">kprl.bonus.parameter</field>
+    <field name="arch" type="xml">
+        <kanban class="o_kanban_kprl_params">
+            <field name="period_id"/>
+            <field name="version"/>
+            <field name="state"/>
+            <field name="is_locked"/>
+            <field name="approver_id"/>
+            <field name="approval_date"/>
+            <field name="min_pool_rate"/>
+            <field name="max_pool_rate"/>
+            <field name="base_bonus_pool"/>
+            <templates>
+                <t t-name="kanban-box">
+                    <div t-attf-class="kprl_param_card kprl_state_#{record.state.raw_value}">
+                        <div class="kprl_card_top">
+                            <div class="kprl_card_title">
+                                <field name="period_id"/>
+                                <span class="kprl_version">v<field name="version"/></span>
+                            </div>
+                            <!-- <span t-if="record.is_locked.raw_value" class="kprl_lock">
+                                <i class="fa fa-lock"/>
+                            </span> -->
+                            <a class="kprl_lock" type="object" name="open_record">
+                                <i class="fa fa-eye"/>
+                            </a>
+                        </div>
+                        <div class="kprl_card_state">
+                            <field name="state" widget="badge"/>
+                        </div>
+                        <div class="kprl_card_metrics">
+                            <div class="kprl_metric">
+                                <span class="kprl_metric_label">Pool Range</span>
+                                <span class="kprl_metric_value">
+                                    <field name="min_pool_rate"/>% – <field name="max_pool_rate"/>%
+                                </span>
+                            </div>
+                            <div class="kprl_metric">
+                                <span class="kprl_metric_label">Base Pool</span>
+                                <span class="kprl_metric_value"><field name="base_bonus_pool" widget="monetary"/></span>
+                            </div>
+                        </div>
+                        <div class="kprl_card_footer" t-if="record.approver_id.raw_value">
+                            <i class="fa fa-user-o"/> <field name="approver_id"/>
+                            <span t-if="record.approval_date.raw_value">
+                                — <field name="approval_date"/>
+                            </span>
+                        </div>
+                    </div>
+                </t>
+            </templates>
+        </kanban>
+    </field>
+</record>
+</odoo>

@@ -1,0 +1,23 @@
+{
+  "_note": "Frozen PayoutPreview fixtures (Slice 1). Response shape MUST NOT change without bumping the contract.",
+  "ops_kprl035": {
+    "period_id": 1, "employee_id": 35,
+    "employee": {"name": "BALOGUN A. BABATUNDE", "grade": "Junior Staff", "department": "Production", "pool_type": "OPM", "track": "ops"},
+    "classification": {"engines": ["operations"], "sub_pool": "OPM", "base_points": 1.0, "skill_premium": 0.0},
+    "source_inputs": {"appraisal": 0.791, "behaviour": 23, "years_of_service": 4},
+    "expect": {"status": "calculated", "sales_breakdown": null}
+  },
+  "sales_asm": {
+    "employee": {"pool_type": "SALES", "track": "sales", "sales_role": "asm"},
+    "source_inputs": {"own_target": 100000000, "own_sales": 82000000, "own_retrieval": 74000000},
+    "expect": {"status": "calculated", "operations_breakdown": null, "attainment": 0.82}
+  },
+  "both": {
+    "employee": {"pool_type": "SUP", "track": "both", "sales_role": "rsm_asm"},
+    "expect": {"engines": ["operations", "sales"]}
+  },
+  "blocked_missing_perf": {
+    "performance": null,
+    "expect": {"status": "blocked", "reason": "no record for (period, employee)", "never_zero_coerced": true}
+  }
+}

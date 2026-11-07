@@ -1,0 +1,1205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="kprl_bonus_assets" name="KPRL Bonus Assets">
+        <link rel="stylesheet" href="/kprl_bonus/static/css/kprl_shared.css"/>
+        <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
+    </template>
+
+    <template id="dashboard_page" name="KPRL Dashboard">
+        <t t-call="web.html_container">
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <title>KPRL Bonus System - <t t-esc="periods and periods[0]['name'] or 'Dashboard'"/> Dashboard</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"/>
+            <link rel="stylesheet" href="/kprl_bonus/static/css/dashboard.css"/>
+            <meta name="csrf-token" t-att-content="request.csrf_token()"/>
+
+            <div class="kprl-dashboard-container">
+                <aside class="kprl-sidebar">
+                    <div class="kprl-logo-box">
+                        <i class="fa fa-th-large kprl-logo-icon"></i>
+                    </div>
+                </aside>
+                <main class="kprl-main-content">
+                    <header class="kprl-header">
+                        <div class="kprl-breadcrumb">
+                            <span class="kprl-brand-title">KPRL Bonus System</span>
+                            <i class="fa fa-angle-right kprl-crumb-sep"></i>
+                            <span id="kprl-current-view" class="kprl-current-view">
+                                <t t-esc="periods and periods[0]['name'] or 'Dashboard'"/> Dashboard
+                            </span>
+                        </div>
+                    <div class="kprl-user-actions">
+                      <t t-if="request.env.user.has_group('kprl_bonus.group_kprl_admin')">
+                            <a href="/web#action=114&amp;cids=1&amp;menu_id=74" class="kprl-btn kprl-btn-outline" style="font-size:12px;padding:5px 12px;text-decoration:none;"><i class="fa fa-arrow-left"></i> Admin Panel</a>
+                        </t>
+                      <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
+                      <button class="kprl-icon-btn"><i class="fa fa-question-circle-o"></i></button>
+                      <div class="kprl-role-badge" t-esc="request.env.user.name"/>
+                      <a href="/web/session/logout" class="kprl-icon-btn" title="Logout">
+                         Logout <i class="fa fa-sign-out"></i>
+                      </a>
+                  </div>
+                    </header>
+
+                    <section class="kprl-control-bar">
+                        <div class="kprl-action-group-left">
+                            <button class="kprl-btn-primary" id="btn-run-computation">Run Computation</button>
+                            <div class="kprl-status-pill-static">Period Close</div>
+                        </div>
+                        <div class="kprl-action-group-right">
+                            <button class="kprl-btn-secondary"><i class="fa fa-download"></i> Export</button>
+                            <button class="kprl-btn-secondary"><i class="fa fa-print"></i> Print</button>
+                        </div>
+                    </section>
+
+                    <nav class="kprl-period-tabs" id="kprl-period-tabs">
+                        <span class="kprl-label-text">Period:</span>
+                        <t t-foreach="periods" t-as="p">
+                            <button class="kprl-tab-btn" t-att-data-period="p['name']" t-att-data-id="p['id']" t-attf-class="kprl-tab-btn #{p_index == 0 and 'kprl-tab-active' or ''}">
+                                <t t-esc="p['name']"/>
+                            </button>
+                        </t>
+                    </nav>
+
+                    <section class="kprl-gate-row">
+                        <span class="kprl-label-text">Gate Status</span>
+                        <div class="kprl-gate-badge kprl-gate-pass">
+                            <i class="fa fa-check-circle"></i> <span id="kprl-gate-text">Profitability Gate: --</span>
+                        </div>
+                        <div class="kprl-gate-badge kprl-gate-clean">
+                            <i class="fa fa-shield"></i> <span id="kprl-gmp-text">GMP Gate: --</span>
+                        </div>
+                        <div class="kprl-gate-info-pill kprl-bg-light-blue">
+                            Company KPI Score: <strong id="kprl-kpi-score">--</strong>
+                        </div>
+                        <div class="kprl-gate-info-pill kprl-bg-bold-blue">
+                            Pool Funded: <strong id="kprl-pool-funded">--</strong>
+                        </div>
+                    </section>
+
+                    <section class="kprl-kpi-grid" id="kprl-kpi-grid">
+                        <div class="kprl-kpi-card kprl-border-cyan">
+                            <div class="kprl-card-title">Effective Pool</div>
+                            <div class="kprl-card-value" id="kprl-kpi-pool"></div>
+                            <div class="kprl-card-trend" id="kprl-trend-pool"/>
+                            <div class="kprl-card-subtext">funded bonus pool</div>
+                        </div>
+                        <div class="kprl-kpi-card kprl-border-dark-blue">
+                            <div class="kprl-card-title">Total Payout</div>
+                            <div class="kprl-card-value" id="kprl-kpi-payout">--</div>
+                            <div class="kprl-card-trend" id="kprl-trend-payout"/>
+                            <div class="kprl-card-subtext">incl. deferred release</div>
+                        </div>
+                        <div class="kprl-kpi-card kprl-border-green">
+                            <div class="kprl-card-title">ExpectedRevenue</div>
+                            <div class="kprl-card-value" id="kprl-kpi-prev"><t t-esc="periods and periods[0]['revenue_target'] or 0"/></div>
+                            <div class="kprl-card-trend" id="kprl-trend-prev"/>
+                            <div class="kprl-card-subtext">below EBITDA cap</div>
+                        </div>
+                        <div class="kprl-kpi-card kprl-border-gray">
+                            <div class="kprl-card-title">Headcount Eligible</div>
+                            <div class="kprl-card-value" id="kprl-kpi-hc">--</div>
+                            <div class="kprl-card-trend kprl-trend-neutral"/>
+                            <div class="kprl-card-subtext"/>
+                        </div>
+                        <div class="kprl-kpi-card kprl-border-cyan">
+                            <div class="kprl-card-title">Revenue Achievement</div>
+                            <div class="kprl-card-value" id="kprl-kpi-rev">--</div>
+                            <div class="kprl-card-trend" id="kprl-trend-rev"/>
+                            <div class="kprl-card-subtext">vs quarterly target</div>
+                        </div>
+                        <div class="kprl-kpi-card kprl-border-green">
+                            <div class="kprl-card-title">EBITDA Margin</div>
+                            <div class="kprl-card-value" id="kprl-kpi-ebitda">--</div>
+                            <div class="kprl-card-trend" id="kprl-trend-ebitda"/>
+                            <div class="kprl-card-subtext">Gate: full-unlock threshold</div>
+                        </div>
+                        <div class="kprl-kpi-card kprl-border-dark-blue">
+                            <div class="kprl-card-title">Proration Factor</div>
+                            <div class="kprl-card-value" id="kprl-kpi-prorate">--</div>
+                            <div class="kprl-card-trend kprl-trend-neutral"/>
+                            <div class="kprl-card-subtext"/>
+                        </div>
+                        <div class="kprl-kpi-card kprl-border-orange">
+                            <div class="kprl-card-title" title='Quarterly Incentive Plan for Management'>QIPM</div>
+                            <div class="kprl-card-value" id="kprl-kpi-aip">--</div>
+                            <div class="kprl-card-trend kprl-trend-neutral"/>
+                            <div class="kprl-card-subtext"/>
+                        </div>
+                    </section>
+
+                    <!-- Trend Analysis Section -->
+                    <section class="kprl-trend-section">
+                        <div class="kprl-trend-header">
+                            <span class="kprl-trend-title">Trend Analysis</span>
+                            <div class="kprl-trend-filters">
+                                <span class="kprl-trend-filter-label">Metric:</span>
+                                <select id="kprl-trend-metric" class="kprl-trend-select">
+                                    <option value="effective_pool">Effective Pool</option>
+                                    <option value="total_payout">Total Payout</option>
+                                    <option value="company_kpi_score">Company KPI Score</option>
+                                    <option value="ebitda_margin">EBITDA Margin</option>
+                                    <option value="quarterly_revenue">Quarterly Revenue</option>
+                                    <option value="headcount">Headcount</option>
+                                </select>
+                                <span class="kprl-trend-filter-label">Chart:</span>
+                                <select id="kprl-trend-chart-type" class="kprl-trend-select">
+                                    <option value="bar">Bar</option>
+                                    <option value="line">Line</option>
+                                </select>
+                                <span class="kprl-trend-filter-label">View:</span>
+                                <t t-foreach="periods" t-as="p">
+                                    <label class="kprl-trend-check-label" style="font-size:12px;color:#495057;display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+                                        <input type="checkbox" class="kprl-trend-period-cb" t-att-value="p['id']" checked="checked"/>
+                                        <t t-esc="p['name']"/>
+                                    </label>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="kprl-chart-wrapper">
+                            <canvas id="kprl-trend-chart"/>
+                        </div>
+                    </section>
+
+                    <section class="kprl-table-section">
+                        <h3 class="kprl-section-heading">Department Performance Breakdown</h3>
+                        <div class="kprl-table-responsive">
+                            <table class="kprl-data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Department</th>
+                                        <th>KPI Score</th>
+                                        <th>Multiplier</th>
+                                        <th>Headcount</th>
+                                        <th>Net Payout ($)</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kprl-table-body"/>
+                            </table>
+                        </div>
+                    </section>
+
+                        <footer class="kprl-sla-footer">
+                        <div class="kprl-sla-content">
+                            <i class="fa fa-clock-o kprl-sla-icon"></i>
+                            <span><strong>Period Close SLA:</strong> Results published by <t t-esc="period.sla_results_date or '--'"/></span>
+                            <span class="kprl-sla-divider">|</span>
+                            <span><strong>Target payout:</strong> <t t-esc="period.sla_payout_date or '--'"/></span>
+                            <span class="kprl-sla-divider">|</span>
+                            <span><strong>Status:</strong> <span t-attf-class="#{period.sla_status == 'ON TRACK' and 'kprl-text-success' or period.sla_status == 'OVERDUE' and 'kprl-text-danger' or ''}" t-esc="period.sla_status or '--'"/></span>
+                        </div>
+                    </footer>
+                </main>
+            </div>
+
+            <div id="kprl-computation-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;">
+                <div style="background:#fff;border-radius:12px;padding:40px;text-align:center;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+                    <div style="font-size:48px;color:#6a3d6a;margin-bottom:20px;"><i class="fa fa-spinner fa-spin"></i></div>
+                    <div style="font-size:18px;font-weight:700;color:#333;margin-bottom:8px;">Running Computation</div>
+                    <div id="kprl-comp-text" style="font-size:13px;color:#6c757d;">Calculating bonus pool allocation...</div>
+                    <div style="width:100%;height:6px;background:#e9ecef;border-radius:3px;margin:20px 0;overflow:hidden;">
+                        <div id="kprl-progress-fill" style="height:100%;width:0%;background:#6a3d6a;border-radius:3px;transition:width .3s;"/>
+                    </div>
+                </div>
+            </div>
+
+            <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
+            <script type="text/javascript" src="/kprl_bonus/static/js/dashboard.js"/>
+        </t>
+    </template>
+
+    <template id="employee_page" name="KPRL Employee Detail">
+        <t t-call="web.html_container">
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <title>KPRL Bonus System - Employee</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+            <link rel="stylesheet" href="/kprl_bonus/static/css/employee.css"/>
+            <meta name="csrf-token" t-att-content="request.csrf_token()"/>
+
+            <header class="kprl-header">
+                <div class="kprl-brand-group">
+                    <div class="kprl-grid-icon"><i class="fa fa-th"></i></div>
+                    <span class="kprl-nav-breadcrumbs">
+                        <span class="kprl-muted">KPRL Bonus System</span>
+                        <i class="fa fa-angle-right kprl-crumb-sep"></i>
+                        Employees / <t t-esc="employee.staff_id"/> — <t t-esc="employee.name"/>
+                    </span>
+                </div>
+                    <div class="kprl-user-actions">
+                    <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
+                    <button class="kprl-icon-btn"><i class="fa fa-question-circle-o"></i></button>
+                    <div class="kprl-role-badge" t-esc="request.env.user.name"/>
+                    <a href="/web/session/logout" class="kprl-icon-btn" title="Logout">
+                       Logout <i class="fa fa-sign-out"></i>
+                    </a>
+                </div>
+            </header>
+
+            <nav class="kprl-sub-nav">
+                <div class="kprl-tabs" id="kprl-emp-tabs">
+                    <button class="kprl-tab-item kprl-active-tab" data-tab="profile">Profile</button>
+                    <button class="kprl-tab-item" data-tab="grade-pool">Grade &amp; Pool</button>
+                    <button class="kprl-tab-item" data-tab="appraisal">Appraisal</button>
+                    <button class="kprl-tab-item" data-tab="deferred">Deferred Balance</button>
+                    <button class="kprl-tab-item" data-tab="history">History</button>
+                </div>
+            </nav>
+
+            <section class="kprl-action-bar">
+                <div class="kprl-left-actions">
+                    <button class="kprl-btn kprl-btn-primary"><i class="fa fa-pencil"></i> Edit</button>
+                    <button class="kprl-btn kprl-btn-secondary">Archive</button>
+                </div>
+                <div class="kprl-status-filters">
+                    <button class="kprl-filter-item">Draft</button>
+                    <button class="kprl-filter-item kprl-active-filter">Active</button>
+                    <button class="kprl-filter-item">On Leave</button>
+                    <button class="kprl-filter-item">Inactive</button>
+                </div>
+                <div class="kprl-right-actions">
+                    <a class="kprl-btn kprl-btn-primary" t-attf-href="/kprl/simulate/{{employee.id}}"><i class="fa fa-calculator"></i> Simulate Payout</a>
+                    <a class="kprl-btn kprl-btn-outline" href="/kprl/employees">Back to List</a>
+                </div>
+            </section>
+
+            <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-profile">
+                <div class="kprl-card kprl-profile-card">
+
+                    <div class="kprl-profile-header">
+                        <div class="kprl-avatar-wrapper">
+                            <div class="kprl-avatar" t-esc="(employee.name or '??').split(' ')[0][0] + (employee.name or '??').split(' ')[-1][0]"/>
+                        </div>
+                        <h2 class="kprl-employee-name" t-esc="employee.name"/>
+                        <div class="kprl-employee-code" t-esc="employee.staff_id"/>
+                        <div class="kprl-badge-row">
+                            <t t-if="employee.status and employee.status.lower() == 'active'">
+                                <span class="kprl-status-pill kprl-pill-active" t-esc="employee.status.upper()"/>
+                            </t>
+                            <t t-if="not employee.status or employee.status.lower() != 'active'">
+                                <span class="kprl-status-pill kprl-pill-inactive" t-esc="employee.status.upper()"/>
+                            </t>
+                            <t t-if="employee.is_sales">
+                                <span class="kprl-status-pill kprl-pill-track">SALES TRACK</span>
+                            </t>
+                            <t t-if="not employee.is_sales">
+                                <span class="kprl-status-pill kprl-pill-track">OPS TRACK</span>
+                            </t>
+                        </div>
+                    </div>
+
+                    <div class="kprl-profile-body">
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="4" width="18" height="16" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                    <circle cx="9" cy="10.5" r="1.8" stroke="#62325E" stroke-width="1.4"/>
+                                    <path d="M6 16c.6-1.8 2-2.7 3-2.7s2.4.9 3 2.7" stroke="#62325E" stroke-width="1.4" stroke-linecap="round"/>
+                                    <path d="M14 9h4M14 12h4" stroke="#62325E" stroke-width="1.4" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Employee ID</label>
+                                <div class="kprl-info-value" t-esc="employee.staff_id"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 21V6l7-3 7 3v15" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                    <path d="M9 21v-5h6v5" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                    <path d="M9 10h.01M12 10h.01M15 10h.01M9 13h.01M12 13h.01M15 13h.01" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Department</label>
+                                <div class="kprl-info-value" t-esc="employee.department_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="8" width="18" height="12" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M3 13h18" stroke="#62325E" stroke-width="1.6"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Job Title</label>
+                                <div class="kprl-info-value" t-esc="employee.job_title or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3 6.5 7 .9-5.1 4.8 1.3 6.9L12 17.8 5.8 21.1l1.3-6.9L2 9.4l7-.9L12 2z" stroke="#62325E" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Grade</label>
+                                <div class="kprl-info-value" t-esc="employee.grade_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="5" width="18" height="16" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M3 10h18" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M8 3v4M16 3v4" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Date Hired</label>
+                                <div class="kprl-info-value" t-esc="employee.employment_date or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="9" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M12 7v5l3.5 2" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Tenure (yrs)</label>
+                                <div class="kprl-info-value" t-esc="employee.tenure_years"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row kprl-info-row-last">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="8" r="3.2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M5 20c1-4 4-6 7-6s6 2 7 6" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Reporting Manager</label>
+                                <div class="kprl-info-value" t-esc="employee.manager_id.name or ''"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="kprl-card kprl-contact-card">
+                    <h3 class="kprl-card-title">Contact &amp; Communication</h3>
+                    <div class="kprl-contact-row">
+                        <span class="kprl-contact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="4" width="18" height="16" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                <path d="M4 6l8 6 8-6" stroke="#62325E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <div class="kprl-contact-text">
+                            <label class="kprl-info-label">Work Email</label>
+                            <a t-attf-href="mailto:{{employee.work_email or ''}}" class="kprl-contact-link" t-esc="employee.work_email or '—'"/>
+                        </div>
+                    </div>
+                    <div class="kprl-contact-row">
+                        <span class="kprl-contact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.9 19.9 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7c.3 1.4.8 2.7 1.5 3.9a2 2 0 0 1-.5 2.2l-1.2 1.2a16 16 0 0 0 6.3 6.3l1.2-1.2a2 2 0 0 1 2.2-.5c1.2.7 2.6 1.2 4 1.5a2 2 0 0 1 1.7 2z" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <div class="kprl-contact-text">
+                            <label class="kprl-info-label">Mobile Phone</label>
+                            <a t-attf-href="tel:{{employee.mobile_phone or ''}}" class="kprl-contact-link" t-esc="employee.mobile_phone or '—'"/>
+                        </div>
+                    </div>
+                    <div class="kprl-contact-row">
+                        <span class="kprl-contact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                <circle cx="12" cy="10" r="3" stroke="#62325E" stroke-width="1.6"/>
+                            </svg>
+                        </span>
+                        <div class="kprl-contact-text">
+                            <label class="kprl-info-label">Territory</label>
+                            <span class="kprl-contact-value" t-esc="employee.territory_id.name or '—'"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kprl-card kprl-stats-card">
+                    <h3 class="kprl-card-title">Quick Stats</h3>
+                    <div class="kprl-stats-grid">
+                        <div class="kprl-stat-item">
+                            <span class="kprl-stat-icon kprl-stat-tenure">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.8"/>
+                                    <path d="M12 7v5l3.5 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <span class="kprl-stat-value" t-esc="employee.tenure_years"/>
+                            <span class="kprl-stat-label">Years Tenure</span>
+                        </div>
+                        <div class="kprl-stat-item">
+                            <span class="kprl-stat-icon kprl-stat-grade">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3 6.5 7 .9-5.1 4.8 1.3 6.9L12 17.8 5.8 21.1l1.3-6.9L2 9.4l7-.9L12 2z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <span class="kprl-stat-value" t-esc="employee.grade_id.code or '—'"/>
+                            <span class="kprl-stat-label">Grade Level</span>
+                        </div>
+                        <div class="kprl-stat-item">
+                            <span class="kprl-stat-icon kprl-stat-pool">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="3" width="7" height="7" rx="1" stroke="#fff" stroke-width="1.8"/>
+                                    <rect x="14" y="3" width="7" height="7" rx="1" stroke="#fff" stroke-width="1.8"/>
+                                    <rect x="3" y="14" width="7" height="7" rx="1" stroke="#fff" stroke-width="1.8"/>
+                                    <rect x="14" y="14" width="7" height="7" rx="1" stroke="#fff" stroke-width="1.8"/>
+                                </svg>
+                            </span>
+                            <span class="kprl-stat-value" t-esc="employee.subpool_id.name or '—'"/>
+                            <span class="kprl-stat-label">Sub-Pool</span>
+                        </div>
+                        <div class="kprl-stat-item">
+                            <span class="kprl-stat-icon kprl-stat-role">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                    <circle cx="9" cy="7" r="4" stroke="#fff" stroke-width="1.8"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.9" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                    <path d="M16 3.1a4 4 0 0 1 0 7.8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <span class="kprl-stat-value" t-esc="employee.sales_role and employee.sales_role.replace('_',' ').title() or '—'"/>
+                            <span class="kprl-stat-label">Sales Role</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-grade-pool" style="display:none;">
+                      <div class="kprl-card kprl-profile-card">
+
+                    <div class="kprl-profile-header">
+                       <div class="kprl-avatar-wrapper">
+                         <div class="kprl-avatar" t-esc="(employee.name or '??').split(' ')[0][0] + (employee.name or '??').split(' ')[-1][0]"/>
+                        </div>
+                    
+                    <h2 class="kprl-employee-name" t-esc="employee.name"/>
+                    <div class="kprl-employee-code" t-esc="employee.staff_id"/>
+                    <div class="kprl-badge-row">
+                        <t t-if="employee.status and employee.status.lower() == 'active'">
+                            <span class="kprl-status-pill kprl-pill-active" t-esc="employee.status.upper()"/>
+                        </t>
+                        <t t-if="not employee.status or employee.status.lower() != 'active'">
+                            <span class="kprl-status-pill kprl-pill-inactive" t-esc="employee.status.upper()"/>
+                        </t>
+                        <t t-if="employee.is_sales">
+                            <span class="kprl-status-pill kprl-pill-track">SALES TRACK</span>
+                        </t>
+                        <t t-if="not employee.is_sales">
+                            <span class="kprl-status-pill kprl-pill-track">OPS TRACK</span>
+                        </t>
+                    </div>
+                   </div>
+                    <div class="kprl-profile-body">
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 21V6l7-3 7 3v15" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                    <path d="M9 21v-5h6v5" stroke="#62325E" stroke-width="1.6" stroke-linejoin="round"/>
+                                    <path d="M9 10h.01M12 10h.01M15 10h.01M9 13h.01M12 13h.01M15 13h.01" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Department</label>
+                                <div class="kprl-info-value" t-esc="employee.department_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="3" y="8" width="18" height="12" rx="2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M3 13h18" stroke="#62325E" stroke-width="1.6"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Job Title</label>
+                                <div class="kprl-info-value" t-esc="employee.job_title or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2l3 6.5 7 .9-5.1 4.8 1.3 6.9L12 17.8 5.8 21.1l1.3-6.9L2 9.4l7-.9L12 2z" stroke="#62325E" stroke-width="1.5" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Grade</label>
+                                <div class="kprl-info-value" t-esc="employee.grade_id.name or ''"/>
+                            </div>
+                        </div>
+
+                        <div class="kprl-info-row kprl-info-row-last">
+                            <span class="kprl-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="9" stroke="#62325E" stroke-width="1.6"/>
+                                    <path d="M12 7v5l3.5 2" stroke="#62325E" stroke-width="1.6" stroke-linecap="round"/>
+                                </svg>
+                            </span>
+                            <div class="kprl-info-text">
+                                <label class="kprl-info-label">Tenure (yrs)</label>
+                                <div class="kprl-info-value" t-esc="employee.tenure_years"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="kprl-card kprl-grade-comp-card">
+                    <div class="kprl-card-title-row">
+                        <span class="kprl-card-title-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 3l9 5-9 5-9-5 9-5z" stroke="#C9B6FF" stroke-width="1.6" stroke-linejoin="round"/>
+                                <path d="M3 13l9 5 9-5" stroke="#C9B6FF" stroke-width="1.6" stroke-linejoin="round"/>
+                                <path d="M3 17.5l9 5 9-5" stroke="#C9B6FF" stroke-width="1.6" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <h3 class="kprl-card-title">Grade &amp; Compensation Parameters</h3>
+                    </div>
+                    <div class="kprl-table-row">
+                        <span class="kprl-table-label">Grade Code</span>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.code or ''"/>
+                    </div>
+                    <div class="kprl-table-row">
+                        <span class="kprl-table-label">Sub-Pool</span>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.subpool_id.name or ''"/>
+                    </div>
+                    <div class="kprl-table-row">
+                        <span class="kprl-table-label">Base Grade Points</span>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.yp_points or 0"/>
+                    </div>
+                    <div class="kprl-table-row">
+                        <span class="kprl-table-label">Skill Premium (pts)</span>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.skill_premium_pts or 0"/>
+                    </div>
+                    <div class="kprl-table-row kprl-highlight-row">
+                        <span class="kprl-table-label">Total Points</span>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.total_points or 0"/>
+                    </div>
+                    <div class="kprl-table-row">
+                        <span class="kprl-table-label">Deferral Rate</span>
+                        <span class="kprl-table-value-group">
+                            <span class="kprl-text-bold" t-esc="employee.grade_id.deferral_rate or 0"/>%
+                        </span>
+                    </div>
+                    <div class="kprl-table-row">
+                        <span class="kprl-table-label">AIP Eligible</span>
+                        <span class="kprl-table-value-group">
+                            <span class="kprl-text-bold" t-esc="employee.grade_id.aip_eligible and 'Yes' or 'No'"/>
+                        </span>
+                    </div>
+                    <div class="kprl-table-row">
+                        <span class="kprl-table-label">Sales Role</span>
+                        <span class="kprl-table-value-group">
+                            <span class="kprl-text-bold" t-esc="employee.is_sales and (dict(employee._fields['sales_role'].selection).get(employee.sales_role) or employee.sales_role) or 'None'"/>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="kprl-card kprl-payout-card">
+                    <div class="kprl-card-title-row">
+                        <span class="kprl-card-title-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" stroke="#C9B6FF" stroke-width="1.6" stroke-linejoin="round"/>
+                                <path d="M9 8h6M9 12h6M9 16h3" stroke="#C9B6FF" stroke-width="1.6" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <h3 class="kprl-card-title">Payout Summary</h3>
+                    </div>
+                    <div id="kprl-payout-content">
+                        <div class="kprl-table-row"><span class="kprl-table-label">Loading payout data...</span></div>
+                    </div>
+                </div>
+            </main>
+
+            <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-appraisal" style="display:none;">
+                <div class="kprl-card kprl-metrics-card" style="grid-column:1/-1;">
+                    <h3 class="kprl-metrics-title">Appraisal &amp; Behavioural Scores</h3>
+                    <div class="kprl-progress-grid">
+                        <div class="kprl-progress-container">
+                            <div class="kprl-progress-labels">
+                                <span class="kprl-progress-title">Performance Appraisal Score</span>
+                                <span class="kprl-progress-score" id="kprl-appraisal-score">--</span>
+                            </div>
+                            <div class="kprl-progress-bar-bg">
+                                <div class="kprl-progress-bar-fill" id="kprl-appraisal-bar" style="width:0%;"></div>
+                            </div>
+                        </div>
+                        <div class="kprl-progress-container">
+                            <div class="kprl-progress-labels">
+                                <span class="kprl-progress-title">Behavioural Score (Manager)</span>
+                                <span class="kprl-progress-score" id="kprl-behavioural-score">--</span>
+                            </div>
+                            <div class="kprl-progress-bar-bg">
+                                <div class="kprl-progress-bar-fill" id="kprl-behavioural-bar" style="width:0%;"></div>
+                            </div>
+                        </div>
+                        <div class="kprl-progress-container">
+                            <div class="kprl-progress-labels">
+                                <span class="kprl-progress-title">Dept KPI Score</span>
+                                <span class="kprl-progress-score" id="kprl-dept-kpi">--</span>
+                            </div>
+                            <div class="kprl-progress-bar-bg">
+                                <div class="kprl-progress-bar-fill" id="kprl-dept-kpi-bar" style="width:0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-deferred" style="display:none;">
+                <div class="kprl-card" style="grid-column:1/-1;">
+                    <h3 class="kprl-card-title">Deferred Balance Ledger</h3>
+                    <div id="kprl-deferred-content">
+                        <div class="kprl-table-row"><span class="kprl-table-label">Loading deferred entries...</span></div>
+                    </div>
+                </div>
+            </main>
+
+            <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-history" style="display:none;">
+                <div class="kprl-card" style="grid-column:1/-1;">
+                    <h3 class="kprl-card-title">Payout History</h3>
+                    <div id="kprl-history-content">
+                        <p style="color:#7A8296;font-size:13px;">Loading history...</p>
+                    </div>
+                </div>
+            </main>
+
+            <script type="text/javascript">
+                window.KPRL_EMPLOYEE_ID = <t t-esc="employee.id"/>;
+            </script>
+            <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
+            <script type="text/javascript" src="/kprl_bonus/static/js/employee.js"/>
+        </t>
+    </template>
+
+    <template id="employee_list_page" name="KPRL Employee List">
+        <t t-call="web.html_container">
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <title>KPRL Bonus - Employees</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+            <link rel="stylesheet" href="/kprl_bonus/static/css/employee.css"/>
+            <meta name="csrf-token" t-att-content="request.csrf_token()"/>
+
+            <header class="kprl-header">
+                <div class="kprl-brand-group">
+                    <div class="kprl-grid-icon"><i class="fa fa-th"></i></div>
+                    <span class="kprl-nav-breadcrumbs">
+                        <span class="kprl-muted">KPRL Bonus System</span>
+                        <i class="fa fa-angle-right kprl-crumb-sep"></i>
+                        All Employees
+                    </span>
+                </div>
+                <div class="kprl-user-actions">
+                    <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
+                    <button class="kprl-icon-btn"><i class="fa fa-question-circle-o"></i></button>
+                    <div class="kprl-role-badge" t-esc="request.env.user.name"/>
+                </div>
+            </header>
+
+            <main style="padding:24px;max-width:1200px;margin:0 auto;">
+                <h2 style="font-size:22px;font-weight:700;color:#2D3142;margin-bottom:16px;">Employee Register</h2>
+                <div style="background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);overflow:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                        <thead>
+                            <tr style="background:#f4f6f9;">
+                                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#6a3d6a;">ID</th>
+                                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#6a3d6a;">Name</th>
+                                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#6a3d6a;">Department</th>
+                                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#6a3d6a;">Grade</th>
+                                <th style="padding:12px 16px;text-align:left;font-weight:600;color:#6a3d6a;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="employees" t-as="emp">
+                                <tr style="border-bottom:1px solid #eef1f5;">
+                                    <td style="padding:12px 16px;font-weight:500;" t-esc="emp.employee_id"/>
+                                    <td style="padding:12px 16px;">
+                                        <a t-attf-href="/kprl/employee/{{emp.id}}" style="color:#6a3d6a;text-decoration:none;font-weight:500;">
+                                            <t t-esc="emp.name"/>
+                                        </a>
+                                    </td>
+                                    <td style="padding:12px 16px;color:#5a5a5a;" t-esc="emp.department_id.name or ''"/>
+                                    <td style="padding:12px 16px;color:#5a5a5a;" t-esc="emp.grade_id.name or 'N/A'"/>
+                                    <td style="padding:12px 16px;">
+                                        <span t-attf-class="kprl-status-pill #{emp.status == 'active' and 'kprl-pill-green' or 'kprl-pill-gray'}" t-esc="emp.status.upper()"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+
+            <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
+            <script type="text/javascript" src="/kprl_bonus/static/js/employee.js"/>
+        </t>
+    </template>
+
+    <template id="config_page" name="KPRL Config">
+        <t t-call="web.html_container">
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <title>KPRL Bonus System - Parameters / Config</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+            <link rel="stylesheet" href="/kprl_bonus/static/css/config.css"/>
+            <meta name="csrf-token" t-att-content="request.csrf_token()"/>
+
+            <div class="kprl-config-wrapper">
+                <aside class="kprl-side-strip">
+                    <div class="kprl-menu-trigger">
+                        <i class="fa fa-th-large kprl-brand-logo"></i>
+                    </div>
+                </aside>
+                <main class="kprl-main-pane">
+                    <header class="kprl-top-nav">
+                        <div class="kprl-path-crumb">
+                            <span class="kprl-txt-muted">KPRL Bonus System</span>
+                            <i class="fa fa-angle-right kprl-sep-icon"></i>
+                            <span class="kprl-txt-bold">Parameters / <span id="kprl-param-period-name">Config</span></span>
+                        </div>
+                        <div class="kprl-meta-actions">
+                            <button class="kprl-ghost-icon"><i class="fa fa-bell-o"></i></button>
+                            <button class="kprl-ghost-icon"><i class="fa fa-question-circle-o"></i></button>
+                            <div class="kprl-role-tag" t-esc="request.env.user.name"/>
+                        </div>
+                    </header>
+
+                    <nav class="kprl-sub-tabs" id="kprl-config-tabs">
+                        <button class="kprl-sub-tab kprl-sub-tab-active" data-tab="pool-rates">Pool Rates</button>
+                        <button class="kprl-sub-tab" data-tab="ebitda-gates">EBITDA Gates</button>
+                        <button class="kprl-sub-tab" data-tab="kpi-weights">KPI Weights</button>
+                        <button class="kprl-sub-tab" data-tab="commission-rates">Commission Rates</button>
+                        <button class="kprl-sub-tab" data-tab="deferral-rules">Deferral Rules</button>
+                        <button class="kprl-sub-tab" data-tab="floors-caps">Floors &amp; Caps</button>
+                    </nav>
+
+                    <section class="kprl-action-ribbon">
+                        <div class="kprl-ribbon-left">
+                            <button class="kprl-btn-save" id="kprl-save-btn">Save</button>
+                            <button class="kprl-btn-outline" id="kprl-request-approval-btn">Request Approval</button>
+                            <button class="kprl-btn-link">Discard</button>
+                        </div>
+                        <div class="kprl-ribbon-right">
+                            <button class="kprl-btn-utility">Audit Log</button>
+                            <button class="kprl-btn-utility">History</button>
+                        </div>
+                    </section>
+
+                    <div class="kprl-grid-layout">
+                        <section class="kprl-config-card">
+                            <h3 class="kprl-card-heading">Pool Rate Parameters <span id="kprl-param-period-label"/></h3>
+                            <div class="kprl-form-container" id="kprl-pool-rates-form"/>
+                            <div class="kprl-status-alert-box" id="kprl-validation-msg" style="display:none">
+                                <i class="fa fa-check-circle-o kprl-alert-icon"></i>
+                                <span id="kprl-validation-text">Configuration valid</span>
+                            </div>
+                        </section>
+
+                        <div class="kprl-right-vertical-stack">
+                            <section class="kprl-config-card">
+                                <h3 class="kprl-card-heading">Company KPI Weight Configuration</h3>
+                                <div class="kprl-form-container" id="kprl-kpi-weights-form"/>
+                            </section>
+
+                            <section class="kprl-config-card">
+                                <h3 class="kprl-card-heading-dark">Approval &amp; Change Control</h3>
+                                <div id="kprl-approval-timeline">
+                                    <p style="color:#7A8296;font-size:13px;">Loading approval history...</p>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
+            <script type="text/javascript" src="/kprl_bonus/static/js/config.js"/>
+        </t>
+    </template>
+
+        <!-- Bonus Simulation Page -->
+    <template id="simulation_page" name="KPRL Bonus Simulation">
+        <t t-call="web.html_container">
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+            <title>KPRL Bonus System - Simulation</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+            <link rel="stylesheet" href="/kprl_bonus/static/css/simulation.css"/>
+            <meta name="csrf-token" t-att-content="request.csrf_token()"/>
+
+            <div class="kprl-sim-wrapper">
+                <main class="kprl-main-content">
+                    <header class="kprl-header">
+                        <div class="kprl-brand-group">
+                            <div class="kprl-grid-icon"><i class="fa fa-th"></i></div>
+                            <span class="kprl-nav-breadcrumbs">
+                                <span class="kprl-muted">KPRL Bonus System</span>
+                                <i class="fa fa-angle-right kprl-crumb-sep"></i>
+                                Bonus Simulation
+                            </span>
+                        </div>
+                        <div class="kprl-user-actions">
+                            <button class="kprl-icon-btn"><i class="fa fa-bell-o"></i></button>
+                            <button class="kprl-icon-btn"><i class="fa fa-question-circle-o"></i></button>
+                            <div class="kprl-role-badge" t-esc="request.env.user.name"/>
+                        </div>
+                    </header>
+
+                    <t t-if='can_switch'>
+                        <section class='kprl-action-bar'>
+                            <div class='kprl-left-actions'>
+                               <label class='kprl-input-label' for='kprl-sim-employee-switch'>Simulate as (HR)</label>
+                                <select id='kprl-sim-employee-switch' class='kprl-info-value-input' onchange='if(this.value) window.location.href="/kprl/simulate/"+this.value;'>
+                                   <t t-foreach='switch_employees' t-as='se'>
+                                       <t t-if="se['id'] == employee.id">
+                                          <option t-att-value="se['id']" selected='selected'><t t-esc="se['name']"/> (<t t-esc="se['staff_id']"/>)</option>
+                                       </t>
+                                       <t t-if="se['id'] != employee.id">
+                                          <option t-att-value="se['id']"><t t-esc="se['name']"/> (<t t-esc="se['staff_id']"/>)</option>
+                                       </t>
+                                   </t>
+                                   </select>
+                            </div>
+                            <div class='kprl-right-actions'>
+                               <span class='kprl-table-label'>Viewing <t t-esc='employee.name'/> <t t-if='not is_own'>(HR preview)</t></span>
+                       </div>
+                   </section>
+                   </t>
+                   <t t-if='not can_switch'>
+                       <section class='kprl-action-bar'>
+                           <span class='kprl-table-label'>Your personal simulation. Figures are estimates only</span>
+                       </section>
+                   </t>
+                    <nav class="kprl-sub-nav">
+                        <div class="kprl-tabs" id="kprl-sim-tabs">
+                            <button class="kprl-tab-item kprl-active-tab" data-tab="simulator">Ops Simulator</button>
+                            <button class="kprl-tab-item" data-tab="sales" id="kprl-tab-sales-btn" style="display:none;">Sales Simulator</button>
+                            <button class="kprl-tab-item" data-tab="what-if">What-If Analysis</button>
+                        </div>
+                    </nav>
+
+                    <section class="kprl-action-bar">
+                        <div class="kprl-left-actions">
+                            <button class="kprl-btn kprl-btn-primary" id="kprl-sim-calculate"><i class="fa fa-calculator"></i> Calculate</button>
+                            <button class="kprl-btn kprl-btn-outline" id="kprl-sim-reset"><i class="fa fa-undo"></i> Reset</button>
+                        </div>
+                        <div class="kprl-quarter-filters" id="kprl-quarter-filters">
+                            <button class="kprl-filter-item" data-quarter="Q1">Q1</button>
+                            <button class="kprl-filter-item kprl-active-filter" data-quarter="Q2">Q2</button>
+                            <button class="kprl-filter-item" data-quarter="Q3">Q3</button>
+                            <button class="kprl-filter-item" data-quarter="Q4">Q4</button>
+                        </div>
+                        <div class="kprl-right-actions">
+                            <a class="kprl-btn kprl-btn-outline" t-attf-href="/kprl/employee/{{employee.id}}">Back to Profile</a>
+                        </div>
+                    </section>
+
+                    <!-- Simulator Tab -->
+                    <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-simulator">
+                        <div class="kprl-card kprl-profile-card">
+                            <div class="kprl-avatar-wrapper">
+                                <div class="kprl-avatar" t-esc="(employee.name or '??').split(' ')[0][0] + (employee.name or '??').split(' ')[-1][0]"/>
+                            </div>
+                            <h2 class="kprl-employee-name" t-esc="employee.name"/>
+                            <div class="kprl-employee-code" t-esc="employee.staff_id"/>
+                            <div class="kprl-badge-row">
+                                <span class="kprl-status-pill kprl-pill-green" t-esc="employee.status.upper()"/>
+                            </div>
+                            <hr class="kprl-divider"/>
+                            <div class="kprl-info-group">
+                                <label class="kprl-info-label">Department</label>
+                                <input type="text" class="kprl-info-value-input" t-att-value="employee.department_id.name or ''" readonly="readonly"/>
+                            </div>
+                            <div class="kprl-info-group">
+                                <label class="kprl-info-label">Grade</label>
+                                <input type="text" class="kprl-info-value-input" t-att-value="employee.grade_id.name or ''" readonly="readonly"/>
+                            </div>
+                            <div class="kprl-info-group">
+                                <label class="kprl-info-label">Sub-Pool</label>
+                                <input type="text" class="kprl-info-value-input" t-att-value="employee.subpool_id.name or ''" readonly="readonly"/>
+                            </div>
+                            <div class="kprl-info-group">
+                                <label class="kprl-info-label">Tenure (yrs)</label>
+                                <input type="text" class="kprl-info-value-input" t-att-value="employee.tenure_years" readonly="readonly"/>
+                            </div>
+                        </div>
+
+                        <!-- Simulation Inputs Card -->
+                        <div class="kprl-card kprl-param-card">
+                            <h3 class="kprl-card-title">Performance Inputs <span class="kprl-quarter-badge" id="kprl-sim-quarter">Q2-2026</span></h3>
+                            <div class="kprl-form-group">
+                                <label class="kprl-input-label">Base Eligible (₦)</label>
+                                <div class="kprl-input-row">
+                                    <input type="number" class="kprl-sim-input" id="kprl-sim-base" value="117800" step="1000"/>
+                                    <span class="kprl-input-note">From grade &amp; role</span>
+                                </div>
+                            </div>
+                            <div class="kprl-form-group">
+                                <label class="kprl-input-label">Appraisal Score (0-100)</label>
+                                <div class="kprl-input-row">
+                                    <input type="number" class="kprl-sim-input" id="kprl-sim-appraisal" value="82" min="0" max="100"/>
+                                    <span class="kprl-input-note">Manager rating</span>
+                                </div>
+                            </div>
+                            <div class="kprl-form-group">
+                                <label class="kprl-input-label">Behavioural Score (0-25)</label>
+                                <div class="kprl-input-row">
+                                    <input type="number" class="kprl-sim-input" id="kprl-sim-behavioural" value="20" min="0" max="25"/>
+                                    <span class="kprl-input-note">Manager rating</span>
+                                </div>
+                            </div>
+                            <div class="kprl-form-group">
+                                <label class="kprl-input-label">Dept KPI Score (0.00-1.00)</label>
+                                <div class="kprl-input-row">
+                                    <input type="number" class="kprl-sim-input" id="kprl-sim-dept-kpi" value="0.95" min="0" max="1.5" step="0.01"/>
+                                    <span class="kprl-input-note">Department performance</span>
+                                </div>
+                            </div>
+                            <div class="kprl-form-group">
+                                <label class="kprl-input-label">Exception Premium (₦)</label>
+                                <div class="kprl-input-row">
+                                    <input type="number" class="kprl-sim-input" id="kprl-sim-exception" value="0" step="1000"/>
+                                    <span class="kprl-input-note">Special award</span>
+                                </div>
+                            </div>
+                            <div class="kprl-form-group">
+                                <label class="kprl-input-label">Malus (₦)</label>
+                                <div class="kprl-input-row">
+                                    <input type="number" class="kprl-sim-input" id="kprl-sim-malus" value="0" step="1000"/>
+                                    <span class="kprl-input-note">Clawback amount</span>
+                                </div>
+                            </div>
+
+                            <div class="kprl-sim-read-only">
+                                <h4 class="kprl-read-only-title">Fixed Parameters (from system)</h4>
+                                <div class="kprl-table-row">
+                                    <span class="kprl-table-label">Proration Factor</span>
+                                    <span class="kprl-table-value" id="kprl-sim-proration">×1.00</span>
+                                </div>
+                                <div class="kprl-table-row">
+                                    <span class="kprl-table-label">Tenure Multiplier</span>
+                                    <span class="kprl-table-value" id="kprl-sim-tenure">×1.06</span>
+                                </div>
+                                <div class="kprl-table-row">
+                                    <span class="kprl-table-label">GMP Factor</span>
+                                    <span class="kprl-table-value" id="kprl-sim-gmp">×1.00</span>
+                                </div>
+                                <div class="kprl-table-row">
+                                    <span class="kprl-table-label">Deferral Rate</span>
+                                    <span class="kprl-table-value" id="kprl-sim-deferral">20%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Simulation Result Card -->
+                        <div class="kprl-card kprl-result-card">
+                            <h3 class="kprl-card-title">Projected Bonus</h3>
+
+                            <div class="kprl-result-breakdown">
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">Base Eligible</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-base">₦117,800</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">× Appraisal Mult</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-appraisal-mult">×0.95</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">× Behavioural Mult</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-behavioural-mult">×1.00</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">× Dept KPI Mult</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-dept-mult">×0.95</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">× Proration</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-proration">×1.00</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">× Tenure Mult</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-tenure">×1.06</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">× GMP Factor</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-gmp">×1.00</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">+ Exception Premium</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-exception">₦0</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">− Malus</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-malus">₦0</span>
+                                </div>
+                                <div class="kprl-breakdown-divider"></div>
+                                <div class="kprl-breakdown-item kprl-breakdown-total">
+                                    <span class="kprl-breakdown-label">Gross Payable</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-gross">₦131,540</span>
+                                </div>
+                                <div class="kprl-breakdown-item">
+                                    <span class="kprl-breakdown-label">Deferred (20%)</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-deferred">₦26,308</span>
+                                </div>
+                                <div class="kprl-breakdown-item kprl-breakdown-net">
+                                    <span class="kprl-breakdown-label">BONUS AFTER DEFERRAL</span>
+                                    <span class="kprl-breakdown-value" id="kprl-out-net">₦105,232</span>
+                                </div>
+                            </div>
+
+                            <div class="kprl-sim-status-box" id="kprl-sim-status">
+                                <i class="fa fa-check-circle-o kprl-alert-icon"></i>
+                                <span id="kprl-sim-status-text">Floor check: PASS (&gt; ₦30,000)</span>
+                            </div>
+                        </div>
+                    </main>
+
+                    <!-- Sales Simulation Tab (for sales track) -->
+                    <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-sales" style="display:none;">
+                        <div class="kprl-card kprl-param-card">
+                            <h3 class="kprl-card-title">Sales Performance Inputs</h3>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Target (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-target" value="66000000" step="1000000"/><span class="kprl-input-note">Personal/territory target</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Sales (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-own" value="45814086" step="1000000"/><span class="kprl-input-note">Actual sales</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Retrievals (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-retr" value="33158079" step="1000000"/><span class="kprl-input-note">Actual retrievals</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Product Knowledge (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-pk" value="0.90" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1 scale</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Call Report (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-call" value="0.88" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Coverage (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-cov" value="0.97" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">New Customer (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-new" value="0.80" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-sim-read-only"><h4 class="kprl-read-only-title">Computed Gates &amp; Multipliers</h4><div class="kprl-table-row"><span class="kprl-table-label">Sales Attainment</span><span class="kprl-table-value" id="kprl-sales-attain">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Retr Rate</span><span class="kprl-table-value" id="kprl-sales-retr-rate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Sales Gate</span><span class="kprl-table-value" id="kprl-sales-gate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Retr Gate</span><span class="kprl-table-value" id="kprl-sales-retr-gate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">KPI Mult</span><span class="kprl-table-value" id="kprl-sales-kpi-mult">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Accel Factor</span><span class="kprl-table-value" id="kprl-sales-accel">-</span></div></div>
+                        </div>
+                        <div class="kprl-card kprl-result-card">
+                            <h3 class="kprl-card-title">Projected Sales Commission</h3>
+                            <div class="kprl-result-breakdown"><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Gross Commission</span><span class="kprl-breakdown-value" id="kprl-sales-gross">-</span></div><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Eligible (after gates)</span><span class="kprl-breakdown-value" id="kprl-sales-eligible">-</span></div><div class="kprl-breakdown-item kprl-breakdown-total"><span class="kprl-breakdown-label">Final Sales Payout</span><span class="kprl-breakdown-value" id="kprl-sales-final">-</span></div><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Cap Check</span><span class="kprl-breakdown-value" id="kprl-sales-cap-status">-</span></div></div>
+                        </div>
+                    </main>
+
+                    <!-- What-If Analysis Tab -->
+                    <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-what-if" style="display:none;">
+                        <div class="kprl-card" style="grid-column:1/-1;">
+                            <h3 class="kprl-card-title">What-If Scenario Comparison</h3>
+                            <p class="kprl-what-if-desc">Compare bonus outcomes across different performance scenarios. Adjust the sliders to see how changes in appraisal, KPI, and behavioural scores affect your bonus.</p>
+                            <div class="kprl-scenario-grid">
+                                <div class="kprl-scenario-col">
+                                    <h4 class="kprl-scenario-title">Worst Case</h4>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Appraisal Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-worst-appraisal" min="0" max="100" value="50"/>
+                                        <span class="kprl-range-value" id="kprl-worst-appraisal-val">50%</span>
+                                    </div>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Dept KPI Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-worst-kpi" min="0" max="150" value="70"/>
+                                        <span class="kprl-range-value" id="kprl-worst-kpi-val">0.70</span>
+                                    </div>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Behavioural Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-worst-behav" min="0" max="25" value="12"/>
+                                        <span class="kprl-range-value" id="kprl-worst-behav-val">12/25</span>
+                                    </div>
+                                    <div class="kprl-scenario-result">
+                                        <span class="kprl-scenario-label">Net Bonus</span>
+                                        <span class="kprl-scenario-amount" id="kprl-worst-result">₦0</span>
+                                    </div>
+                                </div>
+                                <div class="kprl-scenario-col kprl-scenario-current">
+                                    <h4 class="kprl-scenario-title">Current (Actual)</h4>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Appraisal Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-current-appraisal" min="0" max="100" value="82"/>
+                                        <span class="kprl-range-value" id="kprl-current-appraisal-val">82%</span>
+                                    </div>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Dept KPI Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-current-kpi" min="0" max="150" value="95"/>
+                                        <span class="kprl-range-value" id="kprl-current-kpi-val">0.95</span>
+                                    </div>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Behavioural Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-current-behav" min="0" max="25" value="20"/>
+                                        <span class="kprl-range-value" id="kprl-current-behav-val">20/25</span>
+                                    </div>
+                                    <div class="kprl-scenario-result">
+                                        <span class="kprl-scenario-label">Net Bonus</span>
+                                        <span class="kprl-scenario-amount" id="kprl-current-result">₦0</span>
+                                    </div>
+                                </div>
+                                <div class="kprl-scenario-col">
+                                    <h4 class="kprl-scenario-title">Best Case</h4>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Appraisal Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-best-appraisal" min="0" max="100" value="95"/>
+                                        <span class="kprl-range-value" id="kprl-best-appraisal-val">95%</span>
+                                    </div>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Dept KPI Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-best-kpi" min="0" max="150" value="110"/>
+                                        <span class="kprl-range-value" id="kprl-best-kpi-val">1.10</span>
+                                    </div>
+                                    <div class="kprl-form-group">
+                                        <label class="kprl-input-label">Behavioural Score</label>
+                                        <input type="range" class="kprl-range-input" id="kprl-best-behav" min="0" max="25" value="24"/>
+                                        <span class="kprl-range-value" id="kprl-best-behav-val">24/25</span>
+                                    </div>
+                                    <div class="kprl-scenario-result">
+                                        <span class="kprl-scenario-label">Net Bonus</span>
+                                        <span class="kprl-scenario-amount" id="kprl-best-result">₦0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </main>
+            </div>
+
+            <script type="text/javascript">
+                window.KPRL_EMPLOYEE_ID = <t t-esc="employee.id"/>;
+                window.KPRL_SIM_PARAMS = <t t-raw="sim_params_json or '{}'"/>;
+            </script>
+            <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
+            <script type="text/javascript" src="/kprl_bonus/static/js/simulation.js"/>
+
+        <template id="backend_work_sans_font" inherit_id="web.layout" name="Work Sans Font">
+        <xpath expr="//head" position="inside">
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+            <link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;display=swap" rel="stylesheet"/>
+        </xpath>
+    </template>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_product_tree" model="ir.ui.view">
+        <field name="name">kprl.product.tree</field>
+        <field name="model">kprl.product</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="category_id"/>
+                <field name="unit_price" widget="monetary"/>
+                <field name="sku_rate"/>
+                <field name="margin_pct"/>
+                <field name="is_active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_product_form" model="ir.ui.view">
+        <field name="name">kprl.product.form</field>
+        <field name="model">kprl.product</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="category_id"/>
+                            <field name="is_active"/>
+                        </group>
+                        <group>
+                            <field name="unit_price" widget="monetary"/>
+                            <field name="sku_rate"/>
+                            <field name="margin_pct"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_product" model="ir.actions.act_window">
+        <field name="name">Product SKUs</field>
+        <field name="res_model">kprl.product</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

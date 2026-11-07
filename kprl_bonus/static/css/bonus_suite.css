@@ -1,0 +1,360 @@
+/* kprl_bonus_suite.css
+   Covers: bonus.period, bonus.payout, bonus.parameter, bonus.engine forms.
+   Scoped under .o_payout_form so it never bleeds into other Odoo screens.
+*/
+
+.o_payout_form {
+    --payout-ink: #703f6c;
+    --payout-muted: #6b7280;
+    --payout-line: #e5e8ef;
+    --payout-surface: #ffffff;
+    --payout-canvas: #f6f7fb;
+    --payout-accent: #4f5fe0;
+    --payout-accent-soft: #eef0fd;
+    --payout-success: #16a34a;
+    --payout-success-soft: #e8f8ee;
+    --payout-warning: #d97706;
+    --payout-warning-soft: #fdf3e3;
+    --payout-danger: #dc2626;
+    --payout-danger-soft: #fdecec;
+    --payout-radius: 12px;
+    --payout-shadow: 0 1px 2px rgba(20, 24, 41, 0.04), 0 8px 24px rgba(20, 24, 41, 0.05);
+}
+
+.o_payout_form .o_form_sheet {
+    background: var(--payout-canvas);
+}
+
+/* ---------- Title block ---------- */
+.o_payout_form .o_payout_title h1 {
+    font-size: 26px;
+    font-weight: 650;
+    color: var(--payout-ink);
+    letter-spacing: -0.01em;
+    margin: 4px 0 18px;
+}
+
+/* ---------- Generic card ---------- */
+.o_payout_form .o_payout_card {
+    background: var(--payout-surface);
+    border: 1px solid var(--payout-line);
+    border-radius: var(--payout-radius);
+    padding: 20px 24px;
+    margin-bottom: 18px;
+    box-shadow: var(--payout-shadow);
+}
+
+.o_payout_form .o_payout_card_head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--payout-line);
+}
+
+.o_payout_form .o_payout_card_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 10px;
+    background: var(--payout-accent-soft);
+    color: var(--payout-accent);
+    font-size: 15px;
+}
+
+.o_payout_form .o_payout_card_head h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--payout-ink);
+    margin: 0 0 2px;
+    text-transform: none;
+}
+
+.o_payout_form .o_payout_card_hint {
+    font-size: 12.5px;
+    color: var(--payout-muted);
+}
+
+/* ---------- Meta strip (period / status / computed by) ---------- */
+.o_payout_form .o_payout_meta {
+    background: var(--payout-surface);
+    padding: 16px 24px;
+}
+
+.o_payout_form .o_payout_meta .o_form_label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--payout-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* ---------- Hero statement (total payout) ---------- */
+.o_payout_form .o_payout_statement {
+    background: #703f6c;
+    border-radius: var(--payout-radius);
+    padding: 28px 28px 24px;
+    margin-bottom: 20px;
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(79, 95, 224, 0.28);
+    -webkit-border-radius: var(--payout-radius);
+        -moz-border-radius: var(--payout-radius);
+        -ms-border-radius: var(--payout-radius);
+        -o-border-radius: var(--payout-radius);
+}
+
+.o_payout_form .o_payout_statement_label {
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 6px;
+}
+
+.o_payout_form .o_payout_statement .o_form_label {
+    color: #ffffff;
+}
+
+.o_payout_form .o_payout_statement .o_payout_amount,
+.o_payout_form .o_payout_statement .o_payout_amount .o_field_widget,
+.o_payout_form .o_payout_statement .o_payout_amount input {
+    font-size: 40px;
+    font-weight: 700;
+    color: #ffffff !important;
+    letter-spacing: -0.01em;
+}
+
+.o_payout_form .o_payout_statement textarea,
+.o_payout_form .o_payout_statement .o_field_text {
+    min-height: 80px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #ffffff;
+}
+
+.o_payout_form .o_payout_chips {
+    display: flex;
+    gap: 14px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+.o_payout_form .o_payout_chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.o_payout_form .o_payout_chip_dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.o_payout_form .o_payout_chip_ops .o_payout_chip_dot {
+    background: #7dd3fc;
+}
+
+.o_payout_form .o_payout_chip_sales .o_payout_chip_dot {
+    background: #fcd34d;
+}
+
+.o_payout_form .o_payout_chip_label {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
+.o_payout_form .o_payout_chip .o_field_widget {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* ---------- Buttons ---------- */
+.o_payout_form .o_payout_btn,
+.o_payout_form .btn-primary,
+.o_payout_form .btn-success,
+.o_payout_form .btn-danger {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 6px 16px;
+    box-shadow: none;
+}
+
+.o_payout_form .btn-primary {
+    background: var(--payout-accent);
+    border-color: var(--payout-accent);
+}
+
+/* ---------- Statusbar ---------- */
+.o_payout_form .o_statusbar_status .o_arrow_button {
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.o_payout_form .o_statusbar_status .o_arrow_button_current {
+    background: var(--payout-accent);
+    color: #ffffff;
+}
+
+/* ---------- Badges (state / gate_status / gmp_status) ---------- */
+.o_payout_form .badge,
+.o_payout_form .o_field_badge .badge {
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 11.5px;
+    padding: 4px 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.o_payout_form .badge.text-bg-success,
+.o_payout_form .badge.bg-success {
+    background-color: var(--payout-success-soft) !important;
+    color: var(--payout-success) !important;
+}
+
+.o_payout_form .badge.text-bg-warning,
+.o_payout_form .badge.bg-warning {
+    background-color: var(--payout-warning-soft) !important;
+    color: var(--payout-warning) !important;
+}
+
+.o_payout_form .badge.text-bg-danger,
+.o_payout_form .badge.bg-danger {
+    background-color: var(--payout-danger-soft) !important;
+    color: var(--payout-danger) !important;
+}
+
+.o_payout_form .badge.text-bg-info,
+.o_payout_form .badge.bg-info,
+.o_payout_form .badge.text-bg-muted,
+.o_payout_form .badge.bg-secondary {
+    background-color: var(--payout-accent-soft) !important;
+    color: var(--payout-accent) !important;
+}
+
+/* ---------- Stat buttons ---------- */
+.o_payout_form .oe_stat_button {
+    border-radius: 8px;
+}
+
+.o_payout_form .oe_stat_button .o_stat_value {
+    font-weight: 700;
+    color: var(--payout-ink);
+}
+
+.o_payout_form .oe_stat_button .o_stat_text {
+    color: var(--payout-muted);
+    font-size: 11.5px;
+}
+
+/* ---------- Separators (section labels inside cards) ---------- */
+.o_payout_form .o_horizontal_separator {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--payout-muted);
+    border-bottom: 1px solid var(--payout-line);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+}
+
+/* ---------- Group labels ---------- */
+.o_payout_form .o_group .o_horizontal_separator,
+.o_payout_form group > label,
+.o_payout_form .o_form_label {
+    color: var(--payout-ink);
+}
+
+.o_payout_form td.o_td_label label,
+.o_payout_form .o_form_label {
+    font-weight: 500;
+    color: #3b4152;
+}
+
+/* ---------- Alert boxes (governance notes, KPI weight warning) ---------- */
+.o_payout_form .alert-info {
+    background: var(--payout-accent-soft);
+    border: 1px solid rgba(79, 95, 224, 0.25);
+    color: #3a3fae;
+    border-radius: 8px;
+    font-size: 13px;
+    padding: 10px 14px;
+}
+
+.o_payout_form .alert-info .fa-lock,
+.o_payout_form .alert-info .fa-warning {
+    color: var(--payout-accent);
+    margin-right: 6px;
+}
+
+/* ---------- Progressbar widget (pool_util_vs_ebitda_cap) ---------- */
+.o_payout_form .o_field_progressbar .o_progress {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--payout-line);
+    overflow: hidden;
+}
+
+.o_payout_form .o_field_progressbar .o_progressbar_complete {
+    background: var(--payout-accent);
+}
+
+/* ---------- Many2many tags (grade_level_ids) ---------- */
+.o_payout_form .o_field_many2many_tags .o_tag {
+    background: var(--payout-accent-soft);
+    color: var(--payout-accent);
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 3px 10px;
+}
+
+/* ---------- Notebook tabs (parameter control panel, engine sections) ---------- */
+.o_payout_form .o_notebook .nav-link {
+    font-weight: 500;
+    color: var(--payout-muted);
+    border: none;
+    padding: 10px 4px;
+    margin-right: 22px;
+}
+
+.o_payout_form .o_notebook .nav-link.active {
+    color: var(--payout-ink);
+    font-weight: 650;
+    border-bottom: 2px solid var(--payout-accent);
+    background: transparent;
+}
+
+/* ---------- Nested tree lists inside notebook pages ---------- */
+.o_payout_form .o_list_view {
+    border-radius: 10px;
+    border: 1px solid var(--payout-line);
+}
+
+.o_payout_form .o_list_view thead th {
+    background: var(--payout-canvas);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--payout-muted);
+    font-weight: 600;
+}
+.o_list_renderer .o_list_table>thead>tr> :first-child,
+.o_list_renderer .o_list_table>tbody>tr> :first-child,
+.o_list_renderer .o_list_table>tfoot>tr> :first-child {
+    padding-left: var(--ListRenderer-table-padding-x);
+    padding-top: 28px !important;
+}

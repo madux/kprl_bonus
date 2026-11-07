@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quarterly Payout Computation</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1B2D;
+    --ink-soft:#33425A;
+    --bg:#F5F7FA;
+    --card:#FFFFFF;
+    --line:#E3E8EF;
+    --blue:#2454FF;
+    --blue-soft:#EAEFFF;
+    --green:#16A34A;
+    --green-soft:#E9F8EE;
+    --amber:#D97706;
+    --amber-soft:#FEF3E2;
+    --red:#DC2626;
+    --slate:#64748B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    font-family:'Work Sans', sans-serif;
+    color:var(--ink);
+    padding:32px 0 64px;
+  }
+  .display{font-family:'Work Sans', sans-serif;}
+  .mono{font-family:'Work Sans', sans-serif;}
+  .shell{max-width:1040px;margin:0 auto;padding:0 20px;}
+
+  /* Top bar */
+  .topbar{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    margin-bottom:22px;flex-wrap:wrap;gap:16px;
+  }
+  .eyebrow{
+    font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--blue);font-weight:600;margin-bottom:6px;
+  }
+  .rec-title{font-size:1.55rem;font-weight:700;margin:0;}
+  .rec-sub{color:var(--slate);font-size:.88rem;margin-top:2px;}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn-modern{
+    border-radius:9px;font-weight:600;font-size:.86rem;
+    padding:9px 18px;border:1px solid transparent;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-primary-m{background:var(--blue);color:#fff;}
+  .btn-primary-m:hover{background:#1a3fd6;color:#fff;}
+  .btn-success-m{background:var(--green);color:#fff;}
+  .btn-success-m:hover{background:#12873d;color:#fff;}
+  .btn-outline-m{background:#fff;color:var(--ink-soft);border-color:var(--line);}
+  .btn-outline-m:hover{background:#f2f4f7;color:var(--ink-soft);}
+
+  /* Stepper */
+  .stepper{
+    display:flex;align-items:center;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;
+    padding:14px 20px;margin-bottom:22px;
+  }
+  .step{display:flex;align-items:center;gap:10px;flex:1;position:relative;}
+  .step-dot{
+    width:30px;height:30px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.78rem;font-weight:700;border:2px solid var(--line);color:var(--slate);
+    background:#fff;flex-shrink:0;
+  }
+  .step.done .step-dot{background:var(--green);border-color:var(--green);color:#fff;}
+  .step.active .step-dot{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .step-label{font-size:.85rem;font-weight:600;color:var(--slate);}
+  .step.done .step-label,.step.active .step-label{color:var(--ink);}
+  .step-connector{flex:1;height:2px;background:var(--line);margin:0 6px;}
+  .step-connector.done{background:var(--green);}
+
+  /* Card */
+  .card-m{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:22px 24px;margin-bottom:20px;
+  }
+  .card-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .card-head .icon{
+    width:34px;height:34px;border-radius:9px;background:var(--blue-soft);
+    color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.95rem;
+  }
+  .card-head h2{font-size:1.02rem;font-weight:700;margin:0;}
+  .card-head .hint{font-size:.78rem;color:var(--slate);}
+
+  .field-label{
+    font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--slate);font-weight:600;margin-bottom:4px;
+  }
+  .field-value{font-size:.95rem;font-weight:600;color:var(--ink);}
+  .field-value.mono{font-size:.98rem;}
+  .field-box{
+    background:#FAFBFC;border:1px solid var(--line);border-radius:10px;
+    padding:11px 14px;margin-bottom:14px;
+  }
+  .field-box.editable:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);}
+  .field-box input, .field-box textarea{
+    border:none;background:transparent;width:100%;padding:0;
+    font-family:'Work Sans', sans-serif;font-weight:600;font-size:.95rem;color:var(--ink);
+  }
+  .field-box input:focus, .field-box textarea:focus{outline:none;}
+  .field-box.mono-box input{font-family:'Work Sans', sans-serif;}
+
+  .badge-status{
+    font-size:.74rem;font-weight:700;padding:5px 12px;border-radius:20px;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .badge-pass{background:var(--green-soft);color:var(--green);}
+  .badge-warn{background:var(--amber-soft);color:var(--amber);}
+  .badge-fail{background:#FDECEC;color:var(--red);}
+
+  /* Signature: payout statement strip */
+  .statement{
+    background:var(--ink);border-radius:16px;padding:28px 30px;color:#fff;
+    margin-bottom:22px;position:relative;overflow:hidden;
+  }
+  .statement::after{
+    content:"";position:absolute;right:-40px;top:-40px;width:200px;height:200px;
+    border-radius:50%;background:radial-gradient(circle,rgba(36,84,255,.35),transparent 70%);
+  }
+  .statement .label{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:#9FB0CE;margin-bottom:8px;}
+  .statement .amount{font-family:'Work Sans', sans-serif;font-size:2.6rem;font-weight:600;line-height:1;}
+  .statement .amount span{font-size:1.2rem;color:#9FB0CE;margin-left:8px;}
+  .split-bar{
+    display:flex;height:10px;border-radius:6px;overflow:hidden;margin-top:20px;background:#1E2C42;
+  }
+  .split-bar .ops{background:var(--blue);}
+  .split-bar .sales{background:#59E0C5;}
+  .split-legend{display:flex;gap:22px;margin-top:10px;font-size:.78rem;color:#B9C6DD;}
+  .split-legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;}
+
+  textarea.notes{min-height:80px;resize:vertical;}
+
+  @media (max-width:576px){
+    .amount{font-size:2rem !important;}
+    .stepper{overflow-x:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div>
+      <div class="eyebrow"><i class="fa-solid fa-coins me-1"></i>Payout Computation</div>
+      <h1 class="rec-title display">Q3 2026 &middot; Commission &amp; Ops Pool</h1>
+      <div class="rec-sub">Period FY26-Q3 &nbsp;&bull;&nbsp; Record #PC-0342</div>
+    </div>
+    <div class="actions">
+      <button class="btn-modern btn-outline-m"><i class="fa-solid fa-rotate-left"></i>Reset</button>
+      <button class="btn-modern btn-primary-m"><i class="fa-solid fa-calculator"></i>Run Computation</button>
+      <button class="btn-modern btn-success-m"><i class="fa-solid fa-check"></i>Finalize</button>
+    </div>
+  </div>
+
+  <!-- Stepper (state statusbar) -->
+  <div class="stepper">
+    <div class="step done">
+      <div class="step-dot"><i class="fa-solid fa-check"></i></div>
+      <div class="step-label">Draft</div>
+    </div>
+    <div class="step-connector done"></div>
+    <div class="step active">
+      <div class="step-dot">2</div>
+      <div class="step-label">Computed</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <div class="step-dot">3</div>
+      <div class="step-label">Finalized</div>
+    </div>
+  </div>
+
+  <!-- Meta row -->
+  <div class="card-m">
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="field-label">Period</div>
+        <div class="field-value">Q3 2026 (Jul &ndash; Sep)</div>
+      </div>
+      <div class="col-sm-6">
+        <div class="field-label">Status</div>
+        <span class="badge-status badge-warn"><i class="fa-solid fa-hourglass-half"></i>Computed</span>
+      </div>
+      <div class="col-sm-6 mt-3">
+        <div class="field-label">Computed By</div>
+        <div class="field-value"><i class="fa-regular fa-user me-1 text-secondary"></i>A. Ibrahim</div>
+      </div>
+      <div class="col-sm-6 mt-3">
+        <div class="field-label">Computed On</div>
+        <div class="field-value"><i class="fa-regular fa-clock me-1 text-secondary"></i>Jul 02, 2026 &middot; 14:20</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signature statement -->
+  <div class="statement">
+    <div class="label">Total Payout This Period</div>
+    <div class="amount">$486,920<span>USD</span></div>
+    <div class="split-bar">
+      <div class="ops" style="width:58%"></div>
+      <div class="sales" style="width:42%"></div>
+    </div>
+    <div class="split-legend">
+      <span><span class="dot" style="background:var(--blue)"></span>Ops Payout &middot; $282,414</span>
+      <span><span class="dot" style="background:#59E0C5"></span>Sales Commission &middot; $204,506</span>
+    </div>
+  </div>
+
+  <!-- Revenue & Pool -->
+  <div class="card-m">
+    <div class="card-head">
+      <div class="icon"><i class="fa-solid fa-sack-dollar"></i></div>
+      <div>
+        <h2>Revenue &amp; Pool</h2>
+        <div class="hint">Quarterly revenue and the resulting incentive pool</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="field-label">Quarterly Revenue</div>
+        <div class="field-box mono-box"><div class="mono field-value">$4,120,500.00</div></div>
+        <div class="field-label">Net Revenue</div>
+        <div class="field-box mono-box"><div class="mono field-value">$3,884,110.00</div></div>
+        <div class="field-label">Pool Contribution</div>
+        <div class="field-box mono-box"><div class="mono field-value">$542,150.00</div></div>
+      </div>
+      <div class="col-md-6">
+        <div class="field-label">Effective Pool</div>
+        <div class="field-box mono-box"><div class="mono field-value">$498,760.00</div></div>
+        <div class="field-label">AIP Pool</div>
+        <div class="field-box mono-box"><div class="mono field-value">$486,920.00</div></div>
+        <div class="field-label">Proration Factor</div>
+        <div class="field-box mono-box"><div class="mono field-value">0.978</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gates & KPI -->
+  <div class="card-m">
+    <div class="card-head">
+      <div class="icon"><i class="fa-solid fa-gauge-high"></i></div>
+      <div>
+        <h2>Gates &amp; KPI</h2>
+        <div class="hint">Eligibility gates and company performance score</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="field-label">EBITDA Margin</div>
+        <div class="field-box mono-box"><div class="mono field-value">18.4%</div></div>
+        <div class="field-label">Gate Status</div>
+        <div class="field-box"><span class="badge-status badge-pass"><i class="fa-solid fa-circle-check"></i>Passed</span></div>
+        <div class="field-label">Gate Factor</div>
+        <div class="field-box mono-box"><div class="mono field-value">1.00</div></div>
+      </div>
+      <div class="col-md-6">
+        <div class="field-label">GMP Status</div>
+        <div class="field-box"><span class="badge-status badge-warn"><i class="fa-solid fa-triangle-exclamation"></i>Marginal</span></div>
+        <div class="field-label">GMP Factor</div>
+        <div class="field-box mono-box"><div class="mono field-value">0.92</div></div>
+        <div class="field-label">Company KPI Score</div>
+        <div class="field-box mono-box"><div class="mono field-value">87 / 100</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payout Summary -->
+  <div class="card-m">
+    <div class="card-head">
+      <div class="icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+      <div>
+        <h2>Payout Summary</h2>
+        <div class="hint">Final distribution and coverage ratios</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="field-label">Total Payout</div>
+        <div class="field-box mono-box"><div class="mono field-value">$486,920.00</div></div>
+        <div class="field-label">Ops Payout</div>
+        <div class="field-box mono-box"><div class="mono field-value">$282,414.00</div></div>
+        <div class="field-label">Sales Commission</div>
+        <div class="field-box mono-box"><div class="mono field-value">$204,506.00</div></div>
+      </div>
+      <div class="col-md-6">
+        <div class="field-label">Payout as % of Revenue</div>
+        <div class="field-box mono-box"><div class="mono field-value">12.5%</div></div>
+        <div class="field-label">Pool Utilization vs EBITDA Cap</div>
+        <div class="field-box mono-box"><div class="mono field-value">94.2%</div></div>
+        <div class="field-label">Headcount</div>
+        <div class="field-box mono-box"><div class="mono field-value">126</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card-m">
+    <div class="card-head">
+      <div class="icon"><i class="fa-solid fa-note-sticky"></i></div>
+      <div>
+        <h2>Notes</h2>
+        <div class="hint">Internal remarks for this computation</div>
+      </div>
+    </div>
+    <div class="field-box editable">
+      <textarea class="notes" placeholder="Add a note about this computation run&hellip;">GMP factor pulled down by two underperforming regions; flagged for review before finalization.</textarea>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="kprl_dept_prod" model="kprl.department"><field name="name">Production</field><field name="code">PROD</field><field name="kpi_multiplier">0.97</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_qa" model="kprl.department"><field name="name">QA/QC</field><field name="code">QA</field><field name="kpi_multiplier">1.04</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_logistics" model="kprl.department"><field name="name">Logistics</field><field name="code">LOG</field><field name="kpi_multiplier">0.88</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_inventory" model="kprl.department"><field name="name">Inventory Dept</field><field name="code">INV</field><field name="kpi_multiplier">0.93</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_diagnostics" model="kprl.department"><field name="name">Diagnostics</field><field name="code">DIAG</field><field name="kpi_multiplier">0.98</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_fin" model="kprl.department"><field name="name">Finance</field><field name="code">FIN</field><field name="kpi_multiplier">1.00</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_hr" model="kprl.department"><field name="name">Human Resources</field><field name="code">HR</field><field name="kpi_multiplier">0.95</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_admin" model="kprl.department"><field name="name">Administration</field><field name="code">ADMIN</field><field name="kpi_multiplier">0.87</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_marketing" model="kprl.department"><field name="name">Marketing Dept</field><field name="code">MKT</field><field name="kpi_multiplier">0.90</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_mgmt" model="kprl.department"><field name="name">Management</field><field name="code">MGMT</field><field name="kpi_multiplier">0.96</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_hygiene" model="kprl.department"><field name="name">Hygiene</field><field name="code">HYG</field><field name="kpi_multiplier">0.92</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+        <record id="kprl_dept_sales" model="kprl.department"><field name="name">Sales</field><field name="code">SALES</field><field name="kpi_multiplier">0.99</field><field name="gmp_status">clean</field><field name="gmp_self_reported" eval="False"/></record>
+    </data>
+</odoo>

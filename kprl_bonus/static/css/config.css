@@ -1,0 +1,142 @@
+/* config.css — CEO/Superadmin Control Panel */
+.kprl-config-wrapper {
+    display: flex; min-height: 100vh;
+}
+
+.kprl-side-strip {
+    width: 56px; background: #6a3d6a; display: flex;
+    justify-content: center; padding-top: 24px; flex-shrink: 0;
+}
+.kprl-brand-logo { color: #fff; font-size: 20px; opacity: 0.8; cursor: pointer; }
+
+.kprl-main-pane { flex: 1; padding: 20px 28px; max-width: 1400px; }
+
+.kprl-top-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 12px; border-bottom: 1px solid #e2e7ee; margin-bottom: 12px;
+}
+.kprl-path-crumb { font-size: 14px; }
+.kprl-txt-muted { color: #7A8296; }
+.kprl-sep-icon { color: #b0b8c8; margin: 0 8px; font-size: 13px; }
+.kprl-txt-bold { font-weight: 600; color: #2D3142; }
+.kprl-ghost-icon {
+    background: none; border: none; font-size: 18px; color: #7A8296;
+    cursor: pointer; padding: 6px; border-radius: 6px; transition: background 0.2s;
+}
+.kprl-ghost-icon:hover { background: #eef1f5; }
+.kprl-role-tag {
+    background: #6a3d6a; color: #fff; font-size: 12px; font-weight: 600;
+    padding: 6px 14px; border-radius: 20px; margin-left: 8px;
+}
+
+.kprl-sub-tabs { display: flex; gap: 4px; border-bottom: 2px solid #eef1f5; margin-bottom: 16px; }
+.kprl-sub-tab {
+    background: none; border: none; padding: 10px 18px; font-size: 13px;
+    font-weight: 500; color: #7A8296; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+}
+.kprl-sub-tab:hover { color: #6a3d6a; }
+.kprl-sub-tab-active { color: #6a3d6a; border-bottom-color: #6a3d6a; font-weight: 600; }
+
+.kprl-action-ribbon {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding: 10px 16px; background: #fff;
+    border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.kprl-ribbon-left, .kprl-ribbon-right { display: flex; align-items: center; gap: 8px; }
+.kprl-btn-save {
+    background: #6a3d6a; color: #fff; border: none; padding: 8px 24px;
+    border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer;
+    transition: background 0.2s;
+}
+.kprl-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.kprl-btn-save:hover { background: #553c55; }
+.kprl-btn-outline {
+    background: #fff; color: #6a3d6a; border: 1px solid #d0d5dd;
+    padding: 7px 16px; border-radius: 6px; font-size: 13px; cursor: pointer;
+}
+.kprl-btn-link { background: none; border: none; color: #7A8296; font-size: 13px; cursor: pointer; }
+.kprl-btn-utility {
+    background: #f0f2f5; border: none; padding: 6px 14px; border-radius: 6px;
+    font-size: 12px; color: #5a5a5a; cursor: pointer;
+}
+
+.kprl-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.kprl-right-vertical-stack { display: flex; flex-direction: column; gap: 16px; }
+
+.kprl-config-card {
+    background: #fff; border-radius: 10px; padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04); border: 1px solid #eef1f5;
+}
+
+.kprl-card-heading {
+    font-size: 16px; font-weight: 700; color: #2b579a; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #eef1f5;
+}
+.kprl-card-heading-dark {
+    font-size: 14px; font-weight: 700; color: #2D3142; margin-bottom: 16px;
+}
+
+.kprl-form-group { margin-bottom: 12px; }
+.kprl-input-label { display: block; font-size: 12px; font-weight: 600; color: #7A8296; margin-bottom: 4px; }
+.kprl-input-row { display: flex; align-items: center; gap: 10px; }
+.kprl-interactive-input {
+    flex: 1; padding: 6px 12px; border: 1px solid #4a274a; border-radius: 4px;
+    font-size: 13px; font-weight: 700; color: #1a4480; max-width: 320px;
+    font-family: 'Work Sans', sans-serif; background: #fff; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.kprl-interactive-input:focus {
+    border-color: #6a3d6a; box-shadow: 0 0 0 3px rgba(106,61,106,.15); transform: scale(1.008);
+}
+
+.kprl-approver-label { font-size: 11px; color: #a0a8b8; }
+.kprl-approver-badge {
+    font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 12px;
+    white-space: nowrap;
+}
+.kprl-badge-blue-pill { background: #cfe2ff; color: #084298; }
+.kprl-badge-light-blue-pill { background: #e8f4fd; color: #0a58ca; }
+.kprl-badge-green-pill { background: #d1e7dd; color: #0f5132; }
+.kprl-badge-orange-pill { background: #fff3cd; color: #856404; }
+
+.kprl-status-alert-box {
+    display: flex; align-items: center; gap: 8px;
+    background: #def2e6; border: 1px solid #c3e6cb; color: #1b5e20;
+    padding: 10px 14px; border-radius: 4px; margin-top: 20px;
+    font-size: 12px; font-weight: 600;
+}
+.kprl-msg-success { background: #def2e6; border-color: #c3e6cb; color: #1b5e20; }
+.kprl-msg-error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+.kprl-alert-icon { font-size: 14px; }
+
+.kprl-timeline { position: relative; padding-left: 0; display: flex; flex-direction: column; }
+.kprl-timeline-item {
+    position: relative; padding-left: 20px; padding-bottom: 20px;
+    border-left: 2px solid #28a745;
+    display: flex; align-items: flex-start; justify-content: space-between;
+}
+.kprl-timeline-item::before {
+    content: ''; position: absolute; left: -6px; top: 4px;
+    width: 10px; height: 10px; border-radius: 50%; background: #28a745;
+    border: 2px solid #fff; box-shadow: 0 0 0 2px #28a745;
+}
+.kprl-no-line { border-left-color: transparent; padding-bottom: 0; }
+.kprl-no-line::before { background: #28a745; }
+.kprl-timeline-content { display: flex; flex-direction: column; gap: 2px; }
+.kprl-node-title { font-size: 13px; font-weight: 700; color: #333333; }
+.kprl-node-meta { font-size: 11px; color: #6c757d; }
+
+.kprl-badge {
+    font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px;
+    display: inline-block; letter-spacing: 0.3px;
+}
+.kprl-badge-gray { background: #e9ecef; color: #495057; }
+.kprl-badge-green { background: #def2e6; color: #1b5e20; }
+.kprl-badge-blue { background: #e8f0fe; color: #1a73e8; }
+.kprl-badge-green-filled { background: #28a745; color: #fff; }
+.kprl-badge-orange { background: #fff3cd; color: #856404; }
+.kprl-badge-red { background: #f8d7da; color: #721c24; }
+
+@media (max-width: 992px) {
+    .kprl-grid-layout { grid-template-columns: 1fr; }
+}

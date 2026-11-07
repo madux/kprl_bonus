@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- ACTION: Employee window action -->
+        <record id="action_kprl_employee" model="ir.actions.act_window">
+            <field name="name">Employees</field>
+            <field name="res_model">kprl.employee</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_status': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No employees found.
+                </p>
+            </field>
+        </record>
+       <record id="view_kprl_employee_tree_user" model="ir.ui.view">
+            <field name="name">kprl.employee.tree.dashboard</field>
+            <field name="model">kprl.employee</field>
+            <field name="priority">32</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="staff_id"/>
+                    <field name="name"/>
+                    <field name="work_email"/>
+                    <field name="mobile_phone"/>
+                    <field name="department_id"/>
+                    <field name="grade_id"/>
+                    <field name="pool_type"/>
+                    <field name="track"/>
+                    <field name="job_title"/>
+
+                    <field name="subpool_id"/>
+                    <field name="employment_date"/>
+                    <field name="tenure_years"/>
+                    <field name="manager_id"/>
+                    <field name="status"/>
+
+                    <field name="is_sales"/>
+                    <field name="sales_role"/>
+                    <field name="territory_id"/>
+                    <field name="email"/>
+                    <field name="phone"/>
+
+                    <field name="is_active"/>
+                    <field name="user_role"/>
+                   
+                </tree>
+           </field>
+        </record>
+
+        <record id="view_kprl_employee_form_user" model="ir.ui.view">
+            <field name="name">kprl.employee.form.dashboard</field>
+            <field name="model">kprl.employee</field>
+            <field name="priority">32</field>
+            <field name="arch" type="xml">
+                <form class="o_kprl_employee_form" create="true" edit="true" groups="kprl_bonus.group_kprl_user">
+                    <header>
+                        <button name="action_fetch_from_api" type="object"
+                                string="Sync Records" class="btn-primary"
+                                icon="fa-refresh" invisible="not staff_id"/>
+                    </header>
+                    <!-- Field declarations for modifiers -->
+                    <field name="status" invisible="1"/>
+                    <field name="is_sales" invisible="1"/>
+                    <field name="aip_eligible" invisible="1"/>
+                    <field name="payout_period_name" invisible="1"/>
+                    <field name="floor_check" invisible="1"/>
+                    <field name="gmp_factor" invisible="1"/>
+                    <field name="tenure_years" invisible="1"/>
+                    <field name="grade_code" invisible="1"/>
+                    <field name="grade_name" invisible="1"/>
+                    <field name="subpool_name" invisible="1"/>
+                    <field name="base_grade_points" invisible="1"/>
+                    <field name="skill_premium_pts" invisible="1"/>
+                    <field name="total_points" invisible="1"/>
+                    <field name="grade_deferral_rate" invisible="1"/>
+                    <field name="job_title" invisible="1"/>
+                    <field name="employment_date" invisible="1"/>
+                    <field name="manager_id" invisible="1"/>
+                    <field name="employee_id" invisible="1"/>
+                    <field name="department_id" invisible="1"/>
+                    <field name="name" invisible="1"/>
+                    <field name="initials" invisible="1"/>
+                    <field name="base_eligible" invisible="1"/>
+                    <field name="dept_kpi_mult" invisible="1"/>
+                    <field name="appraisal_mult" invisible="1"/>
+                    <field name="behavioural_mult" invisible="1"/>
+                    <field name="exception_premium" invisible="1"/>
+                    <field name="proration_factor" invisible="1"/>
+                    <field name="user_role" invisible="1"/>
+                    <field name="tenure_mult_payout" invisible="1"/>
+                    <field name="malus_amount" invisible="1"/>
+                    <field name="gross_payable" invisible="1"/>
+                    <field name="deferred_amount" invisible="1"/>
+                    <field name="net_immediate" invisible="1"/>
+                    <field name="deferral_rate_payout" invisible="1"/>
+                    <field name="appraisal_score_payout" invisible="1"/>
+                    <field name="behaviour_05" invisible="1"/>
+                    <field name="latest_potential_score" invisible="1"/>
+                    <field name="latest_current_score" invisible="1"/>
+                    <field name="latest_behaviour_score" invisible="1"/>
+                    <field name="dept_kpi_score" invisible="1"/>
+                    <field name="appraisal_max" invisible="1"/>
+                    <field name="behaviour_max" invisible="1"/>
+                    <field name="dept_kpi_score_max" invisible="1"/>
+                    <field name="grade_id" invisible="1"/>
+                    <field name="territory_id" invisible="1"/>
+                    <field name="sales_role" invisible="1"/>
+                    <field name="appraisal_base_score" invisible="1"/>
+                    <field name="performance_ids" invisible="1"/>
+                    <field name="deferred_ids" invisible="1"/>
+                    <field name="payout_ids" invisible="1"/>
+                    <field name="total_deferred" invisible="1"/>
+                    <field name="total_vested" invisible="1"/>
+                    <field name="total_forfeited" invisible="1"/>
+                    <field name="deferred_count" invisible="1"/>
+                    <field name="total_paid" invisible="1"/>
+                    <field name="total_gross_all" invisible="1"/>
+                    <field name="payout_count" invisible="1"/>
+
+                    <sheet>
+                        <!-- User menu dropdown -->
+                        <!-- <div class="o_emp_topbar_right">
+                            <span class="o_emp_topbar_user">
+                                <i class="fa fa-user-circle"/>
+                                <field name="user_role" nolabel="1"/>
+                            </span>
+                            <a href="https://docs.google.com/document/d/1rPugHagQJ7IufwC1l0p6n32CputAE5KOOFBp61btxhQ/edit?tab=t.h58si2xk5g29">See documentation!</a>
+                        </div> -->
+
+                        <div class="o_emp_dashboard">
+
+                            <!-- LEFT: Profile Sidebar -->
+                            <div class="o_emp_profile">
+                                <div class="o_emp_profile_header">
+                                    <div class="o_emp_avatar">
+                                        <field name="initials" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <h3 class="o_emp_name">
+                                        <field name="name" nolabel="1"/>
+                                    </h3>
+                                    <div class="o_emp_id">
+                                        <field name="staff_id" nolabel="1" readonly="1"/>
+                                    </div>
+                                    <div class="o_emp_badges">
+                                        <span class="o_emp_badge_active" invisible="status != 'active'">ACTIVE</span>
+                                        <span class="o_emp_badge_inactive" invisible="status == 'active'">
+                                            <field name="status" nolabel="1"/>
+                                        </span>
+                                        <span class="o_emp_badge_track" invisible="is_sales != False">OPS TRACK</span>
+                                        <span class="o_emp_badge_track" invisible="is_sales != True">SALES TRACK</span>
+                                    </div>
+                                </div>
+
+                                <div class="o_emp_info_rows">
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Related Employee</span>
+                                        <span class="o_emp_info_value"><field name="employee_id" required="1"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Employee ID</span>
+                                        <span class="o_emp_info_value"><field name="staff_id" required="1" readonly="0"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Department</span>
+                                        <span class="o_emp_info_value"><field name="department_id" readonly="0"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Job Title</span>
+                                        <span class="o_emp_info_value"><field name="job_title"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Grade</span>
+                                        <span class="o_emp_info_value"><field name="grade_code"/> — <field name="grade_name"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Grade (set)</span>
+                                        <span class="o_emp_info_value"><field name="grade_id"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Pool Type</span>
+                                        <span class="o_emp_info_value"><field name="pool_type"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Track</span>
+                                        <span class="o_emp_info_value"><field name="track"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Date Hired</span>
+                                        <span class="o_emp_info_value"><field name="employment_date" readonly="1"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Tenure (yrs)</span>
+                                        <span class="o_emp_info_value"><field name="tenure_years" readonly="1"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row o_emp_info_row_last">
+                                        <span class="o_emp_info_label">Reporting Manager</span>
+                                        <span class="o_emp_info_value"><field name="manager_id"/></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                          <!-- CENTER: Grade & Compensation Parameters -->
+                            <div class="o_emp_card o_emp_card_dark">
+                                <div class="o_emp_card_head">
+                                    <div class="o_emp_card_icon"><i class="fa fa-th-large"/></div>
+                                    <div><h2>Grade &amp; Compensation Parameters</h2></div>
+                                </div>
+                                <div class="o_emp_params">
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Grade Code</span>
+                                        <span class="o_emp_param_value"><field name="grade_code"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Sub-Pool</span>
+                                        <span class="o_emp_param_value"><field name="subpool_name"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Base Grade Points</span>
+                                        <span class="o_emp_param_value"><field name="base_grade_points"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Skill Premium (pts)</span>
+                                        <span class="o_emp_param_value"><field name="skill_premium_pts"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Total Points</span>
+                                        <span class="o_emp_param_value"><field name="total_points"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Deferral Rate</span>
+                                        <span class="o_emp_param_value"><field name="grade_deferral_rate"/>%</span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">AIP Eligible</span>
+                                        <span class="o_emp_param_value">
+                                            <span invisible="aip_eligible == False">Yes</span>
+                                            <span invisible="aip_eligible != False">No <span class="o_emp_param_hint">(Grade G7+ only)</span></span>
+                                        </span>
+                                    </div>
+                                    <div class="o_emp_param_row o_emp_param_row_last">
+                                        <span class="o_emp_param_label">Sales Role</span>
+                                        <span class="o_emp_param_value">
+                                            <span invisible="is_sales != True"><field name="sales_role"/></span>
+                                            <span invisible="is_sales == True">None <span class="o_emp_param_hint">(Ops track employee)</span></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT: Payout Summary -->
+                            <div class="o_emp_card o_emp_card_dark" invisible="not payout_period_name">
+                                <div class="o_emp_card_head">
+                                    <div class="o_emp_card_icon"><i class="fa fa-file-invoice-dollar"/></div>
+                                    <div><h2><field name="payout_period_name"/> Payout Summary</h2></div>
+                                </div>
+                                <div class="o_emp_params">
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Base Eligible</span>
+                                        <span class="o_emp_param_value">₦<field name="base_eligible" widget="monetary"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Dept KPI Mult</span>
+                                        <span class="o_emp_param_value">×<field name="dept_kpi_mult"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Appraisal Mult</span>
+                                        <span class="o_emp_param_value">×<field name="appraisal_mult"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Behavioural Mult</span>
+                                        <span class="o_emp_param_value">×<field name="behavioural_mult"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Exception Premium</span>
+                                        <span class="o_emp_param_value">₦<field name="exception_premium" widget="monetary"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Proration</span>
+                                        <span class="o_emp_param_value">×<field name="proration_factor"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Tenure Bonus</span>
+                                        <span class="o_emp_param_value">×<field name="tenure_mult_payout"/> (<field name="tenure_years"/>yr)</span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Floor Check</span>
+                                        <span class="o_emp_param_value">
+                                            <span invisible="floor_check == False">PASS (&gt;30k)</span>
+                                            <span invisible="floor_check != False">FAIL</span>
+                                        </span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">GMP Dept Factor</span>
+                                        <span class="o_emp_param_value">
+                                            ×<field name="gmp_factor"/>
+                                            <span invisible="gmp_factor != 1.0" class="o_emp_param_hint">(Clean)</span>
+                                        </span>
+                                    </div>
+                                    <div class="o_emp_param_row">
+                                        <span class="o_emp_param_label">Malus</span>
+                                        <span class="o_emp_param_value">₦<field name="malus_amount" widget="monetary"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row o_emp_param_row_separator">
+                                        <span class="o_emp_param_label">Gross Payable</span>
+                                        <span class="o_emp_param_value o_emp_param_bold">₦<field name="gross_payable" widget="monetary"/></span>
+                                    </div>
+                                    <div class="o_emp_param_row o_emp_param_row_last">
+                                        <span class="o_emp_param_label">Deferred (<field name="deferral_rate_payout"/>%)</span>
+                                        <span class="o_emp_param_value">₦<field name="deferred_amount" widget="monetary"/></span>
+                                    </div>
+                                </div>
+                                <div class="o_emp_payout_hero">
+                                    <div class="o_emp_payout_hero_label">BONUS AFTER DEFERRAL</div>
+                                    <div class="o_emp_payout_hero_amount">₦<field name="net_immediate" widget="monetary" nolabel="1"/></div>
+                                </div>
+                            </div>
+
+                            <!-- BOTTOM: Appraisal & Behavioural Scores -->
+                            <div class="o_emp_card o_emp_scores o_emp_scores_container">
+                                <div class="o_emp_card_head">
+                                    <div class="o_emp_card_icon"><i class="fa fa-bar-chart"/></div>
+                                    <div><h2>Appraisal &amp; Behavioural Scores</h2></div>
+                                </div>
+                                <div class="o_emp_score_grid">
+                                    <div class="o_emp_score_item">
+                                        <div class="o_emp_score_label">Performance Appraisal Score</div>
+                                        <div class="o_emp_score_value"><field name="appraisal_score_payout"/> / <field name="appraisal_max" nolabel="1"/></div>
+                                        <field name="appraisal_score_payout" widget="progressbar"/>
+                                    </div>
+                                    <div class="o_emp_score_item">
+                                        <div class="o_emp_score_label">Behavioural Score (Manager)</div>
+                                        <div class="o_emp_score_value"><field name="latest_behaviour_score"/> / <field name="behaviour_max" nolabel="1"/></div>
+                                        <div class="o_emp_score_breakdown">Potential <field name="latest_potential_score" nolabel="1"/> - Current <field name="latest_current_score" nolabel="1"/> - Average <field name="latest_behaviour_score" nolabel="1"/></div>
+                                        <field name="latest_behaviour_score" widget="progressbar"/>
+                                    </div>
+                                    <div class="o_emp_score_item">
+                                        <div class="o_emp_score_label">Dept KPI Score</div>
+                                        <div class="o_emp_score_value"><field name="dept_kpi_score"/> / <field name="dept_kpi_score_max" nolabel="1"/></div>
+                                        <field name="dept_kpi_score" widget="progressbar"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NOTEBOOK: Additional Tabs -->
+                        <notebook>
+                            <page string="Grade &amp; Pool" name="grade_pool">
+                                <div class="o_emp_card">
+                                    <div class="o_emp_card_head">
+                                        <div class="o_emp_card_icon"><i class="fa fa-graduation-cap"/></div>
+                                        <div><h2>Grade Detail</h2></div>
+                                    </div>
+                                    <group>
+                                        <group>
+                                            <field name="grade_id"/>
+                                            <field name="pool_type"/>
+                                            <field name="track"/>
+                                            <field name="subpool_id" readonly="1"/>
+                                            <field name="grade_code"/>
+                                            <field name="subpool_name"/>
+                                            <field name="base_grade_points"/>
+                                            <field name="skill_premium_pts"/>
+                                            <field name="total_points"/>
+                                        </group>
+                                        <group>
+                                            <field name="grade_deferral_rate"/>
+                                            <field name="aip_eligible"/>
+                                            <field name="appraisal_base_score"/>
+                                            <field name="is_sales"/>
+                                            <field name="sales_role" invisible="is_sales == False"/>
+                                            <field name="territory_id" invisible="is_sales == False"/>
+                                        </group>
+                                    </group>
+                                </div>
+                            </page>
+
+                            <page string="Appraisal" name="appraisal">
+                                <div class="o_emp_summary_row">
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="appraisal_score_payout"/></div>
+                                        <div class="o_emp_summary_stat_label">Latest Appraisal</div>
+                                    </div>
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="latest_behaviour_score"/></div>
+                                        <div class="o_emp_summary_stat_label">Behavioural /25</div>
+                                    </div>
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="dept_kpi_score"/></div>
+                                        <div class="o_emp_summary_stat_label">Dept KPI</div>
+                                    </div>
+                                </div>
+                                <field name="performance_ids" nolabel="1">
+                                    <tree>
+                                        <field name="period_id"/>
+                                        <field name="appraisal_score"/>
+                                        <field name="retain_score"/>
+                                        <field name="potential_assessment_score"/>
+                                        <field name="current_assessment_score"/>
+                                        <field name="prod_pct"/>
+                                        <field name="call_pct"/>
+                                        <field name="present_pct"/>
+                                        <field name="team_pct"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Deferred Balance" name="deferred">
+                                <div class="o_emp_summary_row">
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="total_deferred" widget="monetary"/></div>
+                                        <div class="o_emp_summary_stat_label">Total Deferred</div>
+                                    </div>
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="total_vested" widget="monetary"/></div>
+                                        <div class="o_emp_summary_stat_label">Total Vested</div>
+                                    </div>
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="total_forfeited" widget="monetary"/></div>
+                                        <div class="o_emp_summary_stat_label">Total Forfeited</div>
+                                    </div>
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="deferred_count"/></div>
+                                        <div class="o_emp_summary_stat_label">Records</div>
+                                    </div>
+                                </div>
+                                <field name="deferred_ids" nolabel="1">
+                                    <tree>
+                                        <field name="period_id"/>
+                                        <field name="grade_id"/>
+                                        <field name="calculated_bonus" widget="monetary"/>
+                                        <field name="deferral_rate"/>
+                                        <field name="deferred_amount" widget="monetary"/>
+                                        <field name="vest_date"/>
+                                        <field name="status" widget="badge"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="History" name="history">
+                                <div class="o_emp_summary_row">
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="total_paid" widget="monetary"/></div>
+                                        <div class="o_emp_summary_stat_label">Total Paid</div>
+                                    </div>
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="total_gross_all" widget="monetary"/></div>
+                                        <div class="o_emp_summary_stat_label">Total Gross (All)</div>
+                                    </div>
+                                    <div class="o_emp_summary_stat">
+                                        <div class="o_emp_summary_stat_value"><field name="payout_count"/></div>
+                                        <div class="o_emp_summary_stat_label">Payout Records</div>
+                                    </div>
+                                </div>
+                                <field name="payout_ids" nolabel="1">
+                                    <tree>
+                                        <field name="period_id"/>
+                                        <field name="department_id"/>
+                                        <field name="grade_id"/>
+                                        <field name="base_eligible" widget="monetary"/>
+                                        <field name="gross_payable" widget="monetary"/>
+                                        <field name="deferred_amount" widget="monetary"/>
+                                        <field name="net_immediate" widget="monetary"/>
+                                        <field name="state" widget="badge"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

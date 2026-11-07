@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_kprl_bonus_engine" model="ir.actions.act_window">
+        <field name="name">Bonus Engine</field>
+        <field name="res_model">kprl.bonus.engine</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="view_kprl_bonus_engine_tree" model="ir.ui.view">
+        <field name="name">kprl.bonus.engine.tree</field>
+        <field name="model">kprl.bonus.engine</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="period_id"/>
+                <field name="state" widget="badge"/>
+                <field name="quarterly_revenue" widget="monetary"/>
+                <field name="effective_pool" widget="monetary"/>
+                <field name="total_payout" widget="monetary"/>
+                <field name="gate_status"/>
+                <field name="company_kpi_score"/>
+                <field name="proration_factor"/>
+                <field name="computed_on"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_bonus_engine_form" model="ir.ui.view">
+        <field name="name">kprl.bonus.engine.form</field>
+        <field name="model">kprl.bonus.engine</field>
+        <field name="arch" type="xml">
+            <form class="o_payout_form o_engine_form">
+                <header>
+                    <button name="action_generate_payouts" type="object"
+                            string="Generate Payouts"
+                            class="btn-secondary o_payout_btn"
+                            icon="fa-users"
+                            invisible="state != 'draft'"/>
+                    <button name="action_compute" type="object"
+                            string="Run Computation"
+                            class="btn-primary o_payout_btn"
+                            icon="fa-calculator"
+                            invisible="state != 'draft'"/>
+                    <button name="action_finalize" type="object"
+                            string="Finalize"
+                            class="btn-success o_payout_btn"
+                            icon="fa-check"
+                            invisible="state != 'computed'"/>
+                    <button name="action_reset" type="object"
+                            string="Reset"
+                            icon="fa-rotate-left"
+                            invisible="state not in ['computed', 'finalized']"/>
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="draft,computed,finalized"/>
+                </header>
+    
+                <sheet>
+    
+                    <!-- Meta card: period / status / computed by / computed on -->
+                    <div class="o_payout_card o_payout_meta">
+                        <group>
+                            <group>
+                                <field name="period_id"/>
+                                <field name="state" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="computed_by" widget="many2one_avatar_user"/>
+                                <field name="computed_on"/>
+                            </group>
+                        </group>
+                    </div>
+    
+                    <!-- Signature statement: total payout hero -->
+                    <div class="o_payout_statement">
+                        <div class="o_payout_statement_label">Total Payout This Period</div>
+                        <field name="total_payout" widget="monetary" class="o_payout_amount" nolabel="1"/>
+                        <div class="o_payout_chips">
+                            <div class="o_payout_chip o_payout_chip_ops">
+                                <span class="o_payout_chip_dot"/>
+                                <span class="o_payout_chip_label">Ops Payout</span>
+                                <field name="ops_payout" widget="monetary" nolabel="1"/>
+                            </div>
+                            <div class="o_payout_chip o_payout_chip_sales">
+                                <span class="o_payout_chip_dot"/>
+                                <span class="o_payout_chip_label">Sales Commission</span>
+                                <field name="sales_commission" widget="monetary" nolabel="1"/>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Revenue & Pool -->
+                    <div class="o_payout_card">
+                        <div class="o_payout_card_head">
+                            <i class="fa fa-money-bill-trend-up o_payout_card_icon"/>
+                            <div>
+                                <h2>Revenue &amp; Pool</h2>
+                                <span class="o_payout_card_hint">Quarterly revenue and the resulting incentive pool</span>
+                            </div>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="quarterly_revenue" widget="monetary"/>
+                                <field name="net_revenue" widget="monetary"/>
+                                <field name="pool_contribution" widget="monetary"/>
+                                <field name="grade_level_ids" widget="many2many_tags" required="1"/>
+                                
+                            </group>
+                            <group>
+                                <field name="effective_pool" widget="monetary"/>
+                                <field name="qipm_pool" widget="monetary" readonly="1"/>
+                                <field name="proration_factor"/>
+                            </group>
+                        </group>
+                    </div>
+    
+                    <!-- Gates & KPI -->
+                    <div class="o_payout_card">
+                        <div class="o_payout_card_head">
+                            <i class="fa fa-gauge-high o_payout_card_icon"/>
+                            <div>
+                                <h2>Gates &amp; KPI</h2>
+                                <span class="o_payout_card_hint">Eligibility gates and company performance score</span>
+                            </div>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="ebitda_margin"/>
+                                <field name="gate_status" widget="badge"
+                                    decoration-success="gate_status == 'full'"
+                                    decoration-warning="gate_status == 'partial'"
+                                    decoration-danger="gate_status == 'closed'"/>
+                                <field name="gate_factor"/>
+                            </group>
+                            <group>
+                                <field name="gmp_factor"/>
+                                <field name="company_kpi_score"/>
+                                <field name='company_kpi_avg'/>
+                                <field name='company_gmp_avg'/>
+                                <field name='company_gmp_band_factor'/>
+                                <field name="gmp_status" widget="badge"
+                                    decoration-success="gmp_status == 'clean'"
+                                    decoration-warning="gmp_status == 'non_compliant'"
+                                    decoration-danger="gmp_status == 'non_compliant'"/>
+                            </group>
+                        </group>
+                    </div>
+                    <!-- Payout Summary -->
+                    <div class="o_payout_card">
+                        <div class="o_payout_card_head">
+                            <i class="fa fa-file-invoice-dollar o_payout_card_icon"/>
+                            <div>
+                                <h2>Effect pools </h2>
+                                <span class="o_payout_card_hint">Distribution and coverage pools</span>
+                            </div>
+                        </div>
+                        <group>
+                            <separator string="EFFECTIVE POOLS"/>
+                              <group string="Grand Pool → OPM / SUP">
+                                <field name="opm_pool_split" string="Opm Share Pct (%)"/>
+                                <field name="sup_pool_split" string="SUP Share (%) – auto" readonly="1"/>
+                                <field name="opm_pool" widget="monetary" readonly="1"/>
+                                <field name="sub_pool" widget="monetary" readonly="1"/>
+                            </group>
+                            <group string="SUP Pool → Senior-Mgmt / Ops-Support">
+                                <field name="senior_management_sub_pool" string="Senior-Mgmt Share (%)"/>
+                                <field name="ops_sub_pool_percentage" string="Ops-Support Share (%) – auto" readonly="1"/>
+                                <field name="senior_management_pool" widget="monetary" readonly="1"/>
+                                <field name="ops_sub_pool" widget="monetary" readonly="1"/>
+                            </group>
+                        </group> 
+                    </div>
+                    <div class="o_payout_card">
+                        <div class="o_payout_card_head">
+                            <i class="fa fa-file-invoice-dollar o_payout_card_icon"/>
+                            <div>
+                                <h2>BONUS ENGINE- SECTION F:  </h2>
+                                <span class="o_payout_card_hint">Points Total &amp; Value per point</span>
+                            </div>
+                        </div>
+                        <group>
+                            <separator string="EFFECTIVE POOLS"/>
+                            <group>
+                                <field name="ops_sup_total_point"/>
+                                <field name="senior_mgt_total_point"/>
+                                <field name="opm_total_point"/>
+                                
+                                
+                            </group>
+                            <group>
+                               <field name="ops_sup_value_point" widget="monetary" readonly="1"/>
+                                <field name="senior_mgt_value_point" widget="monetary" readonly="1"/>
+                                <field name="opm_value_point" widget="monetary" readonly="1"/>
+                            </group>
+                        </group>
+                    </div>
+                    <!-- Payout Summary -->
+                    <div class="o_payout_card">
+                        <div class="o_payout_card_head">
+                            <i class="fa fa-file-invoice-dollar o_payout_card_icon"/>
+                            <div>
+                                <h2>Payout Summary</h2>
+                                <span class="o_payout_card_hint">Final distribution and coverage ratios</span>
+                            </div>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="total_payout" widget="monetary"/>
+                                <field name="ops_payout" widget="monetary"/>
+                                <field name="sales_commission" widget="monetary"/>
+                            </group>
+                            <group>
+                                <field name="payout_as_pct_revenue" widget="percentage"/>
+                                <field name="pool_util_vs_ebitda_cap" widget="progressbar"/>
+                                <field name="headcount"/>
+                                <field name="employee_count"/>
+
+                            </group>
+                        </group>
+                    </div>
+    
+                    <!-- Notes -->
+                    <div class="o_payout_card">
+                        <div class="o_payout_card_head">
+                            <i class="fa fa-note-sticky o_payout_card_icon"/>
+                            <div>
+                                <h2>Notes</h2>
+                                <span class="o_payout_card_hint">Internal remarks for this computation</span>
+                            </div>
+                        </div>
+                        <field name="notes" nolabel="1"
+                            placeholder="Add a note about this computation run…"/>
+                    </div>
+    
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    
+</odoo>

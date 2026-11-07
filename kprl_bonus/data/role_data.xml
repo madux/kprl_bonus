@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="kprl_role_gm" model="kprl.role.parameter">
+            <field name="role">gm</field>
+            <!-- Gate thresholds from specification -->
+            <field name="sales_floor">0.50</field>
+            <field name="min_sales_attainment">0.65</field>
+            <field name="retr_floor">0.65</field>
+            <field name="min_retrieval_rate">0.75</field>
+            <!-- Pool share from specification -->
+            <field name="pool_share">0.10</field>
+            <!-- Legacy fields for backward compatibility -->
+            <field name="sales_eligibility">100.0</field>
+            <field name="retrieval_eligibility">100.0</field>
+            <field name="sales_commission_rate">0.50</field>
+            <field name="product_pool_share">1.50</field>
+            <field name="commission_share">1.50</field>
+            <field name="dual_role_cap">0.0</field>
+        </record>
+        <record id="kprl_role_nsm" model="kprl.role.parameter">
+            <field name="role">nsm</field>
+            <!-- Gate thresholds from specification -->
+            <field name="sales_floor">0.50</field>
+            <field name="min_sales_attainment">0.65</field>
+            <field name="retr_floor">0.65</field>
+            <field name="min_retrieval_rate">0.75</field>
+            <!-- Pool share from specification -->
+            <field name="pool_share">0.08</field>
+            <!-- Legacy fields for backward compatibility -->
+            <field name="sales_eligibility">80.0</field>
+            <field name="retrieval_eligibility">80.0</field>
+            <field name="sales_commission_rate">0.40</field>
+            <field name="product_pool_share">1.20</field>
+            <field name="commission_share">1.20</field>
+            <field name="dual_role_cap">0.0</field>
+        </record>
+        <record id="kprl_role_headtech" model="kprl.role.parameter">
+            <field name="role">headtech</field>
+            <!-- Gate thresholds from specification -->
+            <field name="sales_floor">0.50</field>
+            <field name="min_sales_attainment">0.65</field>
+            <field name="retr_floor">0.65</field>
+            <field name="min_retrieval_rate">0.75</field>
+            <!-- Pool share from specification -->
+            <field name="pool_share">0.05</field>
+            <!-- Legacy fields for backward compatibility -->
+            <field name="sales_eligibility">60.0</field>
+            <field name="retrieval_eligibility">60.0</field>
+            <field name="sales_commission_rate">0.30</field>
+            <field name="product_pool_share">0.80</field>
+            <field name="commission_share">0.80</field>
+            <field name="dual_role_cap">0.0</field>
+        </record>
+        <record id="kprl_role_rsm" model="kprl.role.parameter">
+            <field name="role">rsm</field>
+            <!-- Gate thresholds from specification -->
+            <field name="sales_floor">0.65</field>
+            <field name="min_sales_attainment">0.75</field>
+            <field name="retr_floor">0.70</field>
+            <field name="min_retrieval_rate">0.75</field>
+            <!-- Pool share from specification -->
+            <field name="pool_share">0.22</field>
+            <!-- Legacy fields for backward compatibility -->
+            <field name="sales_eligibility">50.0</field>
+            <field name="retrieval_eligibility">50.0</field>
+            <field name="sales_commission_rate">0.25</field>
+            <field name="product_pool_share">0.50</field>
+            <field name="commission_share">0.50</field>
+            <field name="dual_role_cap">0.0</field>
+        </record>
+        <record id="kprl_role_asm" model="kprl.role.parameter">
+            <field name="role">asm</field>
+            <!-- Gate thresholds from specification -->
+            <field name="sales_floor">0.65</field>
+            <field name="min_sales_attainment">0.70</field>
+            <field name="retr_floor">0.70</field>
+            <field name="min_retrieval_rate">0.70</field>
+            <!-- Pool share from specification -->
+            <field name="pool_share">0.55</field>
+            <!-- Legacy fields for backward compatibility -->
+            <field name="sales_eligibility">30.0</field>
+            <field name="retrieval_eligibility">30.0</field>
+            <field name="sales_commission_rate">0.15</field>
+            <field name="product_pool_share">0.30</field>
+            <field name="commission_share">0.30</field>
+            <field name="dual_role_cap">0.0</field>
+        </record>
+        <record id="kprl_role_rsm_asm" model="kprl.role.parameter">
+            <field name="role">rsm_asm</field>
+            <!-- Gate thresholds from specification (Section K) -->
+            <field name="sales_floor">0.65</field>
+            <field name="min_sales_attainment">0.75</field>
+            <field name="retr_floor">0.70</field>
+            <field name="min_retrieval_rate">0.75</field>
+            <!-- Pool share from specification (derived from dual role factor) -->
+            <field name="pool_share">0.4235</field>
+            <!-- Legacy fields for backward compatibility -->
+            <field name="sales_eligibility">80.0</field>
+            <field name="retrieval_eligibility">80.0</field>
+            <field name="sales_commission_rate">0.40</field>
+            <field name="product_pool_share">0.80</field>
+            <field name="commission_share">0.80</field>
+            <field name="dual_role_cap">1.50</field>
+        </record>
+    </data>
+</odoo>

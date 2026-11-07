@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_kprl_performance_input" model="ir.actions.act_window">
+        <field name="name">Performance Inputs</field>
+        <field name="res_model">kprl.performance.input</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
+    <record id="view_kprl_performance_input_tree" model="ir.ui.view">
+        <field name="name">kprl.performance.input.tree</field>
+        <field name="model">kprl.performance.input</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="period_id"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="appraisal_score"/>
+                <field name="potential_assessment_score"/>
+                <field name="current_assessment_score"/>
+                <field name="team_pct"/>
+                <field name="own_target" widget="monetary"/>
+                <field name="own_sales" widget="monetary"/>
+                <field name="prod_pct"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_asm_team_performance_tree" model="ir.ui.view">
+        <field name="name">kprl.asm.team.performance.tree</field>
+        <field name="model">kprl.asm.team.performance</field>
+        <field name="arch" type="xml">
+            <tree string="Regional ASM Sales and Retrieval" create="false" edit="false" delete="false">
+                <field name="period_id"/>
+                <field name="asm_grouping"/>
+                <field name="asm_id"/>
+                <field name="employee_id"/>
+                <field name="manager_id"/>
+                <field name="department_id"/>
+                <field name="performance_input_found"/>
+                <field name="own_target" sum="Team Target"/>
+                <field name="own_sales" sum="Team Sales"/>
+                <field name="own_retrievals" sum="Team Retrievals"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_performance_input_form" model="ir.ui.view">
+        <field name="name">kprl.performance.input.form</field>
+        <field name="model">kprl.performance.input</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="period_id"/>
+                            <field name="employee_id"/>
+                            <field name="department_id"/>
+                        </group>
+                        <group string="Scores">
+                            <field name="appraisal_score"/>
+                            <field name="retain_score"/>
+                            <field name="potential_assessment_score"/>
+                            <field name="current_assessment_score"/>
+                            <field name="team_pct"/>
+                        </group>
+                    </group>
+                    <group string="Sales Performance">
+                        <group>
+                            <field name="own_target" widget="monetary"/>
+                            <field name="own_sales" widget="monetary"/>
+                            <field name="own_retrievals" widget="monetary"/>
+                            <field name="own_revenue" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="prod_pct"/>
+                            <field name="call_pct"/>
+                            <field name="present_pct"/>
+                            <field name="team_pct"/>
+                        </group>
+                    </group>
+                    <group string="Settings">
+                        <group>
+                            <field name="prod_know"/>
+                            <field name="kpi_mult_floor"/>
+                            <field name="kpi_mult_range"/>
+                            <field name="call_rep"/>
+                        </group>
+                        <group>
+                            <field name="coverage"/>
+                            <field name="new_cust"/>
+                            <field name="pk_norm"/>
+                        </group>
+                    </group>
+                    <group string="Sales KPI">
+                        <group>
+                            <field name="product_knowledge_score"/>
+                            <field name="call_report_compliance"/>
+                            <field name="customer_coverage_rate"/>
+                            <field name="new_customer_acquisition"/>
+                        </group>
+                        <group>
+                            <field name="territory_sales"/>
+                            <field name="territory_retrievals"/>
+                            <field name="territory_target"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kprl_performance_input_search" model="ir.ui.view">
+        <field name="name">kprl.performance.input.search</field>
+        <field name="model">kprl.performance.input</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="period_id"/>
+                <field name="department_id"/>
+            </search>
+        </field>
+    </record>
+
+    
+</odoo>

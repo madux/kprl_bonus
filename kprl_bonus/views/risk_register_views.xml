@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_risk_register_tree" model="ir.ui.view">
+        <field name="name">kprl.risk.register.tree</field>
+        <field name="model">kprl.risk.register</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="risk_description"/>
+                <field name="category"/>
+                <field name="impact" widget="badge"/>
+                <field name="likelihood" widget="badge"/>
+                <field name="rating"/>
+                <field name="control_owner"/>
+                <field name="status" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_risk_register_form" model="ir.ui.view">
+        <field name="name">kprl.risk.register.form</field>
+        <field name="model">kprl.risk.register</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="risk_description"/>
+                            <field name="category"/>
+                        </group>
+                        <group>
+                            <field name="impact"/>
+                            <field name="likelihood"/>
+                            <field name="rating"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="control_owner"/>
+                        <field name="status"/>
+                    </group>
+                    <group>
+                        <field name="mitigation"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_risk_register" model="ir.actions.act_window">
+        <field name="name">Risk Register</field>
+        <field name="res_model">kprl.risk.register</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

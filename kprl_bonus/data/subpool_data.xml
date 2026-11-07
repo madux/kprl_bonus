@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="kprl_subpool_opm" model="kprl.subpool">
+            <field name="name">OPM (Operations)</field>
+            <field name="code">OPM</field>
+            <field name="pool_share_pct">60.0</field>
+            <field name="min_share_pct">50.0</field>
+            <field name="max_share_pct">80.0</field>
+        </record>
+        <record id="kprl_subpool_sen_mgt" model="kprl.subpool">
+            <field name="name">Senior Management</field>
+            <field name="code">SENMGT</field>
+            <field name="pool_share_pct">70.0</field>
+            <field name="min_share_pct">60.0</field>
+            <field name="max_share_pct">80.0</field>
+        </record>
+        <record id="kprl_subpool_ops_sup" model="kprl.subpool">
+            <field name="name">Operations / Supervisory</field>
+            <field name="code">OPSSUP</field>
+            <field name="pool_share_pct">30.0</field>
+            <field name="min_share_pct">20.0</field>
+            <field name="max_share_pct">40.0</field>
+        </record>
+        <record id="kprl_subpool_sales" model="kprl.subpool">
+            <field name="name">Sales Commission Pool</field>
+            <field name="code">SALES</field>
+            <field name="pool_share_pct">0.0</field>
+            <field name="min_share_pct">0.0</field>
+            <field name="max_share_pct">100.0</field>
+        </record>
+        <record id="kprl_subpool_aip" model="kprl.subpool">
+            <field name="name">AIP Pool</field>
+            <field name="code">AIP</field>
+            <field name="pool_share_pct">0.0</field>
+            <field name="min_share_pct">0.0</field>
+            <field name="max_share_pct">100.0</field>
+        </record>
+    </data>
+</odoo>

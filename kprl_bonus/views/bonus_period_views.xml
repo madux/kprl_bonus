@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_bonus_period_tree" model="ir.ui.view">
+        <field name="name">kprl.bonus.period.tree</field>
+        <field name="model">kprl.bonus.period</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="state" widget="badge"/>
+                <field name="revenue_target" widget="monetary"/>
+                <field name="ebitda_margin"/>
+                <field name="company_kpi"/>
+                <field name="sla_status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_bonus_period_form" model="ir.ui.view">
+        <field name="name">kprl.bonus.period.form</field>
+        <field name="model">kprl.bonus.period</field>
+        <field name="arch" type="xml">
+            <form class="o_payout_form">
+                <header>
+                    <button name="action_activate" type="object"
+                            string="Activate"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_close" type="object"
+                            string="Close Period"
+                            invisible="state != 'active'"/>
+                    <button name="action_draft" type="object"
+                            string="Reset to Draft"
+                            invisible="state != 'closed'"/>
+                    <button name="action_export_ledger_excel" type="object"
+                            string="Export Ledger (Excel)"
+                            class="btn-secondary"
+                            groups="kprl_bonus.group_kprl_finance"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="o_payout_statement">
+                        <group> 
+                            <field name="description"/>
+                        </group>
+                    </div>
+                    <div class="o_payout_card o_payout_meta">
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                                <field name="state"/>
+                                <field name="sla_results_date"/>
+                                <field name="sla_payout_date"/>
+                            </group>
+                            <group>
+                                <field name="revenue_target" widget="monetary"/>
+                                <field name="net_rev_target" widget="monetary" invisible="1"/>
+                                <field name='revenue_amount' widget='monetary'/>
+                                <field name='ebitda_amount' widget='monetary'/>
+                                <field name='ebitda_data_complete' invisible='1'/>
+                                
+                                <field name="ebitda_margin"/>
+                                <field name="company_kpi"/>
+                                <div class='alert alert-warning' colspan='2' style='grid-column: 1 / -1; width: 100%; margin: 8px 0 0 0;' invisible='ebitda_data_complete'><i class='fa fa-warning'/> Enter Revenue and Quarterly EBITDA/Profit amounts: margin auto-computes. Compute is blocked until data is complete.</div>
+                            </group>
+                       
+                        </group>
+                    </div>
+                    
+                    <notebook>
+                        <page name="parameters" string="Parameters">
+                            <field name="parameter_ids" nolabel="1">
+                                <tree>
+                                    <field name="state" widget="badge"/>
+                                    <field name="is_locked"/>
+                                    <field name="version"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="engine" string="Bonus Engine">
+                            <field name="engine_ids" nolabel="1">
+                                <tree>
+                                    <field name="state" widget="badge"/>
+                                    <field name="effective_pool" widget="monetary"/>
+                                    <field name="total_payout" widget="monetary"/>
+                                    <field name="company_kpi_score"/>
+                                    <field name="computed_on"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page name="payouts" string="Payouts">
+                            <field name="payout_ids" nolabel="1">
+                                <tree>
+                                    <field name="employee_id"/>
+                                    <field name="gross_payable" widget="monetary"/>
+                                    <field name="net_immediate" widget="monetary"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kprl_bonus_period_search" model="ir.ui.view">
+        <field name="name">kprl.bonus.period.search</field>
+        <field name="model">kprl.bonus.period</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="state"/>
+                <filter name="active" string="Active" domain="[('state','=','active')]"/>
+                <filter name="closed" string="Closed" domain="[('state','=','closed')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_kprl_bonus_period" model="ir.actions.act_window">
+        <field name="name">Bonus Periods</field>
+        <field name="res_model">kprl.bonus.period</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
+</odoo>

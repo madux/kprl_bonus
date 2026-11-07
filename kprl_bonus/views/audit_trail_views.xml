@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_audit_trail_tree" model="ir.ui.view">
+        <field name="name">kprl.audit.trail.tree</field>
+        <field name="model">kprl.audit.trail</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="timestamp"/>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="category" widget="badge"/>
+                <field name="event_id"/>
+                <field name="employee_id"/>
+                <field name="grade_old_id"/>
+                <field name="grade_new_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_audit_trail_form" model="ir.ui.view">
+        <field name="name">kprl.audit.trail.form</field>
+        <field name="model">kprl.audit.trail</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="user_id"/>
+                            <field name="timestamp"/>
+                        </group>
+                        <group>
+                            <field name="category"/>
+                            <field name="event_id"/>
+                            <field name="employee_id"/>
+                            <field name="grade_old_id"/>
+                            <field name="grade_new_id"/>
+                        </group>
+                    <group string="Details">
+                        <field name="detail"/>
+                    </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_audit_trail" model="ir.actions.act_window">
+        <field name="name">Audit Trail</field>
+        <field name="res_model">kprl.audit.trail</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

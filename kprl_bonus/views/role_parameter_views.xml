@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_role_parameter_tree" model="ir.ui.view">
+        <field name="name">kprl.role.parameter.tree</field>
+        <field name="model">kprl.role.parameter</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="role"/>
+                <field name="sales_eligibility"/>
+                <field name="retrieval_eligibility"/>
+                <field name="sales_commission_rate"/>
+                <field name="product_pool_share"/>
+                <field name="commission_share"/>
+                <field name="dual_role_cap"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_role_parameter_form" model="ir.ui.view">
+        <field name="name">kprl.role.parameter.form</field>
+        <field name="model">kprl.role.parameter</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="role"/>
+                        <field name="sales_eligibility"/>
+                        <field name="retrieval_eligibility"/>
+                        <field name="sales_commission_rate"/>
+                        <field name="product_pool_share"/>
+                        <field name="commission_share"/>
+                        <field name="dual_role_cap"/>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_role_parameter" model="ir.actions.act_window">
+        <field name="name">Role Parameters</field>
+        <field name="res_model">kprl.role.parameter</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

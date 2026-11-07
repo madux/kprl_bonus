@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_grade_tree" model="ir.ui.view">
+        <field name="name">kprl.grade.tree</field>
+        <field name="model">kprl.grade</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="yp_points"/>
+                <field name="diff_points" invisible="1"/>
+                <field name="skill_max"/>
+                <field name="suggested_skill"/>
+                <field name="total_points"/>
+                <field name="deferral_rate"/>
+                <field name="subpool_id"/>
+                <field name="aip_eligible"/>
+                <field name="is_senior_mgmt_tier"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_grade_form" model="ir.ui.view">
+        <field name="name">kprl.grade.form</field>
+        <field name="model">kprl.grade</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_reset_to_workbook" type="object"
+                            string="Reset to Workbook Defaults"
+                            class="btn-secondary"
+                            icon="fa-refresh"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="subpool_id"/>
+                        </group>
+                        <group>
+                            <field name="deferral_rate"/>
+                            <field name="aip_eligible"/>
+                            <field name="is_senior_mgmt_tier"/>
+                        </group>
+                    </group>
+                    <group string="Points Breakdown">
+                        <group>
+                            <field name="yp_points"/>
+                            <field name="diff_points" invisible="1"/>
+                            <field name="skill_max"/>
+                            <field name="suggested_skill"/>
+                            <field name="total_points"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="governance_note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_grade" model="ir.actions.act_window">
+        <field name="name">Grade Reference</field>
+        <field name="res_model">kprl.grade</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- User group - read-only access -->
+        <record id="group_kprl_user" model="res.groups">
+            <field name="name">Users / Employee</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+        </record>
+
+        <!-- HR group -->
+        <record id="group_kprl_hr" model="res.groups">
+            <field name="name">HR</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('group_kprl_user'))]"/>
+        </record>
+
+        <!-- Admin group -->
+        <record id="group_kprl_admin" model="res.groups">
+            <field name="name">Admin</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('group_kprl_hr'))]"/>
+        </record>
+
+        <!-- Finance group -->
+        <record id="group_kprl_finance" model="res.groups">
+            <field name="name">Finance</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('group_kprl_admin'))]"/>
+        </record>
+
+        <!-- Exec Director group -->
+        <record id="group_kprl_exec_director" model="res.groups">
+            <field name="name">Exec Director</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('group_kprl_finance'))]"/>
+        </record>
+
+        <!-- CEO/Superadmin group - full access -->
+        <record id="group_kprl_ceo" model="res.groups">
+            <field name="name">CEO / Superadmin</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+            <field name="implied_ids" eval="[(4, ref('group_kprl_exec_director'))]"/>
+        </record>
+    </data>
+</odoo>

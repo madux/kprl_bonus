@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_product_pool_tree" model="ir.ui.view">
+        <field name="name">kprl.product.pool.tree</field>
+        <field name="model">kprl.product.pool</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="period_id"/>
+                <field name="product_id"/>
+                <field name="quantity_units"/>
+                <field name="unit_price" widget="monetary"/>
+                <field name="sku_rate"/>
+                <field name="quantity_revenue" widget="monetary"/>
+                <field name="pool_contribution" widget="monetary"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_product_pool_form" model="ir.ui.view">
+        <field name="name">kprl.product.pool.form</field>
+        <field name="model">kprl.product.pool</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="period_id"/>
+                            <field name="product_id"/>
+                            <field name="quantity_units"/>
+                            <field name="unit_price" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="sku_rate"/>
+                            <field name="quantity_revenue" widget="monetary"/>
+                            <field name="pool_contribution" widget="monetary"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_product_pool" model="ir.actions.act_window">
+        <field name="name">Product Pool Contributions</field>
+        <field name="res_model">kprl.product.pool</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,600 @@
+/* ==========================================================================
+   KPRL BONUS SYSTEM BRAND & RESET CONFIGURATIONS
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Work Sans', sans-serif;
+    background-color: #faf6f6;
+    color: #333333;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    height: 100%;
+    width: 100%;
+}
+
+/* Parent Workspace Dashboard Framework Layout */
+.kprl-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+/* Left Sidebar Decorative Edge Panel */
+.kprl-sidebar {
+    width: 64px;
+    background-color: #71496f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 16px;
+    flex-shrink: 0;
+}
+
+.kprl-logo-box {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.kprl-logo-icon {
+    color: #ffffff;
+    font-size: 22px;
+    opacity: 0.9;
+}
+
+/* Main Dashboard Container Context */
+.kprl-main-content {
+    flex-grow: 1;
+    padding: 0 24px 40px 24px;
+    background-color: #f4f6f9;
+    min-width: 100%;
+    min-height: 100vh;
+}
+
+/* ==========================================================================
+   NAVIGATION HEADER BAR
+   ========================================================================== */
+.kprl-header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e1e4e8;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+    margin-left: -24px;
+    margin-right: -24px;
+    padding: 0 24px;
+}
+
+.kprl-breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.kprl-brand-title {
+    font-weight: 700;
+    color: #212529;
+}
+
+.kprl-crumb-sep {
+    margin: 0 10px;
+    color: #8c96a3;
+    font-size: 12px;
+}
+
+.kprl-current-view {
+    color: #495057;
+    font-weight: 400;
+}
+
+.kprl-user-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.kprl-icon-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.kprl-icon-btn:hover {
+    color: #212529;
+}
+
+.kprl-user-badge {
+    background-color: #71496f;
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   CONTROLS, PILLS, & INTERACTION TOOLS
+   ========================================================================== */
+.kprl-control-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.kprl-action-group-left,
+.kprl-action-group-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.kprl-btn-primary {
+    background-color: #6a3d6a;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.kprl-btn-primary:hover {
+    background-color: #532e53;
+}
+
+.kprl-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.kprl-btn-secondary {
+    background-color: #ffffff;
+    color: #495057;
+    border: 1px solid #ced4da;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.kprl-btn-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #b5bbc1;
+}
+
+.kprl-status-pill-static {
+    background-color: #ffffff;
+    color: #495057;
+    border: 1px solid #ced4da;
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* Period Label Timeline Selection Tabs */
+.kprl-period-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.kprl-label-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    min-width: 80px;
+}
+
+.kprl-tab-btn {
+    background-color: #ffffff;
+    border: 1px solid #e1e4e8;
+    color: #495057;
+    padding: 4px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.kprl-tab-btn:hover {
+    background-color: #f1f3f5;
+}
+
+.kprl-tab-active {
+    background-color: #6a3d6a;
+    color: #ffffff;
+    border-color: #6a3d6a;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   GATE STATUS LINE ITEMS
+   ========================================================================== */
+.kprl-gate-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.kprl-gate-badge {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kprl-gate-pass {
+    background-color: #def2e6;
+    color: #1b5e20;
+    border: 1px solid #c3e6cb;
+}
+
+.kprl-gate-clean {
+    background-color: #def2e6;
+    color: #1b5e20;
+    border: 1px solid #c3e6cb;
+}
+
+.kprl-gate-info-pill {
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.kprl-bg-light-blue {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+}
+
+.kprl-bg-bold-blue {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+    border: 1px solid #d2e3fc;
+}
+
+/* ==========================================================================
+   METRIC SUMMARY GRID & ANIMATED CARDS
+   ========================================================================== */
+.kprl-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+/* Interactive Card Entry & Scale Micro-Animations */
+.kprl-kpi-card {
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+    animation: kprl-fade-in 0.4s cubic-bezier(0.1, 0.8, 0.3, 1) both;
+}
+
+.kprl-kpi-card:hover {
+    transform: translateY(-4px) scale(1.015);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Staggered card load triggers */
+.kprl-kpi-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.kprl-kpi-card:nth-child(2) {
+    animation-delay: 0.10s;
+}
+
+.kprl-kpi-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.kprl-kpi-card:nth-child(4) {
+    animation-delay: 0.20s;
+}
+
+/* Structural Colored Side Accent Bars */
+.kprl-kpi-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.kprl-border-cyan::before {
+    background-color: #17a2b8;
+}
+
+.kprl-border-dark-blue::before {
+    background-color: #2b579a;
+}
+
+.kprl-border-green::before {
+    background-color: #28a745;
+}
+
+.kprl-border-gray::before {
+    background-color: #6c757d;
+}
+
+.kprl-border-orange::before {
+    background-color: #fd7e14;
+}
+
+/* Typography inside Metrics Cards */
+.kprl-card-title {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.kprl-card-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+
+.kprl-card-trend {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.kprl-trend-up {
+    color: #28a745;
+}
+
+.kprl-trend-down {
+    color: #dc3545;
+}
+
+.kprl-trend-neutral {
+    color: #6c757d;
+}
+
+.kprl-card-subtext {
+    font-size: 11px;
+    color: #adb5bd;
+}
+
+/* ==========================================================================
+   TREND ANALYSIS SECTION
+   ========================================================================== */
+.kprl-trend-section {
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+}
+
+.kprl-trend-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.kprl-trend-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2b579a;
+}
+
+.kprl-trend-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.kprl-trend-filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.kprl-trend-select {
+    padding: 4px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'Work Sans', sans-serif;
+    color: #495057;
+    background-color: #ffffff;
+    cursor: pointer;
+    outline: none;
+}
+
+.kprl-trend-select:focus {
+    border-color: #6a3d6a;
+}
+
+.kprl-chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* ==========================================================================
+   DEPARTMENT BREAKDOWN TABLE SECTION
+   ========================================================================== */
+.kprl-table-section {
+    background-color: #ffffff;
+    border-radius: 4px;
+    padding: 20px 0 0 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+}
+
+.kprl-section-heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2b579a;
+    padding: 0 20px 14px 20px;
+}
+
+.kprl-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.kprl-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+
+.kprl-data-table th {
+    background-color: #f1f3f5;
+    color: #495057;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.kprl-data-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f3f5;
+    color: #333333;
+}
+
+.kprl-data-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Row Performance Status Badges */
+.kprl-status-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+
+.kprl-tag-target {
+    background-color: #def2e6;
+    color: #1b5e20;
+}
+
+.kprl-tag-exceed {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+}
+
+.kprl-tag-watch {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* ==========================================================================
+   BOTTOM ALERT & SLA STATUS PANEL
+   ========================================================================== */
+.kprl-sla-footer {
+    background-color: #fffde7;
+    border: 1px solid #fff59d;
+    border-radius: 6px;
+    padding: 12px 20px;
+}
+
+.kprl-sla-content {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #555555;
+    flex-wrap: wrap;
+}
+
+.kprl-sla-icon {
+    color: #f57f17;
+    font-size: 14px;
+    margin-right: 8px;
+}
+
+.kprl-sla-divider {
+    margin: 0 12px;
+    color: #e0e0e0;
+}
+
+.kprl-text-success {
+    color: #28a745;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   KEYFRAME ANIMATION PROCEDURES
+   ========================================================================== */
+@keyframes kprl-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Scaling Breakpoints */
+@media (max-width: 1100px) {
+    .kprl-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 650px) {
+    .kprl-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .kprl-control-bar,
+    .kprl-gate-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .kprl-trend-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

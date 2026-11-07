@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Parallel simulator screen. Existing payout views are untouched. -->
+    <record id="action_kprl_payout_simulator" model="ir.actions.act_window">
+        <field name="name">Payout Simulator (New)</field>
+        <field name="res_model">kprl.payout.simulator</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <record id="view_kprl_payout_simulator_form" model="ir.ui.view">
+        <field name="name">kprl.payout.simulator.form</field>
+        <field name="model">kprl.payout.simulator</field>
+        <field name="arch" type="xml">
+            <form class="o_kprl_simulator">
+                <sheet>
+                    <div class="o_sim_hero">
+                        <h1>Payout Calculator</h1>
+                        <field name="status" widget="badge"/>
+                    </div>
+                    <!-- Only editable controls on the whole screen -->
+                    <group string="Selection">
+                        <field name="period_id" options="{'no_create': True}"/>
+                        <field name="employee_id" options="{'no_create': True}"/>
+                    </group>
+                    <div class="o_sim_blocked" invisible="status != 'blocked'">
+                        <strong>BLOCKED</strong>
+                        <field name="blocking_errors_text" nolabel="1"/>
+                    </div>
+                    <group string="Employee" invisible="not emp_name">
+                        <group>
+                            <field name="emp_name"/>
+                            <field name="staff_id"/>
+                            <field name="grade_name"/>
+                            <field name="dept_name"/>
+                        </group>
+                        <group>
+                            <field name="pool_type"/>
+                            <field name="track"/>
+                            <field name="sales_role"/>
+                            <field name="territory_name"/>
+                            <field name="years_of_service"/>
+                            <field name="emp_status"/>
+                        </group>
+                    </group>
+                    <group string="Classification" invisible="not engines_display">
+                        <field name="engines_display"/>
+                        <field name="sub_pool"/>
+                        <field name="base_points"/>
+                        <field name="skill_premium"/>
+                        <field name="total_points"/>
+                        <field name="deferral_rate"/>
+                    </group>
+                    <group string="Performance (source inputs, readonly)">
+                        <field name="appraisal"/>
+                        <field name="behaviour"/>
+                        <field name="dept_kpi"/>
+                    </group>
+                    <group string="Calculation (slice-1 preview)">
+                        <group string="Operations leg">
+                            <field name="appraisal_multiplier"/>
+                            <field name="behaviour_multiplier"/>
+                            <field name="tenure_multiplier"/>
+                        </group>
+                        <group string="Sales leg">
+                            <field name="sales_attainment"/>
+                            <field name="sales_gate"/>
+                            <field name="retrieval_gate"/>
+                        </group>
+                    </group>
+                    <group string="Totals">
+                        <field name="combined_gross"/>
+                        <field name="warnings_text"/>
+                    </group>
+                    <group>
+                        <button name="action_refresh" type="object" string="Refresh Preview" class="btn-secondary"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

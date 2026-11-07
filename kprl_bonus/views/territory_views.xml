@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ═══════════════ TERRITORY TREE (Enhanced) ═══════════════ -->
+    <record id="view_kprl_territory_tree" model="ir.ui.view">
+        <field name="name">kprl.territory.tree</field>
+        <field name="model">kprl.territory</field>
+        <field name="arch" type="xml">
+            <tree string="Sales Territories"
+                  decoration-info="is_active == True"
+                  decoration-muted="is_active == False">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="rsm_id"/>
+                <field name="rsm_target" widget="monetary"/>
+                <field name="team_target" widget="monetary"/>
+                <field name="effective_target" widget="monetary"/>
+                <field name="total_commission" widget="monetary"/>
+                <field name="latest_achievement" widget="progressbar"
+                       sum="Avg Achievement"/>
+                <field name="gate_status" widget="badge"
+                       decoration-success="gate_status == 'PASS'"
+                       decoration-warning="gate_status == 'REVIEW'"
+                       decoration-danger="gate_status == 'NO DATA'"/>
+                <field name="payout_count"/>
+                <field name="is_active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ═══════════════ TERRITORY FORM (Dashboard) ═══════════════ -->
+    <record id="view_kprl_territory_form" model="ir.ui.view">
+        <field name="name">kprl.territory.form</field>
+        <field name="model">kprl.territory</field>
+        <field name="arch" type="xml">
+            <form string="Territory Dashboard">
+                <sheet>
+                  
+                    <div class="territory_card_container" >
+                        <button class="card_btn" type="object"
+                                name="action_view_payouts" icon="fa-money">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="effective_target" widget="monetary" readonly="1"/>
+                                </span>
+                                <span class="o_stat_text">Territory Target</span>
+                            </div>
+                        </button>
+                        <button class="card_btn" type="object"
+                                name="action_view_payouts" icon="fa-line-chart">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value" >
+                                    <field name="latest_achievement" widget="progressbar"/>
+                                </span>
+                                <span class="o_stat_text">Achievement</span>
+                            </div>
+                        </button>
+                        <button class="card_btn" type="object"
+                                name="action_view_payouts" icon="fa-check-circle">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value" >
+                                    <field name="gate_status" widget="badge"
+                                           decoration-success="gate_status == 'PASS'"
+                                           decoration-warning="gate_status == 'REVIEW'"
+                                           decoration-danger="gate_status == 'NO DATA'"/>
+                                </span>
+                                <span class="o_stat_text">Sales Gate</span>
+                            </div>
+                        </button>
+                        <button class="card_btn" type="object"
+                                name="action_view_payouts" icon="fa-percent">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value" >
+                                    <field name="retrieval_rate"/>%
+                                </span>
+                                <span class="o_stat_text">Retrieval Rate</span>
+                            </div>
+                        </button>
+                        <button class="card_btn" type="object"
+                                name="action_view_payouts" icon="fa-briefcase">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="total_commission" widget="monetary"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Team Commission (<field name="payout_count"/>)
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+<div class="oe_title ">
+                        <h1>
+                            <field name="name" placeholder="Territory Name"/>
+                        </h1>
+                        <div class="oe_edit_only">
+                            <field name="code" placeholder="CODE"/>
+                        </div>
+                    </div>
+                    <notebook>
+                        <page string="Territory Summary" name="summary" class="o_payout_form">
+                            <group>
+                                <group string="Territory Info">
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="rsm_id"/>
+                                    <field name="source"/>
+                                    <field name="is_active"/>
+                                </group>
+                                <group string="Targets">
+                                    <field name="rsm_target" widget="monetary"/>
+                                    <field name="team_target" widget="monetary"/>
+                                    <field name="effective_target" widget="monetary"/>
+                                    <field name="achieve_pct" widget="progressbar"/>
+                                    <field name="latest_period"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Payouts" name="payouts" class="o_payout_form">
+                            <field name="payout_ids" readonly="1">
+                                <tree string="Territory Payouts"
+                                      decoration-success="state == 'approved'"
+                                      decoration-info="state == 'computed'"
+                                      decoration-muted="state == 'draft'">
+                                    <field name="period_id"/>
+                                    <field name="effective_target" widget="monetary"/>
+                                    <field name="achievement_pct" widget="progressbar"/>
+                                    <field name="commission_payable" widget="monetary"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'approved'"
+                                           decoration-warning="state == 'computed'"
+                                           decoration-muted="state == 'draft'"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Commission Breakdown" name="commission" class="o_payout_form">
+                            <group string="Summary">
+                                <group>
+                                    <field name="payout_count" string="Total Records"/>
+                                    <field name="total_target" widget="monetary" string="Total Target"/>
+                                </group>
+                                <group>
+                                    <field name="total_commission" widget="monetary" string="Total Commission"/>
+                                    <field name="gate_status" string="Gate Status"/>
+                                </group>
+                            </group>
+                            <field name="payout_ids" readonly="1">
+                                <tree string="Commission Details">
+                                    <field name="period_id"/>
+                                    <field name="effective_target" widget="monetary" string="Target"/>
+                                    <field name="achievement_pct" string="Achievement (%)"/>
+                                    <field name="commission_payable" widget="monetary" string="Commission"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════ SEARCH VIEW ═══════════════ -->
+        <record id="view_kprl_territory_search" model="ir.ui.view">
+        <field name="name">kprl.territory.search</field>
+        <field name="model">kprl.territory</field>
+        <field name="arch" type="xml">
+            <search string="Search Territories">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="rsm_id"/>
+                <filter name="is_active" string="Active"
+                        domain="[('is_active', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="RSM" name="rsm"
+                            context="{'group_by': 'rsm_id'}"/>
+                    <filter string="Source" name="source"
+                            context="{'group_by': 'source'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════ ACTION ═══════════════ -->
+    <record id="action_kprl_territory" model="ir.actions.act_window">
+        <field name="name">Sales Territories</field>
+        <field name="res_model">kprl.territory</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_kprl_territory_search"/>
+        <field name="context">{'search_default_is_active': 1}</field>
+    </record>
+</odoo>

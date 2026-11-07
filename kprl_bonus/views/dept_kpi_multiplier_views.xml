@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_dept_kpi_multiplier_tree" model="ir.ui.view">
+        <field name="name">kprl.dept.kpi.multiplier.tree</field>
+        <field name="model">kprl.dept.kpi.multiplier</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="department_id"/>
+                <field name="period_id"/>
+                <field name="kpi_score"/>
+                <field name="multiplier"/>
+                <field name="def_factor"/>
+                <field name="gmp_status" widget="badge"/>
+                <field name="self_flag"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_dept_kpi_multiplier_form" model="ir.ui.view">
+        <field name="name">kprl.dept.kpi.multiplier.form</field>
+        <field name="model">kprl.dept.kpi.multiplier</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="department_id"/>
+                        <field name="period_id"/>
+                        <field name="kpi_score"/>
+                        <field name="multiplier"/>
+                        <field name="gmp_status"/>
+                        <field name="def_factor"/>
+                        <field name="self_flag"/>
+                        <field name="def_factor"/>
+                    </group>
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_dept_kpi_multiplier" model="ir.actions.act_window">
+        <field name="name">Dept KPI Multipliers</field>
+        <field name="res_model">kprl.dept.kpi.multiplier</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

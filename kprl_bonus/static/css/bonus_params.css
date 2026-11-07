@@ -1,0 +1,811 @@
+/* ==========================================================================
+   Odoo Form Workspace Isolation (Menu/Navbar Protected)
+   ========================================================================== */
+
+/* 1. Main Sheet Container inside the Viewport Workspace */
+.o_content .o_form_sheet_bg {
+  background-color: #f8f9fa !important;
+  /* Soft grey workspace backdrop */
+  padding: 1.5rem 0;
+}
+
+.o_content .o_form_sheet {
+  background: #ffffff;
+  border: 1px solid #e3e6f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: 2rem !important;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 2. Embedded Control & Stat Button Box */
+.o_content .oe_button_box {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eaecf4;
+  padding-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.o_content .oe_stat_button {
+  border: 1px solid #d1d3e2 !important;
+  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  color: #4e73df !important;
+  font-weight: 600;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.15s ease-in-out;
+}
+
+.o_content .oe_stat_button:hover {
+  background-color: #f8f9fc !important;
+  border-color: #4e73df !important;
+  text-decoration: none;
+}
+
+/* 3. Form Input Grid & Typography Fields */
+.o_content .o_group {
+  margin-bottom: 1.25rem;
+}
+
+.o_content .o_form_label {
+  font-weight: 600;
+  color: #3a3b45;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Clean Form Interactive Fields */
+.o_content .o_field_widget input,
+.o_content .o_field_widget select,
+.o_content .o_field_widget textarea {
+  border-radius: 5px !important;
+  border: 1px solid #d1d3e2 !important;
+  padding: 0.375rem 0.75rem !important;
+  color: #6e707e !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.o_content .o_field_widget input:focus {
+  border-color: #bac8f3 !important;
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.15) !important;
+}
+
+/* 4. Notebook Tab Menus (Base Setup) */
+.o_content .o_notebook {
+  margin-top: 2.5rem;
+}
+
+.o_content .nav-tabs {
+  border-bottom: 2px solid #eaecf4 !important;
+}
+
+.o_content .nav-tabs .nav-link {
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.25rem;
+  color: #858796;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  transition: all 0.15s ease;
+}
+
+.o_content .nav-tabs .nav-link:hover {
+  color: #3a3b45;
+  background-color: transparent;
+}
+
+/* Standard Fallback Active Tab Color */
+.o_content .nav-tabs .nav-item.show .nav-link,
+.o_content .nav-tabs .nav-link.active {
+  color: #4e73df;
+  font-weight: 700;
+  background-color: transparent !important;
+  border-bottom-color: #4e73df !important;
+}
+
+/* Tab Content Areas */
+.o_content .tab-pane .o_group {
+  padding: 1.75rem;
+  border-radius: 8px;
+  background-color: #ffffff;
+  border: 1px solid #eaecf4;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+  margin-top: 1rem;
+}
+
+/* Dynamic Section Title Separation Blocks */
+.o_content .o_horizontal_separator,
+.o_content .tab-pane .o_horizontal_separator {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #3a3b45;
+  border-bottom: 2px solid #eaecf4;
+  padding-bottom: 0.5rem;
+  margin-top: 1.75rem;
+  margin-bottom: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   5. Explicit Section Theme Overrides (Form Area Notebook Tabs)
+   ========================================================================== */
+
+/* Section A: Main Bonus Pool (Gold) */
+.o_content .nav-tabs .nav-link[href="#pool_params"].active {
+  color: #b8923a !important;
+  border-bottom-color: #b8923a !important;
+}
+
+.o_content .tab-pane[id="pool_params"] .o_horizontal_separator {
+  color: #b8923a !important;
+  border-bottom-color: #f5ebd3 !important;
+}
+
+/* Section B: Sales Commission (Green) */
+.o_content .nav-tabs .nav-link[href="#sales"].active {
+  color: #2e7d32 !important;
+  border-bottom-color: #2e7d32 !important;
+}
+
+.o_content .tab-pane[id="sales"] .o_horizontal_separator {
+  color: #2e7d32 !important;
+  border-bottom-color: #e8f5e9 !important;
+}
+
+/* Section C: Eligibility Thresholds (Teal) */
+.o_content .nav-tabs .nav-link[href="#eligibility"].active {
+  color: #00838f !important;
+  border-bottom-color: #00838f !important;
+}
+.o_content .tab-pane[id="eligibility"] .o_horizontal_separator {
+  color: #00838f !important;
+  border-bottom-color: #e0f7fa !important;
+}
+
+/* Section d: AIP & Deferred Parameters (Navy) */
+.o_content .nav-tabs .nav-link[href="#deferred"].active {
+  color: #283593 !important;
+  border-bottom-color: #283593 !important;
+}
+
+.o_content .tab-pane[id="deferred"] .o_horizontal_separator {
+  color: #283593 !important;
+  border-bottom-color: #e8eaf6 !important;
+}
+
+/* Section E: KPI Weights (Orange) */
+.o_content .nav-tabs .nav-link[href="#kpi_weights"].active {
+  color: #ef6c00 !important;
+  border-bottom-color: #ef6c00 !important;
+}
+.o_content .tab-pane[id="kpi_weights"] .o_horizontal_separator {
+  color: #ef6c00 !important;
+  border-bottom-color: #fff3e0 !important;
+}
+
+/* Section F: National Targets (Purple) */
+.o_content .nav-tabs .nav-link[href="#targets"].active {
+  color: #6a1b9a !important;
+  border-bottom-color: #6a1b9a !important;
+}
+
+.o_content .tab-pane[id="targets"] .o_horizontal_separator {
+  color: #6a1b9a !important;
+  border-bottom-color: #f3e5f5 !important;
+}
+
+/* ==========================================================================
+   6. Alerts Block Modifiers
+   ========================================================================== */
+.o_content .alert-info {
+  background-color: #f0f4f8;
+  border-left: 4px solid #4e73df;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  color: #3a3b45;
+  padding: 1rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
+.kprl_param_card {
+  background: #ffffff;
+  border: 1px solid #e3e6f0;
+  border-left: 4px solid #d1d3e2;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.kprl_param_card:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.kprl_state_draft {
+  border-left-color: #858796;
+}
+
+.kprl_state_pending_approval {
+  border-left-color: #ef6c00;
+}
+
+.kprl_state_approved {
+  border-left-color: #2e7d32;
+}
+
+.kprl_state_rejected {
+  border-left-color: #c62828;
+}
+
+.kprl_card_top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kprl_card_title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #3a3b45;
+}
+
+.kprl_version {
+  font-weight: 400;
+  color: #858796;
+  font-size: 0.8rem;
+  margin-left: 6px;
+}
+
+.kprl_lock {
+  color: #c62828;
+}
+
+.kprl_card_state {
+  margin: 0.5rem 0;
+}
+
+.kprl_card_metrics {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.kprl_metric_label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #858796;
+}
+
+.kprl_metric_value {
+  font-weight: 600;
+  color: #3a3b45;
+}
+
+.kprl_card_footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eaecf4;
+  font-size: 0.8rem;
+  color: #858796;
+}
+
+.kprl_param_card {
+  background: #ffffff;
+  border: 1px solid #e3e6f0;
+  border-left: 4px solid #d1d3e2;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.kprl_param_card:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.kprl_state_draft {
+  border-left-color: #858796;
+}
+
+.kprl_state_pending_approval {
+  border-left-color: #ef6c00;
+}
+
+.kprl_state_approved {
+  border-left-color: #2e7d32;
+}
+
+.kprl_state_rejected {
+  border-left-color: #c62828;
+}
+
+.kprl_card_top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kprl_card_title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #3a3b45;
+}
+
+.kprl_version {
+  font-weight: 400;
+  color: #858796;
+  font-size: 0.8rem;
+  margin-left: 6px;
+}
+
+.kprl_lock {
+  color: #c62828;
+}
+
+.kprl_card_state {
+  margin: 0.5rem 0;
+}
+
+.kprl_card_metrics {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.kprl_metric_label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #858796;
+}
+
+.kprl_metric_value {
+  font-weight: 600;
+  color: #3a3b45;
+}
+
+.kprl_card_footer {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eaecf4;
+  font-size: 0.8rem;
+  color: #858796;
+}
+
+/* ==========================================================================
+   Territory Dashboard — Stat Cards (territory_card_container / card_btn)
+   Replaces the old fixed-size .card_btn / .oe_stat_button rule at top
+   of this file. Delete that block — it conflicts with this one.
+   ========================================================================== */
+
+.territory_card_container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 4px 0 24px 0;
+}
+
+.card_btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 226px;
+  min-height: 92px;
+  padding: 18px 18px 18px 16px;
+  background-color: #ffffff;
+  border: 1px solid #e5e1e6;
+  border-left: 5px solid #b98fc9;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(42, 42, 49, 0.08);
+  text-align: left;
+}
+
+/* icon badge */
+.card_btn .o_button_icon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #6d3556;
+}
+
+.card_btn .fa-money.o_button_icon {
+  background-color: #3a7bd5;
+}
+
+.card_btn .fa-line-chart.o_button_icon {
+  background-color: #2f9e6e;
+}
+
+.card_btn .fa-check-circle.o_button_icon {
+  background-color: #6d3556;
+}
+
+.card_btn .fa-percent.o_button_icon {
+  background-color: #1f8f83;
+}
+
+.card_btn .fa-briefcase.o_button_icon {
+  background-color: #d98a1f;
+}
+
+/* text block */
+.card_btn .o_field_widget.o_stat_info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.card_btn .o_stat_value {
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: #2a2a31;
+  line-height: 1.2;
+  white-space: nowrap;
+  /* overflow: hidden;  the % is hiding inside the container*/
+  text-overflow: ellipsis;
+}
+
+.card_btn .o_stat_text {
+  font-size: 0.7rem;
+  color: #6b6b76;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* progressbar widget lives inside o_stat_value in your markup (Achievement
+   card) — the nowrap/ellipsis rule above breaks it. Override for that
+   specific child. */
+.card_btn .o_stat_value .o_field_progressbar {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.card_btn .o_field_progressbar .o_progress {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #ece8eb;
+  margin-top: 4px;
+}
+
+.card_btn .o_field_progressbar .o_progressbar_complete {
+  background-color: #6d3556;
+}
+
+/* badge widget — gate_status */
+.card_btn .o_field_widget[name="gate_status"] .badge {
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+/* narrow screens */
+@media (max-width: 768px) {
+  .card_btn {
+    width: 100%;
+  }
+}
+
+.o_form_view .o_form_sheet .oe_title {
+  float: none;
+  width: 100%;
+}
+
+.o_form_view .oe_button_box {
+  float: none;
+  position: static;
+  clear: both;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+  margin: 16px 0 24px 0;
+}
+
+.o_form_view .oe_button_box .oe_stat_button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #e5e1e6;
+  border-radius: 10px;
+  background-color: #ffffff;
+  padding: 20px 18px;
+  min-height: 88px;
+  min-width: 0;
+  width: 100%;
+  box-shadow: 0 1px 2px rgba(42, 42, 49, 0.06);
+}
+
+/* Do NOT set a fixed width/height on .oe_stat_button (e.g. 250px x
+   200px). The grid columns above already own the width — a fixed
+   width fights the grid and breaks the 5-across full-bleed row the
+   reference design uses. min-height keeps cards from collapsing when
+   a value is short, without forcing every card to the same tall,
+   square shape the reference doesn't have. */
+
+/* icon badge — Odoo renders the icon= attribute as a span carrying both
+   the fa-* class and o_button_icon on the same element */
+.o_form_view .oe_button_box .oe_stat_button .o_button_icon {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #ffffff;
+  background-color: #6d3556;
+}
+
+/* per-metric icon color, selected by the fa-icon class itself
+   (class selector, not a pseudo-class) */
+.o_form_view .oe_button_box .oe_stat_button .fa-money.o_button_icon {
+  background-color: #3a7bd5;
+}
+
+.o_form_view .oe_button_box .oe_stat_button .fa-line-chart.o_button_icon {
+  background-color: #2f9e6e;
+}
+
+.o_form_view .oe_button_box .oe_stat_button .fa-check-circle.o_button_icon {
+  background-color: #6d3556;
+}
+
+.o_form_view .oe_button_box .oe_stat_button .fa-percent.o_button_icon {
+  background-color: #1f8f83;
+}
+
+.o_form_view .oe_button_box .oe_stat_button .fa-briefcase.o_button_icon {
+  background-color: #d98a1f;
+}
+
+.o_form_view .oe_button_box .oe_stat_button .o_field_widget.o_stat_info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.o_form_view .oe_button_box .oe_stat_button .o_stat_value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2a2a31;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.o_form_view .oe_button_box .oe_stat_button .o_stat_text {
+  font-size: 0.72rem;
+  color: #6b6b76;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* below ~1200px, 5 columns is too tight — drop to a 3-col wrap before
+   Bootstrap's own breakpoints kick in, still no negative margins */
+@media (max-width: 1200px) {
+  .o_form_view .oe_button_box {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .o_form_view .oe_button_box {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---- Tables: Payouts / Commission Breakdown / role breakdown ---- */
+.o_form_view .o_list_view,
+.o_list_view.o_field_x2many {
+  border: 1px solid #e5e1e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.o_list_view thead>tr {
+  background-color: #fff;
+}
+
+.o_list_view thead>tr>th {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 10px 12px;
+  border: none;
+}
+
+.o_list_view tbody>tr.o_data_row>td {
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  color: #2a2a31;
+  border-bottom: 1px solid #ece8eb;
+}
+
+/* row tinting driven by Odoo's own decoration-* classes (already declared
+   in your tree arch as decoration-success / decoration-warning /
+   decoration-danger / decoration-muted / decoration-info), not
+   :nth-child zebra striping */
+.o_list_view tbody>tr.o_data_row.text-muted>td {
+  background-color: #faf9fa;
+}
+
+.o_list_view tbody>tr.o_data_row.text-success>td {
+  background-color: #f1f9f5;
+}
+
+.o_list_view tbody>tr.o_data_row.text-info>td {
+  background-color: #f0f6fc;
+}
+
+.o_list_view tbody>tr.o_data_row.text-warning>td {
+  background-color: #fdf7ec;
+}
+
+.o_list_view tbody>tr.o_data_row.text-danger>td {
+  background-color: #fbf0ef;
+}
+
+/* right-align money/percent columns */
+.o_list_view td.o_list_number,
+.o_list_view th.o_list_number {
+  text-align: right;
+}
+
+/* badge widget: gate_status, state */
+.o_list_view .o_field_widget[name="gate_status"] .badge,
+.o_list_view .o_field_widget[name="state"] .badge,
+.o_form_view .o_field_widget[name="gate_status"] .badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+/* progressbar widget: achievement / achieve_pct */
+.o_list_view .o_field_progressbar .o_progress,
+.o_form_view .o_field_progressbar .o_progress {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #ece8eb;
+}
+
+.o_list_view .o_field_progressbar .o_progressbar_complete,
+.o_form_view .o_field_progressbar .o_progressbar_complete {
+  background-color: #6d3556;
+}
+
+/* notebook page background/padding for Territory Summary / Payouts /
+   Commission Breakdown tabs */
+.o_form_view .o_payout_form {
+  padding: 16px 4px 4px 4px;
+  background-color: #f6f4f6;
+}
+
+/* ---- Tables: Payouts / Commission Breakdown / role breakdown ---- */
+.o_form_view .o_list_view,
+.o_list_view.o_field_x2many {
+  border: 1px solid #e5e1e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.o_list_view thead>tr,
+.o_list_view thead>tr>th {
+  background-color: #fff !important;
+}
+
+.o_list_view thead>tr>th {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 10px 12px;
+  border: none;
+}
+
+.o_list_view tbody>tr.o_data_row>td {
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  color: #2a2a31;
+  border-bottom: 1px solid #ece8eb;
+}
+
+/* row tinting driven by Odoo's own decoration-* classes (already declared
+   in your tree arch as decoration-success / decoration-warning /
+   decoration-danger / decoration-muted / decoration-info), not
+   :nth-child zebra striping */
+.o_list_view tbody>tr.o_data_row.text-muted>td {
+  background-color: #faf9fa;
+}
+
+.o_list_view tbody>tr.o_data_row.text-success>td {
+  background-color: #f1f9f5;
+}
+
+.o_list_view tbody>tr.o_data_row.text-info>td {
+  background-color: #f0f6fc;
+}
+
+.o_list_view tbody>tr.o_data_row.text-warning>td {
+  background-color: #fdf7ec;
+}
+
+.o_list_view tbody>tr.o_data_row.text-danger>td {
+  background-color: #fbf0ef;
+}
+
+/* right-align money/percent columns */
+.o_list_view td.o_list_number,
+.o_list_view th.o_list_number {
+  text-align: right;
+}
+
+/* badge widget: gate_status, state */
+.o_list_view .o_field_widget[name="gate_status"] .badge,
+.o_list_view .o_field_widget[name="state"] .badge,
+.o_form_view .o_field_widget[name="gate_status"] .badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+/* progressbar widget: achievement / achieve_pct */
+.o_list_view .o_field_progressbar .o_progress,
+.o_form_view .o_field_progressbar .o_progress {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #ece8eb;
+}
+
+.o_list_view .o_field_progressbar .o_progressbar_complete,
+.o_form_view .o_field_progressbar .o_progressbar_complete {
+  background-color: #6d3556;
+}
+
+/* notebook page background/padding for Territory Summary / Payouts /
+   Commission Breakdown tabs */
+.o_form_view .o_payout_form {
+  padding: 16px 4px 4px 4px;
+  background-color: #f6f4f6;
+}
+/* ---------- Engine form: group label tweaks ---------- */
+.o_engine_form group>label {
+  text-transform: none !important;
+  font-size: 12px;
+}

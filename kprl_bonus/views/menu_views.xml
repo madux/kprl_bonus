@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Top-level menu -->
+    <menuitem id="menu_kprl_bonus_root"
+              name="KPRL Bonus"
+              web_icon="kprl_bonus,static/description/icon.svg"
+              sequence="100"/>
+
+        <!-- Dashboard -->
+   <menuitem id="menu_kprl_dashboard"
+              name="Dashboard"
+              parent="menu_kprl_bonus_root"
+              action="action_kprl_dashboard"
+              sequence="5"/>
+              
+    <!-- Bonus Config -->
+    <menuitem id="menu_kprl_config"
+              name="Configuration"
+              parent="menu_kprl_bonus_root"
+              sequence="10"/>
+
+    <menuitem id="menu_kprl_bonus_period"
+              name="Bonus Periods"
+              parent="menu_kprl_config"
+              action="action_kprl_bonus_period"
+              sequence="5"/>
+
+    <menuitem id="menu_kprl_bonus_parameter"
+              name="Control Panel (Parameters)"
+              parent="menu_kprl_config"
+              action="action_kprl_bonus_parameter"
+              sequence="10"/>
+
+    <menuitem id="menu_kprl_grades"
+              name="Grade Reference"
+              parent="menu_kprl_config"
+              action="action_kprl_grade"
+              sequence="20"/>
+
+    <menuitem id="menu_kprl_departments"
+              name="Departments"
+              parent="menu_kprl_config"
+              action="action_kprl_department"
+              sequence="30"/>
+
+    <menuitem id="menu_kprl_subpools"
+              name="Sub-Pools"
+              parent="menu_kprl_config"
+              action="action_kprl_subpool"
+              sequence="35"/>
+
+    <menuitem id="menu_kprl_role_params"
+              name="Role Parameters"
+              parent="menu_kprl_config"
+              action="action_kprl_role_parameter"
+              sequence="40"/>
+
+    <menuitem id="menu_kprl_tenure"
+              name="Tenure Multipliers"
+              parent="menu_kprl_config"
+              action="action_kprl_tenure_multiplier"
+              sequence="45"/>
+
+    <menuitem id="menu_kprl_products"
+              name="Product SKUs"
+              parent="menu_kprl_config"
+              action="action_kprl_product"
+              sequence="50"/>
+
+    <menuitem id="menu_kprl_territories"
+              name="Sales Territories"
+              parent="menu_kprl_config"
+              action="action_kprl_territory"
+              sequence="55"/>
+
+    <menuitem id="menu_kprl_kpi_store"
+              name="Fetch Latest Employee"
+              parent="menu_kprl_ops"
+              action="action_kprl_kpi_store"
+              sequence="42"/>
+              
+    <!-- Bonus Operations -->
+    <menuitem id="menu_kprl_ops"
+              name="Operations"
+              parent="menu_kprl_bonus_root"
+              sequence="20"/>
+
+    <menuitem id="menu_kprl_employees"
+              name="Employees"
+              parent="menu_kprl_ops"
+              action="action_kprl_employee"
+              sequence="10"/>
+
+    <menuitem id="menu_kprl_performance_input"
+              name="Performance Inputs"
+              parent="menu_kprl_ops"
+              action="action_kprl_performance_input"
+              sequence="20"/>
+
+    <menuitem id="menu_kprl_bonus_engine"
+              name="Bonus Engine"
+              parent="menu_kprl_ops"
+              action="action_kprl_bonus_engine"
+              sequence="30"/>
+
+    <menuitem id="menu_kprl_product_pool"
+              name="Product Pool Contributions"
+              parent="menu_kprl_ops"
+              action="action_kprl_product_pool"
+              sequence="35"/>
+
+    <menuitem id="menu_kprl_dept_kpi"
+              name="Dept KPI Multipliers"
+              parent="menu_kprl_ops"
+              action="action_kprl_dept_kpi_multiplier"
+              sequence="40"/>
+
+    <!-- <menuitem id="menu_kprl_simulation"
+              name="Bonus Simulation"
+              parent="menu_kprl_ops"
+              action="action_kprl_simulation"
+              sequence="45"/> -->
+
+    <!-- Payouts -->
+    <menuitem id="menu_kprl_payouts"
+              name="Payouts"
+              parent="menu_kprl_bonus_root"
+              sequence="30"/>
+
+
+    <menuitem id="menu_kprl_bonus_payout"
+              name="Staff Payouts"
+              parent="menu_kprl_payouts"
+              action="action_kprl_bonus_payout"
+              sequence="10"/>
+
+    <menuitem id="menu_kprl_territory_payout"
+              name="Territory Payouts"
+              parent="menu_kprl_payouts"
+              action="action_kprl_territory_payout"
+              sequence="20"/>
+
+    <menuitem id="menu_kprl_payout_report"
+              name="Payout Register"
+              parent="menu_kprl_payouts"
+              action="action_kprl_payout_report"
+              sequence="25"/>
+              
+    <menuitem id="menu_kprl_deferred"
+              name="Deferred Ledger"
+              parent="menu_kprl_payouts"
+              action="action_kprl_deferred_ledger"
+              sequence="30"/>
+
+    <!-- Valid entry: Payouts > Simulate Payout. Keep. -->
+    <menuitem id="menu_kprl_simulate_payout"
+              name="Simulate Payout"
+              parent="menu_kprl_payouts"
+              action="action_kprl_simulate_payout"
+              sequence="35"/>
+              
+    <!-- Governance -->
+    <menuitem id="menu_kprl_governance"
+              name="Governance"
+              parent="menu_kprl_bonus_root"
+              sequence="40"/>
+
+    <menuitem id="menu_kprl_governance_log"
+              name="Governance Log"
+              parent="menu_kprl_governance"
+              action="action_kprl_governance_log"
+              sequence="5"/>
+
+    <menuitem id="menu_kprl_governance_event"
+              name="Malus &amp; Clawback Events"
+              parent="menu_kprl_governance"
+              action="action_kprl_governance_event"
+              sequence="10"/>
+
+    <menuitem id="menu_kprl_risk_register"
+              name="Risk Register"
+              parent="menu_kprl_governance"
+              action="action_kprl_risk_register"
+              sequence="20"/>
+
+    <menuitem id="menu_kprl_audit_trail"
+              name="Audit Trail"
+              parent="menu_kprl_governance"
+              action="action_kprl_audit_trail"
+              sequence="30"/>
+</odoo>

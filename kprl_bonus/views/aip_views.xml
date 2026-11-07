@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id='view_kprl_aip_pool_tree' model='ir.ui.view'>
+        <field name='name'>kprl.aip.pool.tree</field>
+        <field name='model'>kprl.aip.pool</field>
+        <field name='arch' type='xml'>
+            <tree>
+                <field name='year'/>
+                <field name='gross_pool'/>
+                <field name='gate_factor'/>
+                <field name='effective_pool'/>
+                <field name='state'/>
+            </tree>
+        </field>
+    </record>
+    <record id='view_kprl_aip_pool_form' model='ir.ui.view'>
+        <field name='name'>kprl.aip.pool.form</field>
+        <field name='model'>kprl.aip.pool</field>
+        <field name='arch' type='xml'>
+            <form>
+                <header>
+                    <button name='action_compute' string='Compute' type='object' class='oe_highlight'/>
+                    <button name='action_build_accruals_from_periods' string='Build Accruals From Periods' type='object'/>
+                    <button name='action_post_deferred' string='Post Deferred' type='object'/>
+                    <button name='action_approve_aip_params' string='Approve Params' type='object' class='oe_highlight' groups='kprl_bonus.group_kprl_ceo'/>
+                    <field name='state' widget='statusbar'/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name='name'/>
+                        <field name='year'/>
+                        <field name='annual_revenue_target'/>
+                        <field name='pool_rate'/>
+                        <field name='deferral_rate'/>
+                    </group>
+                    <group>
+                        <field name='full_year_ebitda'/>
+                        <field name='gate_threshold'/>
+                        <field name='strategic_score'/>
+                        <field name='param_state'/>
+                        <field name='param_submitted_by'/>
+                        <field name='param_approver_id'/>
+                    </group>
+                    <group>
+                        <field name='q1_kpi'/>
+                        <field name='q2_kpi'/>
+                        <field name='q3_kpi'/>
+                        <field name='q4_kpi'/>
+                    </group>
+                    <group>
+                        <field name='gross_pool'/>
+                        <field name='gate_factor'/>
+                        <field name='funded_pool'/>
+                        <field name='avg_kpi'/>
+                        <field name='composite'/>
+                        <field name='aip_mult'/>
+                        <field name='effective_pool'/>
+                    </group>
+                    <notebook>
+                        <page string='Allocations'>
+                            <field name='line_ids'/>
+                        </page>
+                        <page string='Accrual Tracker'>
+                            <field name='accrual_ids'/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id='action_kprl_aip_pool' model='ir.actions.act_window'>
+        <field name='name'>AIP Pools</field>
+        <field name='res_model'>kprl.aip.pool</field>
+        <field name='view_mode'>tree,form</field>
+    </record>
+    <menuitem id='menu_kprl_aip_pool' name='AIP' parent='kprl_bonus.menu_kprl_bonus_root' action='action_kprl_aip_pool' sequence='60'/>
+</odoo>

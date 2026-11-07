@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree: KPI Store Lines -->
+    <record id="view_kprl_kpi_store_line_tree" model="ir.ui.view">
+        <field name="name">kprl.kpi.store.line.tree</field>
+        <field name="model">kprl.kpi.store.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="staff_id"/>
+                <field name="employee_id"/>
+                <field name="appraisal_score"/>
+                <field name="potential_assessment_score"/>
+                <field name="current_assessment_score"/>
+                <field name="behaviour_25"/>
+                <field name="score_max"/>
+                <field name="appraisal_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Tree: KPI Store (config) -->
+    <record id="view_kprl_kpi_store_tree" model="ir.ui.view">
+        <field name="name">kprl.kpi.store.tree</field>
+        <field name="model">kprl.kpi.store</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="staff_id"/>
+                <field name="employee_id"/>
+                <field name="period_id"/>
+                <field name="state" widget="badge"/>
+                <field name="result_message"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form: KPI Store (config) -->
+    <record id="view_kprl_kpi_store_form" model="ir.ui.view">
+        <field name="name">kprl.kpi.store.form</field>
+        <field name="model">kprl.kpi.store</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="get_api_response_value"
+                            string="Fetch KPI Values"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'completed'"/>
+                    <button name="action_push_to_performance"
+                            string="Push to Performance"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'completed'"/>
+                    <button name="action_reset"
+                            string="Reset"
+                            type="object"
+                            invisible="state != 'completed'"/>
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,completed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="API Config">
+                            <field name="api_url"/>
+                            <field name="token" password="True"/>
+                        </group>
+                        <group string="Fetch Parameters">
+                            <field name="staff_id"/>
+                            <field name="date_from"/>
+                            <field name="period_id"/>
+                            <field name="employee_id"/>
+                            <field name="result_message"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Fetched Lines"
+                              name="lines">
+                            <field name="kpi_store_line_ids"
+                                   readonly="state != 'completed'">
+                                <tree editable="bottom">
+                                    <field name="staff_id"/>
+                                    <field name="employee_id"/>
+                                    <field name="appraisal_score"/>
+                                    <field name="potential_assessment_score"/>
+                                    <field name="current_assessment_score"/>
+                                    <field name="behaviour_25"/>
+                                    <field name="score_max"/>
+                                    <field name="appraisal_date"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Raw Response"
+                              name="raw">
+                            <field name="raw_result"
+                                   readonly="1"
+                                   placeholder="API response will appear here..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_kprl_kpi_store" model="ir.actions.act_window">
+        <field name="name">Fetch Latest Employee</field>
+        <field name="res_model">kprl.kpi.store</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

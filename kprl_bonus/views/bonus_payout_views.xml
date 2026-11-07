@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <record id="action_kprl_bonus_payout" model="ir.actions.act_window">
+        <field name="name">Staff Payouts</field>
+        <field name="res_model">kprl.bonus.payout</field>
+        <field name="view_mode">tree,form,search</field>
+    </record>
+    <record id="view_kprl_bonus_payout_tree" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.tree</field>
+        <field name="model">kprl.bonus.payout</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="period_id"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="grade_id"/>
+                <field name="gross_payable" string="Gross Bonus" widget="monetary" readonly="1"
+                       sum="Total Gross Bonus"
+                       help="Base Eligible × Department KPI × Appraisal × Behavioural multipliers, plus a 10% exception premium when appraisal is at least 90%. Before proration, tenure enhancement, floor, deferral, GMP/malus, and cap. Sales commission is separate."/>
+                <field name="deferred_amount" widget="monetary" readonly="1" sum="Total Deferred"/>
+                <field name="net_immediate" widget="monetary" readonly="1" sum="Total Bonus after Deferral"/>
+                <field name="net_payable" widget="monetary" readonly="1" sum="Total Net Bonus"/>
+                <field name="taxable_gross_amount" widget="monetary" readonly="1" optional="hide"
+                       help="Same value as Net Bonus - the base the government tax is charged on."/>
+                <field name="gov_tax_rate" readonly="1"/>
+                <field name="gov_tax_amount" widget="monetary" readonly="1" sum="Total Gov Tax"/>
+                <field name="take_home_pay" widget="monetary" readonly="1" sum="Total Take-Home"/>
+                <field name="gross_commission" string="Gross Commission (Sales Engine)" widget="monetary" readonly="1"
+                       sum="Total Gross Commission"
+                       help="Display only, from the Sales Engine. Paid by the Sales Engine; NOT included in Net Bonus or Take-Home Pay."/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_bonus_payout_form" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.form</field>
+        <field name="model">kprl.bonus.payout</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_calculate" type="object"
+                            string="Calculate"
+                            class="btn-primary"
+                            invisible="state not in ('draft', 'computed')"/>
+                    <button name="action_approve" type="object"
+                            string="Approve"
+                            class="btn-success"
+                            invisible="state != 'computed'"/>
+                    <button name="action_paid" type="object"
+                            string="Mark Paid"
+                            class="btn-primary"
+                            invisible="state != 'approved'"/>
+                    <button name="action_print_slip" type="object"
+                            string="Print PDF"
+                            class="btn-secondary"/>
+                    <button name="action_export_excel" type="object"
+                            string="Export Excel"
+                            class="btn-secondary"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="period_id"/>
+                            <field name="department_id"/>
+                            <field name="grade_id"/>
+                            <field name="subpool_id"/>
+                        </group>
+                        <group string="Payout Summary">
+                            <field name="gross_payable" string="Gross Bonus" widget="monetary" readonly="1"
+                                   help="Base Eligible × Department KPI × Appraisal × Behavioural multipliers, plus a 10% exception premium when appraisal is at least 90%. Before proration, tenure enhancement, floor, deferral, GMP/malus, and cap. Sales commission is separate."/>
+                            <field name="deferred_amount" widget="monetary" readonly="1"/>
+                            <field name="net_immediate" widget="monetary" readonly="1"/>
+                            <field name="net_payable" widget="monetary" readonly="1"/>
+                            <field name="taxable_gross_amount" widget="monetary" readonly="1"
+                                   help="Same value as Net Bonus - the base the government tax is charged on."/>
+                            <field name="gov_tax_rate"/>
+                            <field name="gov_tax_amount" widget="monetary" readonly="1"/>
+                            <field name="take_home_pay" widget="monetary" readonly="1"/>
+                            <field name="gross_commission" string="Gross Commission (Sales Engine)" widget="monetary" readonly="1"
+                                   help="Display only, from the Sales Engine. Paid by the Sales Engine; NOT included in Net Bonus or Take-Home Pay."/>
+                        </group>
+                    </group>
+                    <group string="Multipliers &amp; Adjustments">
+                        <group>
+                            <field name="base_eligible" widget="monetary" readonly="1"/>
+                            <field name="dept_kpi_mult" readonly="1"/>
+                            <field name="appraisal_mult" readonly="1"/>
+                            <field name="behavioural_mult" readonly="1"/>
+                            <field name="behavioural_formula_value" readonly="1"/>
+                            <field name="behaviour_05"/>
+                            <field name="appraisal_score"/>
+                            <field name="adjusted_amount" readonly="1" widget="monetary"/>
+                            <field name="tenure_years"/>
+
+                        </group>
+                        <group>
+                            <field name="tenure_mult" readonly="1"/>
+                            <field name="proration_factor" readonly="1"/>
+                            <field name="gmp_factor" readonly="1"/>
+                            <field name="deferral_rate" readonly="1" widget="monetary"
+                                   help="Calculated automatically from the employee's grade deferral rate."/>
+                            <field name="value_point" readonly="1"
+                                   help="Calculated automatically: Sub-Pool amount divided by total eligible points in that sub-pool."/>
+                            <field name="total_points" readonly="1"
+                                   help="Calculated automatically from grade points plus capped skill premium."/>
+                            <field name="payable" readonly="1"
+                                   help="Calculated automatically: Gross Payable times Proration Factor."/>
+                        </group>
+                        <group>
+                            <field name="exception_premium" widget="monetary" readonly="1"/>
+                            <field name="tenure_enhance" readonly="1"/>
+                            <field name="quarterly_amount" string="★ QUATERTLY PAYOUT (₦)" readonly="1"/>
+                            <field name="final_floor" readonly="1" force_save="1"/>
+                        </group>
+                        <group>
+                            <field name="malus_amount" widget="monetary"/>
+                            <field name="floor_check" readonly="1"/>
+                            <field name="cap_check" readonly="1"/>
+                            <field name="company_gmp_factor" readonly="1"/>
+                            <field name="malus_pct_total" readonly="1"/>
+
+                        </group>
+                    </group>
+                    <group>
+                        <field name="state"/>
+                        <field name="engine_status" readonly="1"/>
+                    </group>
+                    <group string="Engine Status">
+                        <field name="blocking_errors_text" readonly="1"/>
+                    </group>
+                    <field name="has_sales_leg" invisible="1"/>
+                    <group string="Sales Engine (auto) - display only, paid via Sales Engine" invisible="has_sales_leg == False">
+                        <field name="sales_attainment" readonly="1"/>
+                        <field name="sales_gate" readonly="1"/>
+                        <field name="retrieval_gate" readonly="1"/>
+                        <field name="sales_commission" readonly="1" widget="monetary"/>
+                        <field name="retrieval_commission" readonly="1" widget="monetary"/>
+                        <field name="sales_kpi_mult" readonly="1"/>
+                        <field name="accelerator_factor" readonly="1"/>
+                        <field name="sales_payout" readonly="1" widget="monetary"/>
+                    </group>
+                    <notebook>
+                        <page string="Governance &amp; Malus">
+                            <field name="governance_event_ids" readonly="1">
+                                <tree editable="bottom">
+                                    <field name="ref"/>
+                                    <field name="trigger_type" widget="badge"/>
+                                    <field name="severity" widget="badge"/>
+                                    <field name="malus_pct"/>
+                                    <field name="malus_amount" widget="monetary"/>
+                                    <field name="clawback_amount" widget="monetary"/>
+                                    <field name="status" widget="badge"/>
+                                    <field name="description" optional="hide"/>
+                                </tree>
+                            </field>
+                            <group>
+                                <field name="total_governance_deduction" widget="monetary" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Clawbacks (post-pay)">
+                            <field name="clawback_event_ids" readonly="1">
+                                <tree editable="bottom">
+                                    <field name="ref"/>
+                                    <field name="deduction_stage" widget="badge"/>
+                                    <field name="severity" widget="badge"/>
+                                    <field name="clawback_amount" widget="monetary"/>
+                                    <field name="status" widget="badge"/>
+                                    <field name="description" optional="hide"/>
+                                </tree>
+                            </field>
+                            <group>
+                                <field name="total_clawback_amount" widget="monetary" readonly="1"/>
+                                <field name="total_forfeited_via_clawback" widget="monetary" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_kprl_bonus_payout_search" model="ir.ui.view">
+        <field name="name">kprl.bonus.payout.search</field>
+        <field name="model">kprl.bonus.payout</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_id"/>
+                <field name="period_id"/>
+                <field name="department_id"/>
+                <field name="state"/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>
+            </search>
+        </field>
+    </record>
+    <record id="action_kprl_simulate_payout" model="ir.actions.act_url">
+        <field name="name">Simulate Payout</field>
+        <field name="url">/kprl/simulate</field>
+        <field name="target">new</field>
+    </record>
+   
+</odoo>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_kprl_governance_event_tree" model="ir.ui.view">
+        <field name="name">kprl.governance.event.tree</field>
+        <field name="model">kprl.governance.event</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="period_id"/>
+                <field name="trigger_type" widget="badge"/>
+                <field name="deduction_stage" widget="badge"/>
+                <field name="severity"/>
+                <field name="stage"/>
+                <field name="status" widget="badge"/>
+                <field name="malus_pct"/>
+                <field name="clawback_amount" widget="monetary"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kprl_governance_event_form" model="ir.ui.view">
+        <field name="name">kprl.governance.event.form</field>
+        <field name="model">kprl.governance.event</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="employee_id"/>
+                            <field name="period_id"/>
+                            <field name="trigger_type"/>
+                            <field name="deduction_stage"/>
+                            <field name="severity"/>
+                        </group>
+                        <group>
+                            <field name="stage"/>
+                            <field name="status"/>
+                            <field name="malus_pct"/>
+                            <field name="clawback_amount" widget="monetary"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                    </group>
+                    <group string="Resolution">
+                        <group>
+                            <field name="closed_by"/>
+                            <field name="closed_date"/>
+                        </group>
+                        <field name="approver_notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kprl_governance_event" model="ir.actions.act_window">
+        <field name="name">Malus &amp; Clawback Events</field>
+        <field name="res_model">kprl.governance.event</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
