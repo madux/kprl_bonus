@@ -12,7 +12,7 @@
             <field name="name">HR</field>
             <field name="category_id" ref="base.module_category_human_resources"/>
             <field name="implied_ids" eval="[(4, ref('group_kprl_user'))]"/>
-            <field name="users" eval="[(4, ref('base.user_admin'), (4, ref('base.group_system'))]"/>
+            <field name="users" eval="[(4, ref('base.user_admin')]"/>
 
         </record>
 
@@ -21,7 +21,7 @@
             <field name="name">Admin</field>
             <field name="category_id" ref="base.module_category_human_resources"/>
             <field name="implied_ids" eval="[(4, ref('group_kprl_hr'))]"/>
-            <field name="users" eval="[(4, ref('base.user_admin'), (4, ref('base.group_system'))]"/>
+            <field name="users" eval="[(4, ref('base.user_admin')]"/>
 
         </record>
 
@@ -30,7 +30,7 @@
             <field name="name">Finance</field>
             <field name="category_id" ref="base.module_category_human_resources"/>
             <field name="implied_ids" eval="[(4, ref('group_kprl_admin'))]"/>
-            <field name="users" eval="[(4, ref('base.user_admin'), (4, ref('base.group_system'))]"/>
+            <field name="users" eval="[(4, ref('base.user_admin')]"/>
 
         </record>
 
@@ -39,7 +39,7 @@
             <field name="name">Exec Director</field>
             <field name="category_id" ref="base.module_category_human_resources"/>
             <field name="implied_ids" eval="[(4, ref('group_kprl_finance'))]"/>
-            <field name="users" eval="[(4, ref('base.user_admin'), (4, ref('base.group_system'))]"/>
+            <field name="users" eval="[(4, ref('base.user_admin')]"/>
 
         </record>
 
@@ -48,7 +48,7 @@
             <field name="name">CEO / Superadmin</field>
             <field name="category_id" ref="base.module_category_human_resources"/>
             <field name="implied_ids" eval="[(4, ref('group_kprl_exec_director'))]"/>
-            <field name="users" eval="[(4, ref('base.user_admin'), (4, ref('base.group_system'))]"/>
+            <field name="users" eval="[(4, ref('base.user_admin')]"/>
 
         </record>
     </data>
