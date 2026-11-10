@@ -28,6 +28,7 @@ access_kprl_subpool_ceo,kprl.subpool.ceo,model_kprl_subpool,group_kprl_ceo,1,1,1
 access_kprl_employee_user,kprl.employee.user,model_kprl_employee,group_kprl_user,1,0,0,0
 access_kprl_employee_hr,kprl.employee.hr,model_kprl_employee,group_kprl_hr,1,1,1,0
 access_kprl_employee_admin,kprl.employee.admin,model_kprl_employee,group_kprl_admin,1,1,1,0
+access_kprl_employee_main_admin,kprl.employee.main_admin,model_kprl_employee,base.group_system,1,1,1,1
 access_kprl_employee_ceo,kprl.employee.ceo,model_kprl_employee,group_kprl_ceo,1,1,1,1
 
 access_kprl_role_parameter_user,kprl.role.parameter.user,model_kprl_role_parameter,group_kprl_user,1,0,0,0
