@@ -1,0 +1,103 @@
+name: Deploy to Odoo server (192.168.10.10)
+
+# Deploys the kprl_bonus module to http://192.168.10.10/ on every push to main.
+#
+# 192.168.10.10 is a private IP, so GitHub-hosted runners cannot reach it.
+# This job must run on a self-hosted runner that sits on the same network
+# (label: odoo-deploy). See the secrets/variables listed below.
+#
+# Required repository secrets:
+#   DEPLOY_SSH_KEY   private key allowed to log in to the server
+#   DEPLOY_USER      SSH user on the server (must be able to restart Odoo)
+# Optional repository variables (defaults in brackets):
+#   DEPLOY_HOST      [192.168.10.10]
+#   DEPLOY_PATH      [/opt/odoo/custom/kprl_bonus]  module directory on the server
+#   ODOO_SERVICE     [odoo]                         systemd service name
+#   ODOO_DB          database to upgrade; if empty, the module upgrade is skipped
+#   ODOO_BIN         [/opt/odoo/odoo-bin]
+#   ODOO_CONF        [/etc/odoo/odoo.conf]
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+env:
+  DEPLOY_HOST: ${{ vars.DEPLOY_HOST || '192.168.10.10' }}
+  DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/odoo/custom/kprl_bonus' }}
+  ODOO_SERVICE: ${{ vars.ODOO_SERVICE || 'odoo' }}
+  ODOO_DB: ${{ vars.ODOO_DB }}
+  ODOO_BIN: ${{ vars.ODOO_BIN || '/opt/odoo/odoo-bin' }}
+  ODOO_CONF: ${{ vars.ODOO_CONF || '/etc/odoo/odoo.conf' }}
+
+jobs:
+  check:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Compile all Python files
+        run: python -m compileall -q kprl_bonus
+      - name: Validate XML files
+        run: |
+          python - <<'EOF'
+          import pathlib, sys
+          from xml.etree import ElementTree as ET
+          bad = 0
+          for p in pathlib.Path('kprl_bonus').rglob('*.xml'):
+              try:
+                  ET.parse(p)
+              except ET.ParseError as e:
+                  print(f'{p}: {e}')
+                  bad += 1
+          sys.exit(1 if bad else 0)
+          EOF
+
+  deploy:
+    name: Deploy
+    needs: check
+    runs-on: [self-hosted, odoo-deploy]
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Sync module files
+        run: |
+          rsync -az --delete \
+            --exclude '__pycache__/' --exclude '*.pyc' --exclude '.git/' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            kprl_bonus/ "${{ secrets.DEPLOY_USER }}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
+
+      - name: Upgrade module and restart Odoo
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${DEPLOY_HOST}" bash -s <<EOF
+          set -e
+          if [ -n "${ODOO_DB}" ]; then
+            sudo systemctl stop ${ODOO_SERVICE}
+            sudo -u odoo ${ODOO_BIN} -c ${ODOO_CONF} -d ${ODOO_DB} -u kprl_bonus --stop-after-init
+          fi
+          sudo systemctl restart ${ODOO_SERVICE}
+          sleep 5
+          systemctl is-active ${ODOO_SERVICE}
+          EOF
+
+      - name: Health check
+        run: curl -fsS -o /dev/null --retry 6 --retry-delay 5 "http://${DEPLOY_HOST}/web/login"
+
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
