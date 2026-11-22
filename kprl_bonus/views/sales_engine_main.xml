@@ -1,0 +1,665 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <!-- ========================================================= -->
+    <!-- KPRL TERRITORY ENGINE - TREE VIEW -->
+    <!-- ========================================================= -->
+
+    <record id="view_kprl_territory_engine_tree" model="ir.ui.view">
+        <field name="name">kprl.territory.engine.tree</field>
+        <field name="model">kprl.territory.engine</field>
+        <field name="arch" type="xml">
+            <tree string="Territory Engines">
+                <field name="period_id"/>
+                <field name="national_actual_sales"/>
+                <field name="national_actual_retrivals"/>
+                <field name="national_sales_target"/>
+                <field name="sales_commission_rate"/>
+                <field name="retrival_commission_rate"/>
+                <field name="total_gross_commission"/>
+                <field name="total_eligible_commission"/>
+                <field name="total_sales_payout"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- KPRL TERRITORY ENGINE - FORM VIEW -->
+    <!-- ========================================================= -->
+
+    <record id="view_kprl_territory_engine_form" model="ir.ui.view">
+        <field name="name">kprl.territory.engine.form</field>
+        <field name="model">kprl.territory.engine</field>
+        <field name="arch" type="xml">
+
+            <form string="Territory Engine">
+
+                <sheet>
+                    <div class="alert alert-info text-center mb-0" role="alert">
+                        <span><a href="https://docs.google.com/document/d/1rPugHagQJ7IufwC1l0p6n32CputAE5KOOFBp61btxhQ/edit?tab=t.h58si2xk5g29">See documentation!</a></span>
+                    </div>      
+                    <div class="oe_title">
+                        <h1>
+                            <field name="period_id"
+                                   placeholder="Bonus Period"/>
+                        </h1>
+                    </div>
+
+                    <group>
+
+                        <group string="National Performance">
+
+                            <field name="national_actual_sales"/>
+
+                            <field name="national_actual_retrivals"/>
+
+                            <field name="national_sales_target"/>
+
+                        </group>
+
+                        <group string="Commission Rates">
+
+                            <field name="sales_commission_rate"/>
+
+                            <field name="retrival_commission_rate"/>
+
+                        </group>
+
+                    </group>
+
+
+                    <group string="Commission Summary">
+
+                        <group>
+
+                            <field name="total_gross_commission"/>
+
+                            <field name="total_eligible_commission"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="total_sales_payout"/>
+
+                        </group>
+
+                    </group>
+
+
+                    <notebook>
+
+                        <page string="Sales Employee Engine Lines">
+
+                            <field name="kprl_employee_engine_line_ids"
+                                   mode="tree,form"
+                                   nolabel="1">
+
+                                <tree>
+
+                                    <field name="employee_id"/>
+
+                                    <field name="role_id" column_invisible="0"/>
+                                    <field name="sales_role" column_invisible="1"/>
+
+                                    <field name="territory_id"/>
+
+                                    <field name="own_sales"/>
+
+                                    <field name="own_retrival"/>
+
+                                    <field name="own_target"/>
+
+                                    <field name="territory_sales"
+                                           readonly="1"
+                                           force_save="1"
+                                           invisible="sales_role == 'asm'"/>
+
+                                    <field name="territory_retrival"
+                                           readonly="1"
+                                           force_save="1"
+                                           invisible="sales_role == 'asm'"/>
+
+                                    <button name="action_view_team_performance"
+                                            type="object"
+                                            string="Regional ASM Performance"
+                                            icon="fa-users"
+                                            invisible="sales_role not in ['rsm', 'rsm_asm']"/>
+
+                                    <field name="sales_attain" readonly="1" force_save="1"/>
+
+                                    <field name="retrival_rate" readonly="1" force_save="1"/>
+
+                                    <field name="yrs" readonly="1" force_save="1"/>
+                                    <field name="sales_gate" readonly="1" force_save="1"/>
+
+                                    <field name="retrival_gate" readonly="1" force_save="1"/>
+
+                                    <field name="eff_pool_share" readonly="1" force_save="1"/>
+
+                                    <field name="commission_sales" readonly="1" force_save="1"/>
+
+                                    <field name="commission_retrival" readonly="1" force_save="1"/>
+
+                                    <field name="gross_commission" readonly="1" force_save="1"/>
+                                    <field name="eligible_commission" readonly="1" force_save="1"/>
+                                    <field name="sales_payout" readonly="1" force_save="1" invisible="0"/>
+                                    <!-- <field name="prod_know" readonly="1" force_save="1" invisible="0"/>
+                                    <field name="call_rep" readonly="1" force_save="1" invisible="0"/>
+                                    <field name="coverage" readonly="1" force_save="1" invisible="0"/>
+                                    <field name="new_cust" readonly="1" force_save="1" invisible="0"/> -->
+
+                                    <!-- <field name="eligible_commission" readonly="1" force_save="1"/>
+                                    <field name="sales_payout" readonly="1" force_save="1" invisible="0"/>
+                                    <field name="product_knowledge_score" readonly="1" force_save="1" invisible="0"/>
+                                    <field name="call_report_compliance" readonly="1" force_save="1" invisible="0"/>
+                                    <field name="customer_coverage_rate" readonly="1" force_save="1" invisible="0"/>
+                                    <field name="new_customer_acquisition" readonly="1" force_save="1" invisible="0"/> -->
+                                </tree>
+
+                            </field>
+
+                        </page>
+                        <page string="Role Share">
+
+                            <field name="kprl_role_share_line_ids"
+                                   mode="tree,form"
+                                   nolabel="1">
+
+                                <tree editable="bottom">
+
+                                    <field name="role_share_line_id" column_invisible="1"/>
+
+                                    <field name="period_id"/>
+
+                                    <field name="role_id"/> 
+                                    <field name="share_rate"/> 
+                                    <field name="dual_factor"/>  
+                                </tree>
+
+                            </field>
+
+                        </page>
+                        <page string="Sale Territory Configuration">
+
+                            <field name="sale_territory_config_ids"
+                                   mode="tree,form"
+                                   nolabel="1">
+
+                                <tree editable="bottom">
+                                    <field name="territory_engine_id" readonly="1" column_invisible="1"/>
+                                    <field name="territory_id" required="1"/>
+                                    <field name="accel_kick_in" required="1"/> 
+                                    <field name="accel_max" required="1"/> 
+                                    <field name="cap_stretch" required="1"/> 
+                                    <field name="cap_indiv_max" required="1"/>  
+                                    <field name="lead_premium" required="1"/>
+                                    <field name="accel_boost" required="1"/>
+                                      
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Totals">
+                            <group>
+                                <group>
+                                    <field name="total_sales_attain" readonly="1"/>
+                                    <field name="total_retrival_rate" readonly="1"/>
+                                    <field name="total_sales_gate" readonly="1"/>
+                                    <field name="total_retrival_gate" readonly="1"/>
+                                    <field name="total_eff_pool_share" readonly="1"/>
+                                    <field name="total_commission_sales" readonly="1"/>
+                                    <field name="total_commission_retrival" readonly="1"/>
+                                    <field name="total_gross_commission" readonly="1"/>
+                                    <field name="total_eligible_commission" readonly="1"/>
+                                    <field name="total_prod_know" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="total_call_rep" readonly="1"/>
+                                    <field name="total_coverage" readonly="1"/>
+                                    <field name="total_new_cust" readonly="1"/>
+                                    <field name="total_kpi_mult" readonly="1"/>
+                                    <field name="total_yrs" readonly="1"/>
+                                    <field name="total_tenure_mult" readonly="1"/>
+                                    <field name="total_sales_payout" readonly="1"/>
+                                    <field name="total_sub_base" readonly="1"/>
+                                    <field name="total_accel_factor" readonly="1"/>
+                                    <field name="total_pk_effective" readonly="1"/>
+                                    <field name="total_rsm_territory_key" readonly="1"/>
+                                    <field name="total_sales_floor" readonly="1"/>
+                                    <field name="total_min_sales"/>
+                                    <field name="total_retrival_floor"/>
+                                    <field name="total_min_retrival"/>
+                                    <field name="total_own_target"/>
+                                </group>
+                            </group>
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+            </form>
+
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- KPRL TERRITORY ENGINE - SEARCH VIEW -->
+    <!-- ========================================================= -->
+
+    <record id="view_kprl_territory_engine_search" model="ir.ui.view">
+        <field name="name">kprl.territory.engine.search</field>
+        <field name="model">kprl.territory.engine</field>
+        <field name="arch" type="xml">
+
+            <search string="Search Territory Engine">
+
+                <field name="period_id"/>
+
+                <filter name="group_period"
+                        string="Bonus Period"
+                        context="{'group_by': 'period_id'}"/>
+
+            </search>
+
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- KPRL TERRITORY ENGINE - ACTION -->
+    <!-- ========================================================= -->
+
+    <record id="action_kprl_territory_engine"
+            model="ir.actions.act_window">
+        <field name="name">Territory Engine</field>
+        <field name="res_model">kprl.territory.engine</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_kprl_territory_engine_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Territory Engine
+            </p>
+
+            <p>
+                Manage national sales, retrievals,
+                commissions and employee territory performance.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- ENGINE LINES - TREE VIEW -->
+    <!-- ========================================================= -->
+
+    <record id="view_kprl_territory_engine_lines_tree" model="ir.ui.view"> 
+        <field name="name">kprl.territory.engine.lines.tree</field>
+        <field name="model">kprl.territory.engine.lines</field> 
+        <field name="arch" type="xml"> 
+            <tree string="Territory Engine Lines"> 
+                <field name="territory_engine_id" column_invisible="1"/> 
+                <field name="employee_id"/> 
+                <field name="role_id"/> 
+                <field name="sales_role" column_invisible="1"/>
+                <field name="territory_id"/> 
+                <field name="own_sales"/> 
+                <field name="own_retrival"/> 
+                <field name="territory_sales" invisible="sales_role == 'asm'"/>
+                <field name="territory_retrival" invisible="sales_role == 'asm'"/>
+                <field name="sales_attain"/> 
+                <field name="retrival_rate"/> 
+                <field name="sales_gate"/> 
+                <field name="retrival_gate"/> 
+                <field name="eff_pool_share"/> 
+                <field name="commission_sales"/> 
+                <field name="commission_retrival"/> 
+                <field name="gross_commission"/> 
+                <field name="eligible_commission"/> 
+                <field name="sales_payout"/> 
+            </tree>
+
+        </field>
+
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- ENGINE LINES - FORM VIEW -->
+    <!-- ========================================================= -->
+
+    <record id="view_kprl_territory_engine_lines_form"
+            model="ir.ui.view">
+
+        <field name="name">kprl.territory.engine.lines.form</field>
+
+        <field name="model">kprl.territory.engine.lines</field>
+
+        <field name="arch" type="xml">
+
+            <form string="Territory Engine Line">
+
+                <sheet>
+
+                    <group string="Employee Information">
+
+                        <group>
+
+                            <field name="territory_engine_id" readonly="1"/>
+
+                            <field name="employee_id"/>
+
+                            <field name="role_id"/>
+
+                            <field name="territory_id"/>
+
+                        </group>
+
+                    </group>
+
+
+                    <notebook>
+
+                        <!-- SALES -->
+
+                        <page string="Sales &amp; Retrieval">
+                            <field name="sales_role" invisible="1"/>
+
+                            <group>
+
+                                <group string="Own Performance">
+
+                                    <field name="own_sales"/>
+
+                                    <field name="own_retrival"/>
+
+                                    <field name="own_target"/>
+
+                                </group>
+
+                                <group string="Territory Performance"
+                                       invisible="sales_role == 'asm'">
+
+                                    <field name="territory_sales_target"/>
+
+                                    <field name="territory_sales"/>
+
+                                    <field name="territory_retrival"/>
+
+                                </group>
+
+                            </group>
+
+                            <button name="action_view_team_performance"
+                                    type="object"
+                                    string="View Regional ASM Performance"
+                                    class="oe_highlight"
+                                    icon="fa-users"
+                                    invisible="sales_role not in ['rsm', 'rsm_asm']"/>
+
+                        </page>
+
+
+                        <!-- GATES -->
+
+                        <page string="Attainment &amp; Gates">
+
+                            <group>
+
+                                <group>
+
+                                    <field name="sales_attain"/>
+
+                                    <field name="retrival_rate"/>
+
+                                </group>
+
+                                <group>
+
+                                    <field name="sales_gate"/>
+
+                                    <field name="retrival_gate"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
+
+                        <!-- COMMISSION -->
+
+                        <page string="Commission">
+
+                            <group>
+
+                                <group string="Commission Calculation">
+
+                                    <field name="eff_pool_share"/>
+
+                                    <field name="commission_sales"/>
+
+                                    <field name="commission_retrival"/>
+
+                                    <field name="gross_commission"/>
+
+                                    <field name="eligible_commission"/>
+
+                                </group>
+
+                                <group string="Payout">
+
+                                    <field name="sales_payout"/>
+
+                                    <field name="sub_base"/>
+
+                                    <field name="accel_factor"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
+
+                        <!-- KPI -->
+
+                        <page string="KPI">
+
+                            <group>
+
+                                <group>
+
+                                    <field name="prod_know"/>
+
+                                    <field name="call_rep"/>
+
+                                    <field name="coverage"/>
+
+                                    <field name="new_cust"/>
+
+                                </group>
+
+                                <group>
+
+                                    <field name="kpi_mult"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
+
+                        <!-- TENURE -->
+
+                        <page string="Tenure">
+
+                            <group>
+
+                                <field name="yrs"/>
+
+                                <field name="tenure_mult"/>
+
+                            </group>
+
+                        </page>
+
+
+                        <!-- ACCELERATION -->
+
+                        <page string="Acceleration">
+
+                            <group>
+
+                                <group>
+
+                                    <field name="accel_factor"/>
+
+                                    <field name="pk_effective"/>
+
+                                </group>
+
+                                <group>
+
+                                    <field name="rsm_territory_key"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
+
+                        <!-- FLOORS -->
+
+                        <page string="Floors">
+
+                            <group>
+
+                                <group>
+
+                                    <field name="sales_floor"/>
+
+                                    <field name="min_sales"/>
+
+                                </group>
+
+                                <group>
+
+                                    <field name="retrival_floor"/>
+
+                                    <field name="min_retrival"/>
+
+                                </group>
+
+                            </group>
+
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+            </form>
+
+        </field>
+
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- ENGINE LINES - SEARCH VIEW -->
+    <!-- ========================================================= -->
+
+    <record id="view_kprl_territory_engine_lines_search" model="ir.ui.view">
+
+        <field name="name">kprl.territory.engine.lines.search</field>
+
+        <field name="model">kprl.territory.engine.lines</field>
+
+        <field name="arch" type="xml">
+
+            <search string="Search Engine Lines">
+
+                <field name="employee_id"/>
+
+                <field name="role_id"/>
+
+                <field name="territory_id"/>
+
+                <field name="territory_engine_id"/>
+
+                <group string="Group By">
+
+                    <filter name="group_employee"
+                            string="Employee"
+                            context="{'group_by': 'employee_id'}"/>
+
+                    <filter name="group_role"
+                            string="Role"
+                            context="{'group_by': 'role_id'}"/>
+
+                    <filter name="group_territory"
+                            string="Territory"
+                            context="{'group_by': 'territory_id'}"/>
+
+                    <filter name="group_engine"
+                            string="Territory Engine"
+                            context="{'group_by': 'territory_engine_id'}"/>
+
+                </group>
+
+            </search>
+
+        </field>
+
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- ENGINE LINES - ACTION -->
+    <!-- ========================================================= -->
+
+    <record id="action_kprl_territory_engine_lines" model="ir.actions.act_window">
+        <field name="name">Territory Engine Lines</field>
+        <field name="res_model">kprl.territory.engine.lines</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_kprl_territory_engine_lines_search"/>
+    </record>
+
+    <!-- ========================================================= -->
+    <!-- MAIN MENU -->
+    <!-- ========================================================= -->
+
+    <!-- <menuitem id="menu_kprl_territory_engine_root"
+              name="KPRL"
+              parent="menu_kprl_ops"
+              sequence="31"/> -->
+
+
+    <!-- ========================================================= -->
+    <!-- TERRITORY ENGINE MENU -->
+    <!-- ========================================================= -->
+
+    <menuitem id="menu_kprl_territory_engine"
+              name="Sales Engine (by Territory) "
+              parent="menu_kprl_ops"
+              action="action_kprl_territory_engine"
+              sequence="32"/>
+
+
+    <!-- ========================================================= -->
+    <!-- ENGINE LINES MENU -->
+    <!-- ========================================================= -->
+
+    <menuitem id="menu_kprl_territory_engine_lines"
+              name="Sale Engine Lines"
+              parent="menu_kprl_ops"
+              action="action_kprl_territory_engine_lines"
+              sequence="33"/>
+
+</odoo>

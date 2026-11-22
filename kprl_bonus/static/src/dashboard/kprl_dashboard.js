@@ -29,6 +29,8 @@ export class KprlDashboard extends Component {
       currentPeriodName: '',
       engine: {},
       departments: [],
+      territories: [],
+      employees: [],
       trends: [],
       loading: true,
       computing: false,
@@ -413,3 +415,4 @@ export class KprlDashboard extends Component {
 
 KprlDashboard.template = 'kprl_bonus.KprlDashboard';
 registry.category('actions').add('kprl_dashboard', KprlDashboard);
+

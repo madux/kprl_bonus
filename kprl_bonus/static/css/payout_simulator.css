@@ -1,0 +1,4 @@
+/* Parallel payout simulator (new screen). Old payout styles untouched. */
+.o_kprl_simulator .o_sim_hero { display: flex; align-items: center; gap: 12px; }
+.o_kprl_simulator .o_sim_hero h1 { margin: 0; font-size: 20px; }
+.o_kprl_simulator .o_sim_blocked { background: #fdecea; border: 1px solid #f5c6cb; padding: 10px 14px; margin: 10px 0; }

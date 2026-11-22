@@ -72,13 +72,13 @@
                          
 
                         <group>
-                            <field name="funded_pool_after_both_gate"/>
-                            <field name="profitability_gate_factor"/>
+                            <field name="funded_pool_after_both_gate" readonly='1'/>
+                            <field name="profitability_gate_factor" readonly='1'/>
                         </group>
                         <group>
                             <field name="state"/>
-                            <field name="base_bonus_pool"/>
-                            <field name="gmp_gate_factor"/>
+                            <field name="base_bonus_pool" readonly='1'/>
+                            <field name="gmp_gate_factor" readonly='1'/>
                         </group>
                     </group>
  
@@ -125,10 +125,10 @@
                                     <field name="ebitda_scaling_start_max" string="EBITDA threshold Scaling Start — Upper Bound"/>
                                     <field name="ebitda_max_rate_threshold_min" string="EBITDA Max Threshold — Lower Bound"/>
                                     <field name="ebitda_max_rate_threshold_max" string="EBITDA Max Threshold — Upper Bound"/>
-                                    <field name="partial_gate_floor_min" string="Profitability Gate (Partial unlock) — Lower Bound"/>
-                                    <field name="partial_gate_floor_max" string="Profitability Gate (Partial unlock) — Upper Bound"/>
-                                    <field name="full_gate_floor_min" string="Profitability Gate (full unlock) — Lower Bound"/>
-                                    <field name="full_gate_floor_max" string="Profitability Gate (full unlock) — Upper Bound"/>
+                                    <field name="partial_gate_floor_min" string="Ramp Start Margin (zero-payout) — Lower Bound"/>
+                                    <field name="partial_gate_floor_max" string="Ramp Start Margin (zero-payout) — Upper Bound"/>
+                                    <field name="full_gate_floor_min" string="Full Unlock Threshold — Lower Bound"/>
+                                    <field name="full_gate_floor_max" string="Full Unlock Threshold — Upper Bound"/>
                                     <field name="max_pool_rate_min" string="Pool Rate Max (ceiling) — Lower Bound"/>
                                     <field name="max_pool_rate_max" string="Pool Rate Max (ceiling) — Upper Bound"/>
                                     <field name="max_pool_rate_approver"/>
@@ -182,16 +182,13 @@
 
                         <!-- Section C: Sales Eligibility -->
                         <page name="eligibility" string="Eligibility Thresholds">
-                            <group string="Section C: Sales Eligibility Thresholds (Finance Director)">
-                                <field name="top_mgmt_min_sales" widget="monetary"/>
-                                <field name="sen_mgmt_min_sales" widget="monetary"/>
-                                <field name="mid_mgmt_min_sales" widget="monetary"/>
-                                <field name="first_entrant_sales_threshold" widget="monetary"/>
-                                <field name="entry_level_sales_retrieval"/>
-                            </group>
-                            <group string="Sales Entry Gate Ramp">
-                                <field name="ramp_new_hire_months"/>
-                                <field name="ramp_entry_mult"/>
+                            <group string="Section C: Sales Eligibility Thresholds (Finance + HR Director approval)">
+                                <field name="b34_top_mgmt_min_sales_attainment"/>
+                                <field name="b35_top_mgmt_min_retrieval_rate"/>
+                                <field name="b36_rsm_min_territory_sales_attainment"/>
+                                <field name="b37_rsm_min_territory_retrieval_rate"/>
+                                <field name="b38_asm_min_personal_sales_attainment"/>
+                                <field name="b39_asm_min_personal_retrieval_rate"/>
                             </group>
                         </page>
 
@@ -226,7 +223,7 @@
                             </group>
                             <group>
                                 <group>
-                                    <field name="kpi_weight_total" widget="percentage"/>
+                                    <field name="kpi_weight_total"/>
                                     <field name="kpi_weight_valid"/>
                                 </group>
                                 <div class="alert alert-info"
@@ -243,16 +240,82 @@
                                 <field name="quarterly_revenue_target" widget="monetary"/>
                                 <field name="annual_revenue_target" widget="monetary"/>
                             </group>
-                            <group string="Sales Accelerators &amp; Individual Cap">
-                                <field name="accelerator_threshold_1"/>
-                                <field name="accelerator_mult_1"/>
-                                <field name="accelerator_threshold_2"/>
-                                <field name="accelerator_mult_2"/>
-                                <field name="individual_cap"/>
-                            </group>
                             <group string="Tenure Defaults">
                                 <field name="tenure_default_mult"/>
                             </group>
+                        </page>
+
+                        <!-- Section G: Governance, Caps & Policy (Board-approved) -->
+                        <page name="gov_caps" string="Section G — Governance, Caps &amp; Policy">
+                            <group string="Section G — Governance, Caps &amp; Policy (Board-approved)">
+                                <field name="g_bonus_pool_cap_pct"/>
+                                <field name="g_individual_quarterly_cap" widget="monetary"/>
+                                <field name="g_leadership_premium"/>
+                                <field name="g_gmp_self_report_relief"/>
+                                <field name="g_company_gmp_self_reported"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Hard ceiling: effective pool cannot exceed Bonus Pool Cap % of EBITDA. Individual cap per quarter. Leadership premium floors RSM at 1.10x top subordinate. GMP relief 0.5 halves penalty if self-reported.</div>
+                        </page>
+
+                        <!-- Section H: Sales Entry-Gate Ramp Floors (v9) -->
+                        <page name="entry_floors" string="Section H — Entry Floors">
+                            <group string="Section H — Sales Entry-Gate Ramp Floors (v9)">
+                                <field name="h1_top_mgmt_sales_floor"/>
+                                <field name="h2_rsm_sales_floor"/>
+                                <field name="h3_asm_sales_floor"/>
+                                <field name="h4_top_mgmt_retrieval_floor"/>
+                                <field name="h5_rsm_retrieval_floor"/>
+                                <field name="h6_asm_retrieval_floor"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Below floor = 0; floor-&gt;Min ramps 0-&gt;100%; at/above Min fully eligible. If Floor=Min the gate becomes a HARD CLIFF at Min.</div>
+                        </page>
+
+                        <!-- Section I: Sales Accelerators & Stretch Cap (v10) -->
+                        <page name="accelerators" string="Section I — Accelerators">
+                            <group string="Section I — Sales Accelerators &amp; Stretch Cap (v10)">
+                                <field name="i1_accelerator_kick_in"/>
+                                <field name="i2_accelerator_ceiling"/>
+                                <field name="i3_accelerator_boost"/>
+                                <field name="i4_stretch_individual_cap" widget="monetary"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> At/above kick-in attainment your commission earns a rising boost up to the ceiling; over-target performers also get a higher individual cap.</div>
+                        </page>
+
+                        <!-- Section J: KPI Multiplier Band (v12) -->
+                        <page name="kpi_band" string="Section J — KPI Band">
+                            <group string="Section J — KPI Multiplier Band &amp; PK Normalization (v12)">
+                                <field name="kpi_multiplier_floor"/>
+                                <field name="kpi_multiplier_range"/>
+                                <field name="pk_normalization_enabled"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Multiplier = Floor + (weighted KPI score) x Range. Floor 0.80 + Range 0.40 -&gt; band 0.80-1.20. Normalization spreads clustered product-knowledge scores.</div>
+                        </page>
+
+                        <!-- Section K: RSM+ASM Separate Thresholds (v15) -->
+                        <page name="dual_thresholds" string="Section K — Dual Role">
+                            <group string="Section K — RSM+ASM (Dual Role) Separate Thresholds (v15)">
+                                <field name="k1_dual_min_sales"/>
+                                <field name="k2_dual_min_retrieval"/>
+                                <field name="k3_dual_sales_floor"/>
+                                <field name="k4_dual_retrieval_floor"/>
+                            </group>
+                        </page>
+
+                        <!-- Section L: Company Scorecard & Engine Switches (v23) -->
+                        <page name="scorecard" string="Section L — Scorecard">
+                            <group string="Section L — Company Scorecard &amp; Engine Switches (v23)">
+                                <field name="l1_pool_funding_method"/>
+                                <field name="l2_manual_pool_rate_enabled"/>
+                                <field name="l2_manual_pool_rate_override"/>
+                                <field name="l3_gmp_compliance_status"/>
+                            </group>
+                            <group string="Company KPI Scorecard (weights must sum to 100%)">
+                                <field name="l_score_rev_weight"/>
+                                <field name="l_score_ebitda_weight"/>
+                                <field name="l_score_gmp_weight"/>
+                                <field name="l_score_people_weight"/>
+                            </group>
+                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Pool Distribution: L4 Grand -&gt; OPM 60% / SUP 40%; L5 SUP -&gt; Senior 70% / Ops-Support 30% (in Pool Parameters). Scorecard feeds Bonus Engine Section D.</div>
                         </page>
 
                         <page name="notes" string="Notes">

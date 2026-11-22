@@ -147,6 +147,7 @@
   // Badge widget recoloring for gate/gmp status
   .o_field_badge .badge.text-bg-success {
     background-color: var(--pc-green) !important;
+    color: #fff !important;
   }
   .o_field_badge .badge.text-bg-warning {
     background-color: var(--pc-amber) !important;

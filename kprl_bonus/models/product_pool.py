@@ -19,7 +19,6 @@ class ProductPool(models.Model):
     pool_contribution = fields.Float(string='Pool Contribution',
                                      digits='Product Price',
                                      compute='_compute_pool_contrib', store=True)
-    margin_pct = fields.Float(string='Margin (%)', digits=(5, 2))
 
     quarterly_revenue = fields.Float(string='Quarterly Revenue', digits=(5, 2), compute='_compute_quarterly_revenue')
 
@@ -38,7 +37,7 @@ class ProductPool(models.Model):
         for rec in self:
             rec.pool_contribution = rec.quantity_revenue * (rec.sku_rate / 100.0)
 
-    @api.depends('unit_price', 'sku_rate')
+    @api.depends('quantity_units', 'unit_price')
     def _compute_quarterly_revenue(self):
         for record in self:
-            record.quarterly_revenue = record.unit_price * record.sku_rate
+            record.quarterly_revenue = record.quantity_units * record.unit_price

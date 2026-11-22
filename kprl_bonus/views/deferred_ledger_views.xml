@@ -19,6 +19,7 @@
                 <field name="deferred_amount" widget="monetary"/>
                 <field name="vest_date"/>
                 <field name="status" widget="badge"/>
+                <field name="clawback_event_id"/>
             </tree>
         </field>
     </record>
@@ -54,6 +55,7 @@
                             <field name="deferred_amount" widget="monetary"/>
                             <field name="vest_date"/>
                             <field name="status"/>
+                            <field name="clawback_event_id"/>
                         </group>
                     </group>
                     <group>

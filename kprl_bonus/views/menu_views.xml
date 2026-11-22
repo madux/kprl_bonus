@@ -74,7 +74,7 @@
               sequence="55"/>
 
     <menuitem id="menu_kprl_kpi_store"
-              name="KPI Store (Appraisal)"
+              name="Fetch Latest Employee"
               parent="menu_kprl_ops"
               action="action_kprl_kpi_store"
               sequence="42"/>
@@ -152,6 +152,7 @@
               action="action_kprl_deferred_ledger"
               sequence="30"/>
 
+    <!-- Valid entry: Payouts > Simulate Payout. Keep. -->
     <menuitem id="menu_kprl_simulate_payout"
               name="Simulate Payout"
               parent="menu_kprl_payouts"

@@ -25,10 +25,12 @@
                     <field name="mobile_phone"/>
                     <field name="department_id"/>
                     <field name="grade_id"/>
+                    <field name="pool_type"/>
+                    <field name="track"/>
                     <field name="job_title"/>
 
                     <field name="subpool_id"/>
-                    <field name="date_hired"/>
+                    <field name="employment_date"/>
                     <field name="tenure_years"/>
                     <field name="manager_id"/>
                     <field name="status"/>
@@ -52,6 +54,11 @@
             <field name="priority">32</field>
             <field name="arch" type="xml">
                 <form class="o_kprl_employee_form" create="true" edit="true" groups="kprl_bonus.group_kprl_user">
+                    <header>
+                        <button name="action_fetch_from_api" type="object"
+                                string="Sync Records" class="btn-primary"
+                                icon="fa-refresh" invisible="not staff_id"/>
+                    </header>
                     <!-- Field declarations for modifiers -->
                     <field name="status" invisible="1"/>
                     <field name="is_sales" invisible="1"/>
@@ -66,10 +73,9 @@
                     <field name="base_grade_points" invisible="1"/>
                     <field name="skill_premium_pts" invisible="1"/>
                     <field name="total_points" invisible="1"/>
-                    <field name="token_rate" invisible="1"/>
                     <field name="grade_deferral_rate" invisible="1"/>
                     <field name="job_title" invisible="1"/>
-                    <field name="date_hired" invisible="1"/>
+                    <field name="employment_date" invisible="1"/>
                     <field name="manager_id" invisible="1"/>
                     <field name="employee_id" invisible="1"/>
                     <field name="department_id" invisible="1"/>
@@ -90,6 +96,9 @@
                     <field name="deferral_rate_payout" invisible="1"/>
                     <field name="appraisal_score_payout" invisible="1"/>
                     <field name="behaviour_05" invisible="1"/>
+                    <field name="latest_potential_score" invisible="1"/>
+                    <field name="latest_current_score" invisible="1"/>
+                    <field name="latest_behaviour_score" invisible="1"/>
                     <field name="dept_kpi_score" invisible="1"/>
                     <field name="appraisal_max" invisible="1"/>
                     <field name="behaviour_max" invisible="1"/>
@@ -116,7 +125,7 @@
                                 <i class="fa fa-user-circle"/>
                                 <field name="user_role" nolabel="1"/>
                             </span>
-                            <a href="/web/session/logout" class="btn btn-sm btn-outline-secondary">Logout!</a>
+                            <a href="https://docs.google.com/document/d/1rPugHagQJ7IufwC1l0p6n32CputAE5KOOFBp61btxhQ/edit?tab=t.h58si2xk5g29">See documentation!</a>
                         </div> -->
 
                         <div class="o_emp_dashboard">
@@ -165,12 +174,24 @@
                                         <span class="o_emp_info_value"><field name="grade_code"/> — <field name="grade_name"/></span>
                                     </div>
                                     <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Grade (set)</span>
+                                        <span class="o_emp_info_value"><field name="grade_id"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Pool Type</span>
+                                        <span class="o_emp_info_value"><field name="pool_type"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
+                                        <span class="o_emp_info_label">Track</span>
+                                        <span class="o_emp_info_value"><field name="track"/></span>
+                                    </div>
+                                    <div class="o_emp_info_row">
                                         <span class="o_emp_info_label">Date Hired</span>
-                                        <span class="o_emp_info_value"><field name="date_hired"/></span>
+                                        <span class="o_emp_info_value"><field name="employment_date" readonly="1"/></span>
                                     </div>
                                     <div class="o_emp_info_row">
                                         <span class="o_emp_info_label">Tenure (yrs)</span>
-                                        <span class="o_emp_info_value"><field name="tenure_years"/></span>
+                                        <span class="o_emp_info_value"><field name="tenure_years" readonly="1"/></span>
                                     </div>
                                     <div class="o_emp_info_row o_emp_info_row_last">
                                         <span class="o_emp_info_label">Reporting Manager</span>
@@ -205,10 +226,6 @@
                                     <div class="o_emp_param_row">
                                         <span class="o_emp_param_label">Total Points</span>
                                         <span class="o_emp_param_value"><field name="total_points"/></span>
-                                    </div>
-                                    <div class="o_emp_param_row">
-                                        <span class="o_emp_param_label">Token Rate (/pt)</span>
-                                        <span class="o_emp_param_value">₦<field name="token_rate" widget="monetary"/></span>
                                     </div>
                                     <div class="o_emp_param_row">
                                         <span class="o_emp_param_label">Deferral Rate</span>
@@ -294,7 +311,7 @@
                                     </div>
                                 </div>
                                 <div class="o_emp_payout_hero">
-                                    <div class="o_emp_payout_hero_label">NET IMMEDIATE</div>
+                                    <div class="o_emp_payout_hero_label">BONUS AFTER DEFERRAL</div>
                                     <div class="o_emp_payout_hero_amount">₦<field name="net_immediate" widget="monetary" nolabel="1"/></div>
                                 </div>
                             </div>
@@ -313,8 +330,9 @@
                                     </div>
                                     <div class="o_emp_score_item">
                                         <div class="o_emp_score_label">Behavioural Score (Manager)</div>
-                                        <div class="o_emp_score_value"><field name="behaviour_05"/> / <field name="behaviour_max" nolabel="1"/></div>
-                                        <field name="behaviour_05" widget="progressbar"/>
+                                        <div class="o_emp_score_value"><field name="latest_behaviour_score"/> / <field name="behaviour_max" nolabel="1"/></div>
+                                        <div class="o_emp_score_breakdown">Potential <field name="latest_potential_score" nolabel="1"/> - Current <field name="latest_current_score" nolabel="1"/> - Average <field name="latest_behaviour_score" nolabel="1"/></div>
+                                        <field name="latest_behaviour_score" widget="progressbar"/>
                                     </div>
                                     <div class="o_emp_score_item">
                                         <div class="o_emp_score_label">Dept KPI Score</div>
@@ -336,6 +354,9 @@
                                     <group>
                                         <group>
                                             <field name="grade_id"/>
+                                            <field name="pool_type"/>
+                                            <field name="track"/>
+                                            <field name="subpool_id" readonly="1"/>
                                             <field name="grade_code"/>
                                             <field name="subpool_name"/>
                                             <field name="base_grade_points"/>
@@ -343,7 +364,6 @@
                                             <field name="total_points"/>
                                         </group>
                                         <group>
-                                            <field name="token_rate" widget="monetary"/>
                                             <field name="grade_deferral_rate"/>
                                             <field name="aip_eligible"/>
                                             <field name="appraisal_base_score"/>
@@ -362,7 +382,7 @@
                                         <div class="o_emp_summary_stat_label">Latest Appraisal</div>
                                     </div>
                                     <div class="o_emp_summary_stat">
-                                        <div class="o_emp_summary_stat_value"><field name="behaviour_05"/></div>
+                                        <div class="o_emp_summary_stat_value"><field name="latest_behaviour_score"/></div>
                                         <div class="o_emp_summary_stat_label">Behavioural /25</div>
                                     </div>
                                     <div class="o_emp_summary_stat">
@@ -375,6 +395,8 @@
                                         <field name="period_id"/>
                                         <field name="appraisal_score"/>
                                         <field name="retain_score"/>
+                                        <field name="potential_assessment_score"/>
+                                        <field name="current_assessment_score"/>
                                         <field name="prod_pct"/>
                                         <field name="call_pct"/>
                                         <field name="present_pct"/>

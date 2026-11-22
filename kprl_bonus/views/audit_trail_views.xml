@@ -10,6 +10,9 @@
                 <field name="user_id"/>
                 <field name="category" widget="badge"/>
                 <field name="event_id"/>
+                <field name="employee_id"/>
+                <field name="grade_old_id"/>
+                <field name="grade_new_id"/>
             </tree>
         </field>
     </record>
@@ -29,7 +32,13 @@
                         <group>
                             <field name="category"/>
                             <field name="event_id"/>
+                            <field name="employee_id"/>
+                            <field name="grade_old_id"/>
+                            <field name="grade_new_id"/>
                         </group>
+                    <group string="Details">
+                        <field name="detail"/>
+                    </group>
                     </group>
                 </sheet>
             </form>

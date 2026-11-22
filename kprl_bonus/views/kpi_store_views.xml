@@ -9,6 +9,9 @@
                 <field name="staff_id"/>
                 <field name="employee_id"/>
                 <field name="appraisal_score"/>
+                <field name="potential_assessment_score"/>
+                <field name="current_assessment_score"/>
+                <field name="behaviour_25"/>
                 <field name="score_max"/>
                 <field name="appraisal_date"/>
             </tree>
@@ -78,6 +81,9 @@
                                     <field name="staff_id"/>
                                     <field name="employee_id"/>
                                     <field name="appraisal_score"/>
+                                    <field name="potential_assessment_score"/>
+                                    <field name="current_assessment_score"/>
+                                    <field name="behaviour_25"/>
                                     <field name="score_max"/>
                                     <field name="appraisal_date"/>
                                 </tree>
@@ -97,7 +103,7 @@
 
     <!-- Action -->
     <record id="action_kprl_kpi_store" model="ir.actions.act_window">
-        <field name="name">KPI Store</field>
+        <field name="name">Fetch Latest Employee</field>
         <field name="res_model">kprl.kpi.store</field>
         <field name="view_mode">tree,form</field>
     </record>

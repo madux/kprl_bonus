@@ -9,7 +9,7 @@
                 <field name="period_id"/>
                 <field name="kpi_score"/>
                 <field name="multiplier"/>
-                <field name="weight"/>
+                <field name="def_factor"/>
                 <field name="gmp_status" widget="badge"/>
                 <field name="self_flag"/>
             </tree>
@@ -27,8 +27,8 @@
                         <field name="period_id"/>
                         <field name="kpi_score"/>
                         <field name="multiplier"/>
-                        <field name="weight"/>
                         <field name="gmp_status"/>
+                        <field name="def_factor"/>
                         <field name="self_flag"/>
                         <field name="def_factor"/>
                     </group>

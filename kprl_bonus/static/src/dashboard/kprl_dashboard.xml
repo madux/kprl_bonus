@@ -111,8 +111,8 @@
                         <div class="kprl-owl-card-sub">pool fully funded</div>
                     </div>
                     <div class="kprl-owl-kpi-card kprl-border-orange">
-                        <div class="kprl-owl-card-title">AIP Pool (Annual)</div>
-                        <div class="kprl-owl-card-value" t-esc="fmtCurrency(state.engine.aip_pool)"/>
+                        <div class="kprl-owl-card-title" title='Quarterly Incentive Plan for Management'>QIPM</div>
+                        <div class="kprl-owl-card-value" t-esc="fmtCurrency(state.engine.qipm_pool)"/>
                         <div class="kprl-owl-card-sub">Rev x 0.2%</div>
                     </div>
                 </div>
@@ -162,7 +162,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <t t-foreach="state.departments" t-as="d" t-key="d.department_id ? d.department_id[0] : d_index">
+                                    <t t-foreach="state.departments || []" t-as="d" t-key="d.department_id ? d.department_id[0] : d_index">
                                         <tr>
                                             <td t-esc="d.department_id ? d.department_id[1] : 'N/A'"/>
                                             <td t-esc="fmtScore(d.kpi_score)"/>
@@ -176,7 +176,7 @@
                                             </td>
                                         </tr>
                                     </t>
-                                    <t t-if="state.departments.length === 0">
+                                    <t t-if="(state.departments || []).length === 0">
                                         <tr>
                                             <td colspan="6" style="text-align:center;padding:24px;color:#999;">
                                                 No department data available
@@ -205,7 +205,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <t t-foreach="state.territories" t-as="t" t-key="t.id">
+                                    <t t-foreach="state.territories || []" t-as="t" t-key="t.id">
                                         <tr>
                                             <td><strong t-esc="t.code || t.name"/></td>
                                             <td t-esc="t.rsm_id ? t.rsm_id[1] : '\u2014'"/>
@@ -230,7 +230,7 @@
                                             </td>
                                         </tr>
                                     </t>
-                                    <t t-if="state.territories.length === 0">
+                                    <t t-if="(state.territories || []).length === 0">
                                         <tr>
                                             <td colspan="7" style="text-align:center;padding:24px;color:#999;">
                                                 No territory data available
@@ -254,7 +254,7 @@
                             <select class="kprl-owl-employee-select"
                                     t-on-change="selectEmployee">
                                 <option value="">— Choose an employee —</option>
-                                <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
+                                <t t-foreach="state.employees || []" t-as="emp" t-key="emp.id">
                                     <option t-att-value="emp.id"
                                             t-esc="emp.name + ' (' + (emp.staff_id || emp.employee_id || '') + ')'"/>
                                 </t>
@@ -301,7 +301,7 @@
                                         <div class="kprl-owl-ss-figure-label">Ops Bonus</div>
                                         <div class="kprl-owl-ss-figure-value"
                                              t-esc="fmtCurrency(state.employeePayout.ops_bonus)"/>
-                                        <div class="kprl-owl-ss-figure-sub">Net Immediate</div>
+                                        <div class="kprl-owl-ss-figure-sub">Bonus after Deferral</div>
                                     </div>
                                     <div class="kprl-owl-ss-figure-card">
                                         <div class="kprl-owl-ss-figure-label">Sales Commission</div>

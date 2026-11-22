@@ -1,6 +1,6 @@
 {
     'name': 'KPRL Bonus Management',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.6',
     'category': 'Human Resources',
     'summary': 'Comprehensive bonus & commission engine with governance',
     'description': """
@@ -40,6 +40,8 @@
         'views/product_pool_views.xml',
         'views/performance_input_views.xml',
         'views/bonus_payout_views.xml',
+        'views/payout_simulator_views.xml',
+        'views/payout_run_views.xml',
         'views/employee_views.xml',
         'views/territory_payout_views.xml',
         'views/deferred_ledger_views.xml',
@@ -48,10 +50,11 @@
         'views/audit_trail_views.xml',
         'views/payout_report_views.xml',
         'views/payout_report_paper.xml',
+        'views/payslip_paper.xml',
         'views/governance_action.xml',
         'views/menu_views.xml',
-        
-
+        'views/sales_engine_main.xml',
+        'views/aip_views.xml'
     ],
     'assets': {
         'web.assets_backend': [
@@ -76,6 +79,7 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'icon': '/kprl_bonus/static/description/icon.svg',
+    'icon': '/kprl_bonus/static/description/icons.svg',
     'license': 'LGPL-3',
 }
+

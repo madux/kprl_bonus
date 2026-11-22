@@ -117,7 +117,7 @@
                             <div class="kprl-card-title">EBITDA Margin</div>
                             <div class="kprl-card-value" id="kprl-kpi-ebitda">--</div>
                             <div class="kprl-card-trend" id="kprl-trend-ebitda"/>
-                            <div class="kprl-card-subtext">Gate: Full (&gt;22%)</div>
+                            <div class="kprl-card-subtext">Gate: full-unlock threshold</div>
                         </div>
                         <div class="kprl-kpi-card kprl-border-dark-blue">
                             <div class="kprl-card-title">Proration Factor</div>
@@ -126,7 +126,7 @@
                             <div class="kprl-card-subtext"/>
                         </div>
                         <div class="kprl-kpi-card kprl-border-orange">
-                            <div class="kprl-card-title">AIP Pool (Annual)</div>
+                            <div class="kprl-card-title" title='Quarterly Incentive Plan for Management'>QIPM</div>
                             <div class="kprl-card-value" id="kprl-kpi-aip">--</div>
                             <div class="kprl-card-trend kprl-trend-neutral"/>
                             <div class="kprl-card-subtext"/>
@@ -364,7 +364,7 @@
                             </span>
                             <div class="kprl-info-text">
                                 <label class="kprl-info-label">Date Hired</label>
-                                <div class="kprl-info-value" t-esc="employee.date_hired or ''"/>
+                                <div class="kprl-info-value" t-esc="employee.employment_date or ''"/>
                             </div>
                         </div>
 
@@ -594,15 +594,11 @@
                     </div>
                     <div class="kprl-table-row">
                         <span class="kprl-table-label">Skill Premium (pts)</span>
-                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.skill_premium or 0"/>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.skill_premium_pts or 0"/>
                     </div>
                     <div class="kprl-table-row kprl-highlight-row">
                         <span class="kprl-table-label">Total Points</span>
-                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.total_points or 0"/>
-                    </div>
-                    <div class="kprl-table-row">
-                        <span class="kprl-table-label">Token Rate (₦/pt)</span>
-                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.grade_id.token_rate or 0"/>
+                        <span class="kprl-table-value kprl-text-bold" t-esc="employee.total_points or 0"/>
                     </div>
                     <div class="kprl-table-row">
                         <span class="kprl-table-label">Deferral Rate</span>
@@ -884,9 +880,35 @@
                         </div>
                     </header>
 
+                    <t t-if='can_switch'>
+                        <section class='kprl-action-bar'>
+                            <div class='kprl-left-actions'>
+                               <label class='kprl-input-label' for='kprl-sim-employee-switch'>Simulate as (HR)</label>
+                                <select id='kprl-sim-employee-switch' class='kprl-info-value-input' onchange='if(this.value) window.location.href="/kprl/simulate/"+this.value;'>
+                                   <t t-foreach='switch_employees' t-as='se'>
+                                       <t t-if="se['id'] == employee.id">
+                                          <option t-att-value="se['id']" selected='selected'><t t-esc="se['name']"/> (<t t-esc="se['staff_id']"/>)</option>
+                                       </t>
+                                       <t t-if="se['id'] != employee.id">
+                                          <option t-att-value="se['id']"><t t-esc="se['name']"/> (<t t-esc="se['staff_id']"/>)</option>
+                                       </t>
+                                   </t>
+                                   </select>
+                            </div>
+                            <div class='kprl-right-actions'>
+                               <span class='kprl-table-label'>Viewing <t t-esc='employee.name'/> <t t-if='not is_own'>(HR preview)</t></span>
+                       </div>
+                   </section>
+                   </t>
+                   <t t-if='not can_switch'>
+                       <section class='kprl-action-bar'>
+                           <span class='kprl-table-label'>Your personal simulation. Figures are estimates only</span>
+                       </section>
+                   </t>
                     <nav class="kprl-sub-nav">
                         <div class="kprl-tabs" id="kprl-sim-tabs">
-                            <button class="kprl-tab-item kprl-active-tab" data-tab="simulator">Simulator</button>
+                            <button class="kprl-tab-item kprl-active-tab" data-tab="simulator">Ops Simulator</button>
+                            <button class="kprl-tab-item" data-tab="sales" id="kprl-tab-sales-btn" style="display:none;">Sales Simulator</button>
                             <button class="kprl-tab-item" data-tab="what-if">What-If Analysis</button>
                         </div>
                     </nav>
@@ -1055,7 +1077,7 @@
                                     <span class="kprl-breakdown-value" id="kprl-out-deferred">₦26,308</span>
                                 </div>
                                 <div class="kprl-breakdown-item kprl-breakdown-net">
-                                    <span class="kprl-breakdown-label">NET IMMEDIATE</span>
+                                    <span class="kprl-breakdown-label">BONUS AFTER DEFERRAL</span>
                                     <span class="kprl-breakdown-value" id="kprl-out-net">₦105,232</span>
                                 </div>
                             </div>
@@ -1064,6 +1086,25 @@
                                 <i class="fa fa-check-circle-o kprl-alert-icon"></i>
                                 <span id="kprl-sim-status-text">Floor check: PASS (&gt; ₦30,000)</span>
                             </div>
+                        </div>
+                    </main>
+
+                    <!-- Sales Simulation Tab (for sales track) -->
+                    <main class="kprl-dashboard-grid kprl-tab-content" id="kprl-tab-sales" style="display:none;">
+                        <div class="kprl-card kprl-param-card">
+                            <h3 class="kprl-card-title">Sales Performance Inputs</h3>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Target (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-target" value="66000000" step="1000000"/><span class="kprl-input-note">Personal/territory target</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Sales (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-own" value="45814086" step="1000000"/><span class="kprl-input-note">Actual sales</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Own Retrievals (&#8358;)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-retr" value="33158079" step="1000000"/><span class="kprl-input-note">Actual retrievals</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Product Knowledge (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-pk" value="0.90" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1 scale</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Call Report (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-call" value="0.88" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">Coverage (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-cov" value="0.97" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-form-group"><label class="kprl-input-label">New Customer (0-1)</label><div class="kprl-input-row"><input type="number" class="kprl-sim-input" id="kprl-sales-new" value="0.80" min="0" max="1" step="0.01"/><span class="kprl-input-note">0-1</span></div></div>
+                            <div class="kprl-sim-read-only"><h4 class="kprl-read-only-title">Computed Gates &amp; Multipliers</h4><div class="kprl-table-row"><span class="kprl-table-label">Sales Attainment</span><span class="kprl-table-value" id="kprl-sales-attain">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Retr Rate</span><span class="kprl-table-value" id="kprl-sales-retr-rate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Sales Gate</span><span class="kprl-table-value" id="kprl-sales-gate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Retr Gate</span><span class="kprl-table-value" id="kprl-sales-retr-gate">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">KPI Mult</span><span class="kprl-table-value" id="kprl-sales-kpi-mult">-</span></div><div class="kprl-table-row"><span class="kprl-table-label">Accel Factor</span><span class="kprl-table-value" id="kprl-sales-accel">-</span></div></div>
+                        </div>
+                        <div class="kprl-card kprl-result-card">
+                            <h3 class="kprl-card-title">Projected Sales Commission</h3>
+                            <div class="kprl-result-breakdown"><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Gross Commission</span><span class="kprl-breakdown-value" id="kprl-sales-gross">-</span></div><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Eligible (after gates)</span><span class="kprl-breakdown-value" id="kprl-sales-eligible">-</span></div><div class="kprl-breakdown-item kprl-breakdown-total"><span class="kprl-breakdown-label">Final Sales Payout</span><span class="kprl-breakdown-value" id="kprl-sales-final">-</span></div><div class="kprl-breakdown-item"><span class="kprl-breakdown-label">Cap Check</span><span class="kprl-breakdown-value" id="kprl-sales-cap-status">-</span></div></div>
                         </div>
                     </main>
 
@@ -1147,7 +1188,7 @@
 
             <script type="text/javascript">
                 window.KPRL_EMPLOYEE_ID = <t t-esc="employee.id"/>;
-                window.KPRL_SIM_PARAMS = <t t-esc="sim_params or '{}'" />;
+                window.KPRL_SIM_PARAMS = <t t-raw="sim_params_json or '{}'"/>;
             </script>
             <script type="text/javascript" src="/kprl_bonus/static/js/kprl_api.js"/>
             <script type="text/javascript" src="/kprl_bonus/static/js/simulation.js"/>

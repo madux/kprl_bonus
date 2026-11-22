@@ -29,6 +29,11 @@
         <field name="arch" type="xml">
             <form class="o_payout_form o_engine_form">
                 <header>
+                    <button name="action_generate_payouts" type="object"
+                            string="Generate Payouts"
+                            class="btn-secondary o_payout_btn"
+                            icon="fa-users"
+                            invisible="state != 'draft'"/>
                     <button name="action_compute" type="object"
                             string="Run Computation"
                             class="btn-primary o_payout_btn"
@@ -100,7 +105,7 @@
                             </group>
                             <group>
                                 <field name="effective_pool" widget="monetary"/>
-                                <field name="aip_pool" widget="monetary"/>
+                                <field name="qipm_pool" widget="monetary" readonly="1"/>
                                 <field name="proration_factor"/>
                             </group>
                         </group>
@@ -117,20 +122,23 @@
                         </div>
                         <group>
                             <group>
-                                <field name="ebitda_margin" widget="percentage"/>
+                                <field name="ebitda_margin"/>
                                 <field name="gate_status" widget="badge"
-                                    decoration-success="gate_status == 'passed'"
-                                    decoration-warning="gate_status == 'marginal'"
-                                    decoration-danger="gate_status == 'failed'"/>
+                                    decoration-success="gate_status == 'full'"
+                                    decoration-warning="gate_status == 'partial'"
+                                    decoration-danger="gate_status == 'closed'"/>
                                 <field name="gate_factor"/>
                             </group>
                             <group>
-                                <field name="gmp_status" widget="badge"
-                                    decoration-success="gmp_status == 'passed'"
-                                    decoration-warning="gmp_status == 'marginal'"
-                                    decoration-danger="gmp_status == 'failed'"/>
                                 <field name="gmp_factor"/>
                                 <field name="company_kpi_score"/>
+                                <field name='company_kpi_avg'/>
+                                <field name='company_gmp_avg'/>
+                                <field name='company_gmp_band_factor'/>
+                                <field name="gmp_status" widget="badge"
+                                    decoration-success="gmp_status == 'clean'"
+                                    decoration-warning="gmp_status == 'non_compliant'"
+                                    decoration-danger="gmp_status == 'non_compliant'"/>
                             </group>
                         </group>
                     </div>

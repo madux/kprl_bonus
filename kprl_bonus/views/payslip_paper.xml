@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_payout_slip" model="ir.actions.report">
+        <field name="name">Payslip</field>
+        <field name="model">kprl.bonus.payout</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">kprl_bonus.report_payout_slip</field>
+        <field name="report_file">kprl_bonus.report_payout_slip</field>
+        <field name="print_report_name">'Payslip-%s-%s' % (object.employee_id.staff_id or 'staff', object.period_id.name or 'period')</field>
+    </record>
+
+    <template id="report_payout_slip">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="kprl_bonus.report_payout_slip_content"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_payout_slip_content">
+        <t t-set="emp" t-value="doc.employee_id"/>
+        <t t-set="period" t-value="doc.period_id"/>
+        <t t-set="today" t-value="time.strftime('%d %B %Y')"/>
+        <div class="kprl-payslip" style="font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; font-size: 11px;">
+            <div style="border-bottom: 3px solid #1a3c6e; padding-bottom: 12px; margin-bottom: 16px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 60%;">
+                            <h1 style="font-size: 22px; color: #1a3c6e; margin: 0;">KPRL</h1>
+                            <h2 style="font-size: 14px; color: #555; margin: 4px 0 0 0; font-weight: 400;">Bonus Payslip</h2>
+                        </td>
+                        <td style="width: 40%; text-align: right; font-size: 11px; color: #666;">
+                            <p style="margin: 2px 0;"><strong>Period:</strong> <t t-esc="period.name if period else 'N/A'"/></p>
+                            <p style="margin: 2px 0;"><strong>Date:</strong> <t t-esc="today"/></p>
+                            <p style="margin: 2px 0;"><strong>Status:</strong> <t t-esc="doc.state or ''"/></p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 11px;">
+                <tr>
+                    <td style="width: 50%; vertical-align: top;">
+                        <p style="margin: 2px 0;"><strong>Staff:</strong> <t t-esc="emp.name or ''"/> (<t t-esc="emp.staff_id or ''"/>)</p>
+                        <p style="margin: 2px 0;"><strong>Department:</strong> <t t-esc="doc.department_id.name or ''"/></p>
+                        <p style="margin: 2px 0;"><strong>Grade:</strong> <t t-esc="doc.grade_id.name or ''"/></p>
+                    </td>
+                    <td style="width: 50%; vertical-align: top;">
+                        <p style="margin: 2px 0;"><strong>Track:</strong> <t t-esc="emp.track or ''"/></p>
+                        <p style="margin: 2px 0;"><strong>Tenure:</strong> <t t-esc="'%.2f yrs' % (doc.tenure_years or 0.0)"/></p>
+                        <p style="margin: 2px 0;"><strong>Engine:</strong> <t t-esc="doc.engine_status or ''"/></p>
+                    </td>
+                </tr>
+            </table>
+            <h3 style="font-size: 13px; color: #1a3c6e; margin: 12px 0 6px 0;">Earnings Cascade</h3>
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px;" repeat="1">
+                <thead>
+                    <tr style="background: #1a3c6e; color: #fff;">
+                        <th style="padding: 6px; text-align: left;">Particulars</th>
+                        <th style="padding: 6px; text-align: right; width: 160px;">Amount (?)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Base Eligible (points x value/point)</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.base_eligible or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Dept KPI Multiplier (x<t t-esc="'%.4f' % (doc.dept_kpi_mult or 0.0)"/>)</td><td style="padding: 4px; text-align: right;">-</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Appraisal Multiplier (x<t t-esc="'%.4f' % (doc.appraisal_mult or 0.0)"/>, score <t t-esc="'%.2f' % (doc.appraisal_score or 0.0)"/>)</td><td style="padding: 4px; text-align: right;">-</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Behavioural Multiplier (x<t t-esc="'%.4f' % (doc.behavioural_mult or 0.0)"/>, <t t-esc="'%.1f' % (doc.behaviour_05 or 0.0)"/> / <t t-esc="'%.1f' % (doc.behaviour_max or 25.0)"/>)</td><td style="padding: 4px; text-align: right;">-</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Adjusted Bonus</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.adjusted_amount or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Exception Premium</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.exception_premium or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Gross Commission (Sales + Retrieval)</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.gross_commission or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px; font-weight: 700;">Gross Bonus</td><td style="padding: 4px; text-align: right; font-weight: 700;"><t t-esc="'{:,.2f}'.format(doc.gross_payable or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Proration (x<t t-esc="'%.2f' % (doc.proration_factor or 1.0)"/>) - Payable</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.payable or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Tenure Multiplier (x<t t-esc="'%.4f' % (doc.tenure_mult or 1.0)"/>) - Tenure Enhanced</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.tenure_enhance or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Final incl. Floor</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.final_floor or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Deferred (<t t-esc="'%.2f' % (doc.deferral_rate or 0.0)"/>%)</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.deferred_amount or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Bonus after Deferral (Quarterly Payout)</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.net_immediate or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Dept GMP Factor (x<t t-esc="'%.4f' % (doc.gmp_factor or 1.0)"/>) / Company GMP (x<t t-esc="'%.4f' % (doc.company_gmp_factor or 1.0)"/>)</td><td style="padding: 4px; text-align: right;">-</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Malus (<t t-esc="'%.2f' % (doc.malus_pct_total or 0.0)"/>%)</td><td style="padding: 4px; text-align: right;">-</td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px; font-weight: 700;">Net Bonus</td><td style="padding: 4px; text-align: right; font-weight: 700;"><t t-esc="'{:,.2f}'.format(doc.net_payable or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Gross Taxable Amount (Tax Base)</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.taxable_gross_amount or 0.0)"/></td></tr>
+                    <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Government Tax (<t t-esc="'%.2f' % (doc.gov_tax_rate or 0.0)"/>%)</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.gov_tax_amount or 0.0)"/></td></tr>
+                    <tr style="background: #e8f0fe;"><td style="padding: 6px; font-weight: 700; font-size: 12px;">Take-Home Pay</td><td style="padding: 6px; text-align: right; font-weight: 700; font-size: 12px; color: #1a3c6e;"><t t-esc="'{:,.2f}'.format(doc.take_home_pay or 0.0)"/></td></tr>
+                </tbody>
+            </table>
+            <t t-if="doc.has_sales_leg">
+                <h3 style="font-size: 13px; color: #1a3c6e; margin: 12px 0 6px 0;">Sales Leg</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Attainment <t t-esc="'%.2f' % (doc.sales_attainment or 0.0)"/> (gate <t t-esc="'%.2f' % (doc.sales_gate or 0.0)"/>)</td><td style="padding: 4px; text-align: right;">-</td></tr>
+                        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Sales Commission</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.sales_commission or 0.0)"/></td></tr>
+                        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Retrieval Commission (rate <t t-esc="'%.4f' % (doc.retrieval_rate or 0.0)"/>)</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.retrieval_commission or 0.0)"/></td></tr>
+                        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Sales KPI Multiplier (x<t t-esc="'%.4f' % (doc.sales_kpi_mult or 0.0)"/>), Accelerator (x<t t-esc="'%.4f' % (doc.accelerator_factor or 0.0)"/>)</td><td style="padding: 4px; text-align: right;">-</td></tr>
+                        <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 4px;">Leadership Floor / Cap</td><td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(doc.leadership_floor or 0.0)"/> / <t t-esc="'{:,.2f}'.format(doc.sales_cap or 0.0)"/></td></tr>
+                        <tr style="background: #f3e8ff;"><td style="padding: 4px; font-weight: 700;">Sales Payout</td><td style="padding: 4px; text-align: right; font-weight: 700;"><t t-esc="'{:,.2f}'.format(doc.sales_payout or 0.0)"/></td></tr>
+                    </tbody>
+                </table>
+            </t>
+            <t t-if="doc.governance_event_ids">
+                <h3 style="font-size: 13px; color: #1a3c6e; margin: 12px 0 6px 0;">Governance &amp; Malus</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <thead><tr style="background: #f0f0f0;"><th style="padding: 4px; text-align: left;">Ref</th><th style="padding: 4px; text-align: left;">Type</th><th style="padding: 4px; text-align: left;">Status</th><th style="padding: 4px; text-align: right;">Malus %</th><th style="padding: 4px; text-align: right;">Amount (?)</th></tr></thead>
+                    <tbody>
+                        <t t-foreach="doc.governance_event_ids" t-as="ev">
+                            <tr style="border-bottom: 1px solid #ddd;">
+                                <td style="padding: 4px;"><t t-esc="ev.ref or ''"/></td>
+                                <td style="padding: 4px;"><t t-esc="ev.trigger_type or ''"/></td>
+                                <td style="padding: 4px;"><t t-esc="ev.status or ''"/></td>
+                                <td style="padding: 4px; text-align: right;"><t t-esc="'%.2f' % (ev.malus_pct or 0.0)"/></td>
+                                <td style="padding: 4px; text-align: right;"><t t-esc="'{:,.2f}'.format(ev.malus_amount or 0.0)"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </t>
+            <t t-if="doc.clawback_event_ids">
+                <h3 style="font-size: 13px; color: #1a3c6e; margin: 12px 0 6px 0;">Clawbacks (post-pay)</h3>
+                <p style="font-size: 10px;">Opened: <t t-esc="'{:,.2f}'.format(doc.total_clawback_amount or 0.0)"/> - Forfeited: <t t-esc="'{:,.2f}'.format(doc.total_forfeited_via_clawback or 0.0)"/></p>
+            </t>
+            <div style="margin-top: 40px; border-top: 1px solid #ccc; padding-top: 16px;">
+                <table style="width: 100%; font-size: 11px;">
+                    <tr>
+                        <td style="width: 50%; text-align: center;"><div style="border-top: 1px solid #333; width: 80%; margin: 0 auto 4px auto; padding-top: 4px;">_________________________</div><strong>Prepared By</strong><br/><span style="font-size: 10px; color: #666;">Finance / HR</span></td>
+                        <td style="width: 50%; text-align: center;"><div style="border-top: 1px solid #333; width: 80%; margin: 0 auto 4px auto; padding-top: 4px;">_________________________</div><strong>Approved By</strong><br/><span style="font-size: 10px; color: #666;">Authorised Signatory</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </template>
+</odoo>
