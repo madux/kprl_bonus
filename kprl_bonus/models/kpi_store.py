@@ -307,9 +307,10 @@ class KpiStore(models.Model):
                     problems.append(
                         "%s: manager_staff_number is self. Fix PMS reporting line." % sid)
                 elif normalize_staff_id(mgr) not in known:
-                    problems.append(
-                        "%s: manager %r not found. Sync the manager first or fix "
-                        "PMS manager_staff_number." % (sid, mgr))
+                    # Not blocking: employee syncs without a manager, to be set manually.
+                    _logger.warning(
+                        "KPRL KPI Store: %s: manager %r not found; "
+                        "synced without manager (set manually).", sid, mgr)
         return problems
 
     def _sync_employee_record(self, rec, period=False, link_manager=True):
@@ -385,11 +386,11 @@ class KpiStore(models.Model):
         if link_manager and rec.get('manager_staff_number'):
             mgr = self._resolve_manager(rec.get('manager_staff_number'), kprl_employee.id)
             if not mgr:
-                raise ValidationError(
-                    "Staff %s: manager %r not found. Sync the manager first or fix "
-                    "PMS manager_staff_number, then re-sync." % (
-                        staff_id, rec.get('manager_staff_number')))
-            if (kprl_employee.manager_id.id or False) != mgr.id:
+                _logger.warning(
+                    "KPRL KPI Store: staff %s: manager %r not found; "
+                    "manager left unchanged (set manually).",
+                    staff_id, rec.get('manager_staff_number'))
+            elif (kprl_employee.manager_id.id or False) != mgr.id:
                 kprl_employee.write({'manager_id': mgr.id})
         # --------------------------------------------------
         # PERFORMANCE INPUT
@@ -482,11 +483,11 @@ class KpiStore(models.Model):
             if rec.get('manager_staff_number'):
                 mgr = self._resolve_manager(rec.get('manager_staff_number'), kprl_employee.id)
                 if not mgr:
-                    raise ValidationError(
-                        "Staff %s: manager %r not found. Sync the manager first or fix "
-                        "PMS manager_staff_number, then re-sync." % (
-                            rec.get('employee_number'), rec.get('manager_staff_number')))
-                if (kprl_employee.manager_id.id or False) != mgr.id:
+                    _logger.warning(
+                        "KPRL KPI Store: staff %s: manager %r not found; "
+                        "manager left unchanged (set manually).",
+                        rec.get('employee_number'), rec.get('manager_staff_number'))
+                elif (kprl_employee.manager_id.id or False) != mgr.id:
                     kprl_employee.write({'manager_id': mgr.id})
         self.state = 'completed'
         self.result_message = f'Fetched {ok} employee(s)' + (f', skipped {skipped}' if skipped else '')

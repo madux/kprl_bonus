@@ -450,12 +450,12 @@ class Employee(models.Model):
             vals["grade_id"] = grade.id
         if rec.get("manager_staff_number"):
             mgr = store_model._resolve_manager(rec.get("manager_staff_number"), self.id)
-            if not mgr:
-                raise ValidationError(
-                    "Staff %s: manager %r not found. Sync the manager first or fix "
-                    "PMS manager_staff_number, then re-sync." % (
-                        self.staff_id, rec.get("manager_staff_number")))
-            vals["manager_id"] = mgr.id
+            if mgr:
+                vals["manager_id"] = mgr.id
+            else:
+                _logger.warning(
+                    "KPRL Employee %s: manager %r not found; manager left unchanged (set manually).",
+                    self.staff_id, rec.get("manager_staff_number"))
         from .kprl_math import parse_pms_employment_date
         hired = parse_pms_employment_date(rec.get("employment_date"))
         if hired:
