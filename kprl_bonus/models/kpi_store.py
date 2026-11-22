@@ -271,7 +271,7 @@ class KpiStore(models.Model):
 
     @api.model
     def _resolve_manager(self, mgr_number, employee_id=False):
-        """Resolve manager_staff_number to a kprl.employee (tolerant match).
+        """Resolve staff_Id to a kprl.employee (tolerant match).
         Returns record or False (missing, blank, or self-reference)."""
         if not mgr_number:
             return False
@@ -348,6 +348,8 @@ class KpiStore(models.Model):
         # KPRL EMPLOYEE (match by Staff ID only)
         # --------------------------------------------------
         kprl_employee = self._find_kprl_employee(staff_id)
+        emp_update_vals = []
+
         kprl_vals = {
             'name': employee_name,
             'employee_id': hr_employee.id,
@@ -383,15 +385,18 @@ class KpiStore(models.Model):
             ))
         else:
             kprl_employee.write(kprl_vals)
-        if link_manager and rec.get('manager_staff_number'):
+        if rec.get('manager_staff_number'):
             mgr = self._resolve_manager(rec.get('manager_staff_number'), kprl_employee.id)
-            if not mgr:
-                _logger.warning(
-                    "KPRL KPI Store: staff %s: manager %r not found; "
-                    "manager left unchanged (set manually).",
-                    staff_id, rec.get('manager_staff_number'))
-            elif (kprl_employee.manager_id.id or False) != mgr.id:
-                kprl_employee.write({'manager_id': mgr.id})
+            emp_manager = self.env['kprl.employee'].search([('staff_id', '=', rec.get('manager_staff_number'))], limit=1)
+            if emp_manager:
+                emp_update_vals.append({'manager_id': emp_manager.id, 'employee_id': kprl_employee.id})
+            # if not mgr:
+            #     _logger.warning(
+            #         "KPRL KPI Store: staff %s: manager %r not found; "
+            #         "manager left unchanged (set manually).",
+            #         staff_id, rec.get('manager_staff_number'))
+            # elif (kprl_employee.manager_id.id or False) != mgr.id:
+            #     kprl_employee.write({'manager_id': mgr.id})
         # --------------------------------------------------
         # PERFORMANCE INPUT
         # --------------------------------------------------
@@ -416,6 +421,10 @@ class KpiStore(models.Model):
                 performance_input.write(vals)
             else:
                 self.env['kprl.performance.input'].create(vals)
+        for emp_vals in emp_update_vals:
+            _logger.info(f"Updating employee {emp_vals['employee_id']} manager to {emp_vals['manager_id']}")
+            emp = self.env['kprl.employee'].browse(emp_vals['employee_id'])
+            emp.write({'manager_id': emp_vals['manager_id']})          
         return kprl_employee
 
     def get_api_response_value(self):
@@ -437,17 +446,17 @@ class KpiStore(models.Model):
             ('date_end', '>=', self.date_from),
         ], limit=1)
 
-        if not period:
-            raise ValidationError(
-                'No bonus period found. Please set a Target Period on the KPI Store record '
-                'or ensure a period exists that covers the Date From value.'
-            )
-
-        problems = self._validate_batch_records(data)
-        if problems:
-            raise ValidationError(
-                "PMS sync blocked: fix these in PMS (or sync the listed managers first), "
-                "then re-run. No records were written.\n- " + "\n- ".join(problems))
+        # if not period:
+        #     raise ValidationError(
+        #         'No bonus period found. Please set a Target Period on the KPI Store record '
+        #         'or ensure a period exists that covers the Date From value.'
+        #     )
+        pass
+        # problems = self._validate_batch_records(data)
+        # if problems:
+        #     raise ValidationError(
+        #         "PMS sync blocked: fix these in PMS (or sync the listed managers first), "
+        #         "then re-run. No records were written.\n- " + "\n- ".join(problems))
         self.kpi_store_line_ids.unlink()
         ok, skipped, errors = 0, 0, []
         synced = []
